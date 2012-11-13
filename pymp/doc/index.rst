@@ -6,10 +6,9 @@
 Welcome to PyMP's documentation!
 ================================
 
-Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    doc
    code
