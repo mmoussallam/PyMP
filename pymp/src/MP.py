@@ -1,4 +1,4 @@
-'''*****************************************************************************/
+#*****************************************************************************/
 #                                                                            */
 #                               MP.py                                        */
 #                                                                            */
@@ -25,8 +25,12 @@
 #                                                                            */
 #******************************************************************************
 
+'''
+MP.py 
+=====
 
-Simple MP algorithm using the pymp objects
+A Simple MP algorithm using the pymp objects
+--------------------------------------------
 
 '''
 
@@ -68,12 +72,23 @@ def MP( originalSignal ,
          plot = False,
          debugSpecific=-1,
          cutBorders=False):
-    """ Common Matching Pursuit Loop Options are detailed below:
-    - `originalSignal`,  MANDATORY the original signal (as a pymp_Signal object) x to decompose
-    - `dictionary`    : MANDATORY the dictionary (as a pymp_Dico object) math::\Phi on which to decompose x
-    - `targetSRR`    :  a target Signal to Residual Ratio
-    - `maxIteratioNumber` : maximum number of iteration allowed
-    """
+    ''' Common Matching Pursuit Loop Options are detailed below:
+    
+    Args:
+        `originalSignal`:  MANDATORY the original signal (as a pymp_Signal object) x to decompose
+        `dictionary`: MANDATORY the dictionary (as a pymp_Dico object) math::\Phi on which to decompose x
+        `targetSRR`:  a target Signal to Residual Ratio
+        `maxIteratioNumber`: maximum number of iteration allowed
+    Returns:
+        `Approx`:  A pymp_Approx object encapsulating the approximant
+        `decay`: A list of residual's energy across iterations
+    
+    Usage:
+    For decomposing the signal x on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
+        approx,decay = MP.MP(x, D, 10, 1000)
+    x must be a pymp_Signal and D a pymp_Dico object
+    
+    '''
     
     # back compatibility - use debug levels now
     if debug is not None: 
@@ -373,8 +388,8 @@ def GP( originalSignal ,
         debug=0 , 
         padSignal=True ,
         itClean=False , doWatchSRR=False):
-    """ EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS 
-    Gradient Pursuit Loop """
+    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS 
+    #Gradient Pursuit Loop """
     #===========================================================================
     # from scipy.sparse import lil_matrix
     #===========================================================================
@@ -538,8 +553,8 @@ def OMP( originalSignal ,
         debug=0 , 
         padSignal=True ,
         itClean=False ):
-    """ EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
-     Orthogonal Matching Pursuit Loop """
+    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
+    # Orthogonal Matching Pursuit Loop """
     
     
     # back compatibility - use debug levels now

@@ -1,4 +1,4 @@
-'''*****************************************************************************/
+#*****************************************************************************/
 #                                                                            */
 #                           pymp_Block.py                              */
 #                                                                            */
@@ -24,13 +24,16 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #                                                                            */
 #*****************************************************************************
+'''
+pymp_Block
+==========
 
 A block is an object encapsulating the atomic projection operations
 
 PyMP considers dictionaries as collections of block that are usually defined by 
 a monoscale time-frequency transform (e.g. Gabor or MDCT)
 
-Here we just define an abstract Block class
+Here we just define an abstract Block class, see mdct.pymp_MDCTBlock for a practical implementation
 
 '''
 

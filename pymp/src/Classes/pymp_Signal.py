@@ -1,4 +1,4 @@
-'''
+#
 #                                                                            */
 #                           pymp_Signal.py                                   */
 #                                                                            */
@@ -23,6 +23,9 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330,                            */
 #  Boston, MA  02111-1307, USA.                                              */
 #  
+'''
+pymp_Signal.py
+==============
 
 This file defines the main class handling audio signal in the Pymp Framework
 The main class is pymp_Signal, it can be instantiated from a numpy array using
@@ -30,7 +33,7 @@ the main constructor (mutlichannel is allowed)
 
 Longer signals should not be loaded in memory. the pymp_LongSignal class allows
 to define this kind of signal, and slice it in frames overlapping or not
-                                                                          */
+                                                                          
 '''
 
 
