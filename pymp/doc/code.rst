@@ -6,13 +6,13 @@ MP routines:
 
 Main Module providing MP methods
 ********************************
-	.. automodule:: MP
+	.. automodule:: PyMP.MP
 		:members: MP
 		:undoc-members:
 
 Alternative: Command Line utility
 *********************************	
-	.. automodule:: MPcmd
+	.. automodule:: PyMP.MPcmd
 
 
 Classes Package:

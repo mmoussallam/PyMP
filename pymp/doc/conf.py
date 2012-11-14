@@ -16,8 +16,8 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.append(os.path.abspath('../src'))
-sys.path.append(os.path.abspath('../src/Classes'))
+sys.path.append(os.path.abspath('../PyMP'))
+sys.path.append(os.path.abspath('../PyMP/Classes'))
 sys.path.append(os.path.abspath('../Examples'))
 
 #sys.path.append(os.path.abspath('/tsi/devel/linux-x86_64/squeeze/python2.7/Sphinx-1.1.2/lib/python2.7/site-packages/Sphinx-1.1.2-py2.7.egg/sphinx/ext'))
