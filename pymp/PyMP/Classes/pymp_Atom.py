@@ -28,6 +28,7 @@
 
 class pymp_Atom:
     """ Abstract Atom class interface: 
+    
     To implement a new type of atom, you must derive from this class. 
     The minimum fields are :
         - type: A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT

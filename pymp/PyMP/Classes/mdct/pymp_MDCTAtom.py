@@ -1,4 +1,4 @@
-'''
+#
 #                                                                            
 #                       Classes.mdct.pymp_MDCTAtom                                    
 #                                                                            
@@ -24,17 +24,17 @@
 #  Boston, MA  02111-1307, USA.                                              
 #
 
+"""
+
 This class inherits from pymp_Atom and is used to represent and manipulate MDCT atoms
 
-An MDCT atom is defined for a length L, a frequency localisation k and a frame parameter p by:
 
-math::\phi_{L,p,k}^{MDCT}[n]=w_{L}[u]\sqrt{\frac{2}{L}}\cos\left[\frac{\pi}{L}\left(u+\frac{L+1}{2}\right)\left(k+\frac{1}{2}\right)\right]
 
 In this handle, we authorize any discrete time localization.
 
 
                                                                             
-'''
+"""
 
 
 from Classes.pymp_Atom import pymp_Atom
@@ -53,13 +53,18 @@ _PyServer = PyWinServer.PyServer()
 
 class pymp_MDCTAtom(pymp_Atom):
     """ MDCT atom class : implement real domain MDCT atoms of scale defined by the atom length
-        Additionnal attributes are:
+        
+    An MDCT atom is defined for a length L, a frequency localization k and a frame parameter p by:
+
+    ..math::\phi_{L,p,k}^{MDCT}[n]=w_{L}[u]\sqrt{\frac{2}{L}}\cos\left[\frac{\pi}{L}\left(u+\frac{L+1}{2}\right)\left(k+\frac{1}{2}\right)\right]
+    
+    Additionnal attributes are:
             - frequencyBin : MDCT frequency bin index (default is 0)
             - frame : the frame index of the atom
             - reducedFrequency: corresponding sampling frequency (default is 0)
             - mdctValue : the atom mdct coefficient 
             
-        Additionnal parameters for time-shifted atoms:
+    Additionnal parameters for time-shifted atoms:
             - timeShift: time shift in samples related to the closest MDCT grid index
             - projectionScore: useful when atom is reprojected using say.. LOMP algorithm"""
 

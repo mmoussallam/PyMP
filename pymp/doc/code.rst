@@ -42,4 +42,19 @@ Abstract MP classes
 		
 	.. automodule:: Classes.pymp_Dico
 		:members:
-			
+
+
+Classes.mdct Package:
+---------------------
+    .. automodule:: Classes.mdct
+
+Classes for Unions of MDCT Basis
+********************************
+	.. automodule:: Classes.mdct.pymp_MDCTAtom
+		:members: 
+		
+	.. automodule:: Classes.mdct.pymp_MDCTBlock
+		:members: 	
+		
+	.. automodule:: Classes.mdct.pymp_MDCTDico
+		:members:

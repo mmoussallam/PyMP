@@ -11,7 +11,29 @@ pythonVersion = sys.version[0:3];
 
 #pythonVersion = '2.7'
 #fullfastPursuitPath = commands.getoutput('locate parProj.h')
-fastPursuitPath = os.path.abspath('../../lib/fastPursuit/')
+herePath = os.path.abspath( __file__ );
+herePath = herePath[:-8];
+
+fastPursuitPath = os.path.abspath(herePath+'../../lib/fastPursuit/')
+print fastPursuitPath
+print "Current path is " , herePath
+
+# First check if the library is there
+if not os.path.exists(fastPursuitPath+'/libfastPursuit.a'):
+    # Otherwise compile it!
+    print commands.getoutput('cd ' +fastPursuitPath+'/src/')
+    
+    print commands.getoutput('gcc -c '+fastPursuitPath+'/src/parProj.c -o '+fastPursuitPath+'/src/parProj.o -fPIC -DDEBUG=0');    
+    print commands.getoutput('ar rcs '+fastPursuitPath+'/libfastPursuit.a '+fastPursuitPath+'/src/parProj.o');
+    
+    print commands.getoutput('cd ' +herePath)
+
+    
+    # Second check, no more excuses
+    if not os.path.exists(fastPursuitPath+'/libfastPursuit.a'):
+        raise ImportError("Unable to load fastPursuit library, please make sure it has been compiled and is accessible")
+
+
 
 if os.name == 'posix':  
 
@@ -35,8 +57,8 @@ if os.name == 'posix':
                     define_macros = [('MAJOR_VERSION', '1'),
                                      ('MINOR_VERSION', '2')],
                     include_dirs = includeDirList,
-                    library_dirs = ['/usr/local/lib'  ],                    
-                    sources = ['parallelProjections.c' ],
+                    library_dirs = ['/usr/local/lib'  ],                                    
+                    sources = [herePath+'parallelProjections.c' ],
                     extra_compile_args =['-fopenmp','-fPIC'] ,
                     extra_link_args = ['-lgomp','-lfftw3',fastPursuitPath+'/libfastPursuit.a' ])
 

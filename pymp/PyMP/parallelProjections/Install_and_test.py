@@ -1,4 +1,4 @@
-'''
+#
 # M. Moussallam                                             Mon Nov 12 2012  */
 # -------------------------------------------------------------------------- */
 #                                                                            */
@@ -19,6 +19,7 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #     
 
+"""
  This class tests whether the extension C module parallelProjections is correctly
  installed and accessible.
  
@@ -29,8 +30,8 @@
  proper authorization are granted
   
  
-                                                                       */
-'''#
+
+"""
 import os,sys
 import commands
 import string
