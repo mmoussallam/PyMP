@@ -1,5 +1,3 @@
-
-
 A Python Matching Pursuit Implementation developed during my PhD 
 
 
@@ -43,18 +41,15 @@ signal. Thus, the algorithm builds an *approximant* :math:`\tilde{x}_{m}` of :ma
 
 
 How to have it work?
-====================
+--------------------
 
 Once you've downloaded and unzipped the source file, here's how to
-proceed to install python modules on your machine and start using it? 
+proceed to install python modules on your machine and start using it 
 
-
-Examples
-========
 
 
 Bibliography
-============
+------------
 
     [1]. M. Moussallam , L. Daudet , et G. Richard , "Matching Pursuits with Random Sequential Subdictionaries"
     Signal Processing, vol. 92, pp. 2532-2544, 2012.

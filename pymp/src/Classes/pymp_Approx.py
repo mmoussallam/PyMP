@@ -24,15 +24,7 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #                                                                            */
 #*****************************************************************************
-'''
-pymp_Approx
-===========
 
-The approx class encapsulate the approximation that is iteratively being constructed 
-by a greed algorithm
-
-
-'''
 
 import pymp_Atom , pymp_Signal , pymp_Log
 from numpy import math , array , zeros , sum , NINF , PINF, log2
@@ -49,46 +41,47 @@ global _Logger
 _Logger = pymp_Log.pymp_Log('Approx')
 
 class pymp_Approx:
-    """ object that handles MP constructed approximations 
+    """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm
+
+    This object handles MP constructed approximations 
     The approx object is quite similarr in nature to the MPTK [1] Book object but allows 
     further manipulations in python such as plotting the time frequency distribution of atoms
     
-    The object has following properties:
-    * dico     : the dictionary from which it has been constructed
-    * atoms    : a list of pymp_atom objets
-    * atomNumber    : the length of the atoms list
-    * SRR           : the Signal to Residual Ratio achived by the approximation
-    * originalSignal    : a pymp_Signal object that is the original signal
-    * frameNumber    : DEPRECATED
-    * frameLength    : DEPRECATED
-    * length        : Length in samples of the time signal
-    * recomposedSignal    : a pymp_Signal objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
-    * samplingFrequency    : the sampling frequency
+    The object has following attributes:
+    Attributes:
     
-    An approximant can be manipulated in various ways. Obviously atoms can be edited by several methods
-    - addAtom 
-    - removeAtom
-    - filterAtom
+        * `dico`     : the dictionary (as a :class:`.pymp_Dico` object) from which it has been constructed
+        
+        * `atoms`    : a list of :class:`.pymp_Atom` objets
+        
+        * `atomNumber`    : the length of the atoms list
+        
+        * `SRR`           : the Signal to Residual Ratio achieved by the approximation
+        
+        * `originalSignal`    : a :class:`.pymp_Signal` object that is the original signal
+        
+        * `length`        : Length in samples of the time signal, same as the one of `originalSignal`
     
-    Measure of distorsion can be estimated by the method
-    - computeSRR
+        * `recomposedSignal`   : a :class:`.pymp_Signal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
+        
     
-    pymp_Approx objets can be exported in various formats
-    - toDico
-    - toSparseArray
-    - toArray
-    - writeToXml
-    - dumpToDisk
+    An approximant can be manipulated in various ways. Obviously atoms can be edited by several methods among which
+    :func:`addAtom` ,  :func:`removeAtom`  and :func:`filterAtom`
+    
+    Measure of distorsion can be estimated by the method :func:`computeSRR`
+    
+    pymp_Approx objets can be exported in various formats using 
+    :func:`toDico` , 
+    :func:`toSparseArray` , 
+    :func:`toArray` , 
+    :func:`writeToXml` , 
+    :func:`dumpToDisk` , 
     
     and reversely can be recovered from these formats
-    - loadFromDisk
-    - readFromXml
-    - readFromMatStruct
     
-    A useful plotting routine is provided to visualize atom distribution in the time frequency plane
+    A useful plotting routine, :func:`plotTF` is provided to visualize atom distribution in the time frequency plane
     Also an experimental 3D plot taking the atom iteration number as a depth parameter
-    - plotTF
-    - plot3D
+    :func:`plot3D`
     
     
     """
@@ -105,7 +98,7 @@ class pymp_Approx:
     samplingFrequency = 0
     
     def __init__(self , dico = None , atoms = [] , originalSignal = None , length=0 , Fs=0, debugLevel=None):
-        ''' basic constructor'''
+        """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm """
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
         
@@ -252,8 +245,10 @@ class pymp_Approx:
     # routine to compute approximation Signal To Residual ratio so far
     def computeSRR(self , residual=None):
         ''' routine to compute approximation Signal To Residual ratio so far using:
-        SRR = 10 \log_10 \frac{\| \tilde{x} \|^2}{\| \tilde{x} - x \|^2}
-        where $\tilde{x}$ is the reconstructed signal and $x$ the original
+            
+            .. math::SRR = 10 \log_10 \frac{\| \tilde{x} \|^2}{\| \tilde{x} - x \|^2}
+        
+            where :math:`\tilde{x}` is the reconstructed signal and :math:`x` the original
         '''
         if not isinstance(self.recomposedSignal , pymp_Signal.pymp_Signal):
             return NINF
@@ -279,18 +274,31 @@ class pymp_Approx:
     def plotTF(self , labelX=True , labelY=True, fontsize=12 , ylim=None, patchColor=None , labelColor=None , 
                multicolor=False ,axes=None ,maxAtoms=None, recenter=None,keepValues=False,
                french=False,Alpha=False,logF=False):
-        """ each atom of the approx is plotted in a time-frequency plane with a gray scale for amplitudes
+        """ A time Frequency plot routine using Matplotlib
+        
+            each atom of the approx is plotted in a time-frequency plane with a gray scale for amplitudes
             Many options are available:
+            
             - labelX     : whether or not to add the Time label on the X axis
+            
             - labelY     : whether or not to add the Frequency label on the Y axis
+            
             - fontsize    : the label fontSize
+            
             - ylim        : the frequency range of the plot
+            
             - patchColor    : specify a single color for all atoms
+            
             - maxAtoms    : specify a maximum number of atom to take into account. Usually atoms are ordered by decreasing amplitude due to MP rules, meaning only the most salient atoms will be plotted
+            
             - recenter    : a couple of values to offset the time and frequency localization of atoms
+            
             - keepValues    : use atom Amplitudes for atom colorations
+            
             - french    : all labels in french
+            
             - Alpha     : use transparency
+            
             - logF        : frequency axis in logarithmic scale
             
         """

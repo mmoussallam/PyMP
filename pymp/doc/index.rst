@@ -11,6 +11,7 @@ Welcome to PyMP's documentation!
    :maxdepth: 4
 
    doc
+   example
    code
 
 Indices and tables

@@ -24,30 +24,22 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #                                                                            */
 #*****************************************************************************
-'''
-pymp_Block
-==========
 
-A block is an object encapsulating the atomic projection operations
-
-PyMP considers dictionaries as collections of block that are usually defined by 
-a monoscale time-frequency transform (e.g. Gabor or MDCT)
-
-Here we just define an abstract Block class, see mdct.pymp_MDCTBlock for a practical implementation
-
-'''
 
 
 
 class pymp_Block:
-    ''' A block is an instance handling projections for Matching Pursuit. Mandatory fields:
-        - type : the type of dictionary (e.g  Gabor , MDCT , Haar ...)  
-        - scale : the scale of the block
-        - residualSignal : a py_pursuit_Signal instance that describes the current residual
+    ''' A block is an instance handling projections for Matching Pursuit. 
+    
+        Mandatory fields:    
+            - type : the type of dictionary (e.g  Gabor , MDCT , Haar ...)  
+            - scale : the scale of the block
+            - residualSignal : a py_pursuit_Signal instance that describes the current residual
+    
         Mandatory methods
-        - update :  updates the inner products table
-        - getMaximum : retrieve the maximum absolute value of inner products
-        - getMaxAtom : return a corresponding Atom instance'''
+            - update :  updates the inner products table
+            - getMaximum : retrieve the maximum absolute value of inner products
+            - getMaxAtom : return a corresponding Atom instance'''
     
     #members 
     scale = 0;    

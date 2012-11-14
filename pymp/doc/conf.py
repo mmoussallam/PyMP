@@ -17,12 +17,17 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('/tsi/claude/moussall/data/workspace/PyMP/pymp/src'))
+sys.path.append(os.path.abspath('/tsi/claude/moussall/data/workspace/PyMP/pymp/src/Classes'))
+sys.path.append(os.path.abspath('/tsi/claude/moussall/data/workspace/PyMP/pymp/Examples'))
 
+#sys.path.append(os.path.abspath('/tsi/devel/linux-x86_64/squeeze/python2.7/Sphinx-1.1.2/lib/python2.7/site-packages/Sphinx-1.1.2-py2.7.egg/sphinx/ext'))
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc','sphinx.ext.mathjax']
+
+#jsmath_path = '.';
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -27,12 +27,10 @@
 pymp_Signal.py
 ==============
 
-This file defines the main class handling audio signal in the Pymp Framework
 The main class is pymp_Signal, it can be instantiated from a numpy array using
 the main constructor (mutlichannel is allowed)
 
-Longer signals should not be loaded in memory. the pymp_LongSignal class allows
-to define this kind of signal, and slice it in frames overlapping or not
+
                                                                           
 '''
 
@@ -47,33 +45,53 @@ global _Logger
 _Logger = pymp_Log.pymp_Log('Signal', imode=False)
 #from operator import add, mul
 class pymp_Signal:
-    '''More interestingly, it can be instantiated from a wav file path using the static InitFromFile Method
+    """This file defines the main class handling audio signal in the Pymp Framework.
 
-    A pymp_Signal is fairly a numpy array (called dataVec) and a collection of properties:
-        - channelNumber         The number of channel
-        - length                The length in samples (integer) of the signal (total dimension of the numpy array is channelNumber x length) 
-        - samplingFrequency     The sampling frequency
-        - location              (optional) Where the original file is located on the disk 
-        - sampleWidth           Various bit format exist for wav file, this allows to handle it
-        - isNormalized          A boolean telling is the numpy array has been normalized (which here means its values are between -1 and 1)
-        - energy                The energy (\sum_i x[i]^2) of the array 
+    A pymp_Signal is fairly a numpy array (called dataVec) and a collection of attributes.
+    Longer signals should not be loaded in memory. the `pymp_LongSignal` class allows
+    to define this kind of signal, and slice it in frames overlapping or not.
+    
+    Attributes:
+    
+        `channelNumber`:The number of channel
+        
+        `length`:                The length in samples (integer) of the signal (total dimension of the numpy array is channelNumber x length)
+         
+        `samplingFrequency`:     The sampling frequency
+        
+        `location`:              (optional) Where the original file is located on the disk 
+        
+        `sampleWidth` :          Various bit format exist for wav file, this allows to handle it
+        
+        `isNormalized` :         A boolean telling is the numpy array has been normalized (which here means its values are between -1 and 1)
+        
+        `energy`:                The energy (:math:`\sum_i x[i]^2`) of the array 
     
     Standard methods to manipulate the signal are:
-        - Normalize
-        - Plot using matlplotlib
-        - crop 
-        - pad with zeroes
-        - copy
-        - downsample
+    
+        :func:`normalize` : makes sure all values of the array are between -1 and 1
+        
+        :func:`plot`: Plot using matlplotlib
+        
+        :func:`crop` : crop
+        
+        :func:`pad`:  with zeroes
+        
+        :func:`copy`:
+        
+        :func:`downsample`:
         
     For use in the PyMP framework, other methods need to be defined:
-        - add :             adds an atom waveform to the current signal and updates energy
-        - subtract :        the opposite operation
-        
-    Output Method: write
-    '''
     
-    # attributes 
+        :func:`add`:             adds an atom waveform to the current signal and updates energy
+        
+        :func:`subtract`:        the opposite operation
+        
+    Output Methods: :func:`write`
+    
+    """
+    
+    # att 
     dataVec = [];                # 
     channelNumber = 0;
     length = 0;
@@ -362,17 +380,37 @@ def InitFromFile(filepath , forceMono = False , doNormalize= False , debugLevel=
 
 
 class pymp_LongSignal(pymp_Signal):
-    """ Subclass of signal where the data is not loaded at once for memory consumptions purposes 
-        Instead, the data is sliced in frames that can be loaded later individually. very useful to 
-        process very large files such as audio archives"""
+    """ A class handling long audio signals
     
-    # added attributes
-    filetype = ''       # file extension : .wav or .mp3
-    nframes = 0;        # number of 
-    sampleWidth = 0;    # bit width of each frame
-    segmentSize = 0;      # in 16-bits samples : different from nframes which is internal wav representation
-    segmentNumber =0;     # numberof audio segments to be consideres
-    overlap = 0;         # overlapping rate between two consecutive segments
+        Subclass of :class:`.pymp_signal' where the data is not loaded at once for memory consumptions purposes 
+        Instead, the data is sliced in frames that can be loaded later individually. very useful to 
+        process large files such as audio archives
+        
+        Attributes:
+    
+            `filepath`:    The path to the audio file
+            
+            `frameSize`:   In samples, default is 16384*3 
+             
+            `frameDuration`:  Alternative to frameSize, specify directly a frame duration in seconds (Defult is None)
+            
+            `forceMono`:      Only load the left (first) channel (default is False)
+            
+            `Noverlap` :      overlap (as a ratio r such that :math:`0\leq r < 1`)
+    
+    Standard methods to manipulate the signal are:
+    
+        :func:`getSubSignal` : Loads a subSignal
+        
+    """
+    
+    # more attr
+#    filetype = ''       # file extension : .wav or .mp3
+#    nframes = 0;        # number of 
+#    sampleWidth = 0;    # bit width of each frame
+#    segmentSize = 0;      # in 16-bits samples : different from nframes which is internal wav representation
+#    segmentNumber =0;     # numberof audio segments to be consideres
+#    overlap = 0;         # overlapping rate between two consecutive segments
     
     # constructor
     def __init__(self, filepath , frameSize= 16384*3, frameDuration = None, forceMono = False , Noverlap = 0 ):
@@ -412,16 +450,27 @@ class pymp_LongSignal(pymp_Signal):
         self.length = self.segmentNumber * frameSize
         file.close()
     
-    def readFrames(self , frameIndexes):
-        #self.data = array.array('h') #creates an array of ints            
-        file = wave.open(self.location, 'r')
-        str_bytestream = file.readframes(self.nframes)
-        self.data = fromstring(str_bytestream,'h')
-        file.close()
+#    def readFrames(self , frameIndexes):
+#        #self.data = array.array('h') #creates an array of ints            
+#        file = wave.open(self.location, 'r')
+#        str_bytestream = file.readframes(self.nframes)
+#        self.data = fromstring(str_bytestream,'h')
+#        file.close()
         
         
     def getSubSignal(self , startSegment , segmentNumber ,forceMono=False, doNormalize=False , channel=0 , padSignal = 0):
-        """ Routine to actually read from the buffer and return a smaller signal instance """
+        """ Routine to actually read from the buffer and return a smaller signal instance 
+        
+        :Returns:
+        
+            a :class:`pymp_Signal` object
+            
+        :Example:
+        
+            longSig = pymp_LongSignal(**myLongSigFilePath**, frameDuration=5) # Initialize long signal
+            subSig = longSig.getSubSignal(0,10) # Loads the first 50 seconds of data
+        
+        """
         
         # convert frame into bytes positions
         bFrame = startSegment*(self.segmentSize * (1 - self.overlap)) 

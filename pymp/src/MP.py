@@ -72,23 +72,32 @@ def MP( originalSignal ,
          plot = False,
          debugSpecific=-1,
          cutBorders=False):
-    ''' Common Matching Pursuit Loop Options are detailed below:
+    """Common Matching Pursuit Loop Options are detailed below:
     
     Args:
-        `originalSignal`:  MANDATORY the original signal (as a pymp_Signal object) x to decompose
-        `dictionary`: MANDATORY the dictionary (as a pymp_Dico object) math::\Phi on which to decompose x
-        `targetSRR`:  a target Signal to Residual Ratio
-        `maxIteratioNumber`: maximum number of iteration allowed
+    
+         `originalSignal`:    the original signal (as a :class:`.pymp_Signal` object) :math:`x` to decompose
+         
+         `dictionary`:        the dictionary (as a :class:`.pymp_Dico` object) :math:`\Phi` on which to decompose :math:x
+         
+         `targetSRR`:         a target Signal to Residual Ratio
+         
+         `maxIteratioNumber`: maximum number of iteration allowed
+         
     Returns:
-        `Approx`:  A pymp_Approx object encapsulating the approximant
-        `decay`: A list of residual's energy across iterations
     
-    Usage:
-    For decomposing the signal x on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
+         `approx`:  A :class:`.pymp_Approx` object encapsulating the approximant
+         
+         `decay`:   A list of residual's energy across iterations
+    
+    :Example:
+                
         approx,decay = MP.MP(x, D, 10, 1000)
-    x must be a pymp_Signal and D a pymp_Dico object
+        
+    For decomposing the signal x on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
+    x must be a :class:`.pymp_Signal` and D a :class:`.pymp_Dico` object
     
-    '''
+    """
     
     # back compatibility - use debug levels now
     if debug is not None: 

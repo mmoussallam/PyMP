@@ -13,31 +13,33 @@ Main Module providing MP methods
 Alternative: Command Line utility
 *********************************	
 	.. automodule:: MPcmd
-		:members:
-		:undoc-members:
 
 
-PyMP Classes:
-------------
-	
-	.. automodule:: Classes.pymp_Signal
-		:members:
-		:undoc-members:
+Classes Package:
+----------------
 
-	.. automodule:: Classes.pymp_Atom
-		:members:
-		:undoc-members:
+The :mod:`.Classes` Package contains all basic pymp_objects such as :class:`.pymp_Signal` , :class:`.pymp_Dico`, 
+:class:`.pymp_Atom` , :class:`.pymp_Approx` and :class:`.pymp_Block`
+
+    .. automodule:: Classes
 		
-	.. automodule:: Classes.pymp_Dico
-		:members:
-		:undoc-members:
+Signal and Approximation Handles
+********************************
+		
+	.. automodule:: Classes.pymp_Signal
+		:members: pymp_Signal
 
 	.. automodule:: Classes.pymp_Approx
 		:members:
-		:undoc-members:
+
+Abstract MP classes
+*******************
+	.. automodule:: Classes.pymp_Atom
+		:members: 
 		
 	.. automodule:: Classes.pymp_Block
+		:members: 	
+		
+	.. automodule:: Classes.pymp_Dico
 		:members:
-		:undoc-members:
-	
-
+			

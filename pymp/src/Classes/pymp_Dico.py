@@ -24,21 +24,14 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #                                                                            */
 #*****************************************************************************'''
-""" 
-pymp_Dico
-=========
 
-This class creates an interface that any type of dictionary should reproduce 
-        in order to be used correclty by Pursuit algorithm in this framework:
-            - `sizes`: a list of scales 
-            - `blocks`: a list of blocks that handles the projection of a residual signal along with
-                        the selection of a projection maximum given a transform and a criteria
-        """
 
 class pymp_Dico():
     """ This class creates an interface that any type of dictionary should reproduce 
         in order to be used correclty by Pursuit algorithm in this framework:
+        
             - `sizes`: a list of scales 
+            
             - `blocks`: a list of blocks that handles the projection of a residual signal along with
                         the selection of a projection maximum given a transform and a criteria
         """

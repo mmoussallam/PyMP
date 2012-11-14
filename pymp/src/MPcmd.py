@@ -29,7 +29,34 @@
 MPcmd.py
 ========
 
-This module intend to provide a command line interface using PyMP
+PyPursuit command line arguments looks as follow:
+             -h or --help : print this help
+
+             -f [filePath] : specifies the path to the audiofile, only wav files supported for now
+             
+             -w : flag for writing the output (approx and recomposedSignal) to output files
+             
+             -o [outPutFilePath] : path for the output
+            
+             -m [maxAtomNumber] :  specifies the maximum number of selected atoms
+             
+             -s [SRR] : specifies the target Signal-To-Residual Ratio
+             
+             -d [dictionarySizes] : specifies the sizes: e.g -d 128,1024,8192
+             
+             -t or --type ['MP' | 'LOMP'] : specify the chosen decomposition algorithm
+             
+             --debug=[0|1|2|3] : debug level. Default is 0
+             
+             -a or --pad pad signal with zeroes , default is 1
+             
+             -p or --plot plots the approximation using matplotib
+             
+             -l [segmentDuration] : length of the segments
+             
+             :Example: 
+             
+                 >>>python MPcmd.py -f sndFile.wav -m 100 -s 10 -d 128,1024,8192 --debug=1 -a -p
 
 '''
 
