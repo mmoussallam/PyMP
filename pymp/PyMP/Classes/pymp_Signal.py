@@ -24,13 +24,15 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #  
 '''
-pymp_Signal.py
+Module pymp_Signal
 ==============
 
-The main class is pymp_Signal, it can be instantiated from a numpy array using
-the main constructor (mutlichannel is allowed)
+The main class is :class:`pymp_Signal`, it can be instantiated from a numpy array using
+the main constructor (mutlichannel is allowed).
 
+It can also be created from a wav file using the :func:`InitFromFile` static routine
 
+Longer Signals are handled with :class:`pymp_LongSignal` objects.
                                                                           
 '''
 

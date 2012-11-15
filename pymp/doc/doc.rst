@@ -1,5 +1,3 @@
-A Python Matching Pursuit Implementation developed during my PhD 
-
 
 What is PyMP?
 =============
@@ -8,6 +6,7 @@ PyMP is a collection of classes and scripts mostly written in Python
 during my PhD to perform fast decomposition of audio signals on
 multiscale time-frequency dictionaries. 
 
+For now, it can only handle MDCT-based dictionaries
 
 Architecture
 ------------
@@ -27,30 +26,72 @@ In the opposite case let's have a look at how this is built:
 
 
 A few notions
--------------
+*************
 
 This section only recall MP in order to describe the meaning of PyMP
-methods and classes. This is NOT an introduction to greedy algorithm. 
+methods and classes. This is NOT an introduction to greedy algorithms. 
 
 MP will decompose a signal :math:`x` into a linear combination of atoms :math:`\phi` taken from a dictionary :math:`\Phi` by iteratively selecting them according to their correlation to the
 signal. Thus, the algorithm builds an *approximant* :math:`\tilde{x}_{m}` of :math:`x` in :math:`m` iterations such that: 
 
 .. math:: \tilde{x}_{m}=\sum_{n=0}^{m-1}\alpha_{n}\phi_{\gamma^{n}}\approx x 
 
+Implementation
+**************
 
+PyMP provide an Object-Oriented implementation of the MP algorithm in the following manner:
 
+	- Signals (such as :math:`x`) are handled through :class:`.pymp_Signal` objects
+	
+	- Dictionaries (such as :math:`\Phi`) are handled through :class:`.pymp_Dico` objects
+	
+	- Approximants (such as :math:`\tilde{x}_{m}`) are handled through :class:`.pymp_Approx` objects
+
+The algorithm itself is performed using funnction from the :mod:`.MP` module.  A comprehensive view of how it works is provided in the 
+next topic.
 
 How to have it work?
 --------------------
+.. warning::
+		
+	You will need to have *fftw*  and *openMP* libraries installed and header accessible. 
+	Installation has been succesfully tested on linux machines but not on windows. 
+	Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries I recommend the use of cygwin on Windows Platform
 
-Once you've downloaded and unzipped the source file, here's how to
-proceed to install python modules on your machine and start using it 
 
+PyMP is mainly a collection of pure python modules, which installation is quite traditionnal. 
+However, in order to accelerate the inner product computations, it uses a low-level pure C library that is
+used through a python C extension module.
 
+Which means there are three installation steps:
+
+	- Compile the pure C library: located in *root/lib/fastPursuit/*
+	
+	- Build and install the Python C extension module called *parallelProjections*
+	
+	- Build and install the pure Python packages among which:
+	
+			- :mod:`.Classes`: a package where all the Objects are stored
+			
+			- :mod:`.Tools`: a collection of tools
+			
+			- :mod:`.Tests`: a package of tests
+
+.. note::
+
+	Hopefully you won't need to perform these operations, it will be done for you by executing by the *setup.py* script 
+	in the root directory. Simply run::
+	
+	>>> python setup.py install
+	
+	And it should be fine...
+	
 
 Bibliography
 ------------
 
     [1]. M. Moussallam , L. Daudet , et G. Richard , "Matching Pursuits with Random Sequential Subdictionaries"
-    Signal Processing, vol. 92, pp. 2532-2544, 2012.
+    Signal Processing, vol. 92, pp. 2532-2544, 2012. pdf_ .  
+
+.. _pdf: http://dx.doi.org/10.1016/j.sigpro.2012.03.019
 

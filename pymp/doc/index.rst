@@ -12,7 +12,13 @@ Welcome to PyMP's documentation!
 
    doc
    example
-   code
+   
+   MP.rst
+		
+   classes.rst
+		
+   Mdct.rst
+   test
 
 Indices and tables
 ==================

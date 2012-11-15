@@ -26,8 +26,8 @@
 #******************************************************************************/
 
 '''
-MPcmd.py
-========
+Module MPcmd
+============
 
 PyPursuit command line arguments looks as follow:
              -h or --help : print this help
@@ -54,9 +54,9 @@ PyPursuit command line arguments looks as follow:
              
              -l [segmentDuration] : length of the segments
              
-             :Example: 
+             Example:: 
              
-                 >>>python MPcmd.py -f sndFile.wav -m 100 -s 10 -d 128,1024,8192 --debug=1 -a -p
+                 >>> python MPcmd.py -f sndFile.wav -m 100 -s 10 -d 128,1024,8192 --debug=1 -a -p
 
 '''
 

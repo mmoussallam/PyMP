@@ -24,6 +24,13 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #                                                                            */
 #******************************************************************************/
+
+'''
+Module pymp_Log
+===============
+                                                                          
+'''
+
 import logging
 import sys , traceback
 import matplotlib.pyplot as plt

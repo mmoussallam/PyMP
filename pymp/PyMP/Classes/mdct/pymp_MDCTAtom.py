@@ -25,15 +25,12 @@
 #
 
 """
-
-This class inherits from pymp_Atom and is used to represent and manipulate MDCT atoms
-
-
-
-In this handle, we authorize any discrete time localization.
-
-
-                                                                            
+Module pymp_MDCTAtom
+====================
+                                                                          
+This class inherits from :class:`.pymp_Atom` and is used to represent and manipulate MDCT atoms.
+:class:`pymp_MDCTAtom` Objects can either be constructed or recovered from Xml using :func:`pymp_MDCTAtom.fromXml`
+                                                                          
 """
 
 
@@ -56,7 +53,9 @@ class pymp_MDCTAtom(pymp_Atom):
         
     An MDCT atom is defined for a length L, a frequency localization k and a frame parameter p by:
 
-    ..math::\phi_{L,p,k}^{MDCT}[n]=w_{L}[u]\sqrt{\frac{2}{L}}\cos\left[\frac{\pi}{L}\left(u+\frac{L+1}{2}\right)\left(k+\frac{1}{2}\right)\right]
+    .. math::
+    
+        \phi_{L,p,k}^{MDCT}[n]=w_{L}[u]\sqrt{\frac{2}{L}}\cos\left[\frac{\pi}{L}\left(u+\frac{L+1}{2}\right)\left(k+\frac{1}{2}\right)\right]
     
     Additionnal attributes are:
             - frequencyBin : MDCT frequency bin index (default is 0)

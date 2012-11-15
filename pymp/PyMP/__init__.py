@@ -1,1 +1,1 @@
-__all__ = ['MP.py',]
+__all__ = ['MP.py','MPcmd.py']

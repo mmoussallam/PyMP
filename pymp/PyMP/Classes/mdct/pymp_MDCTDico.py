@@ -1,4 +1,4 @@
-'''
+#
 #                                                                            
 #                       Classes.mdct.pymp_MDCTDico                                    
 #                                                                            
@@ -23,7 +23,30 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330,                            
 #  Boston, MA  02111-1307, USA.                                              
 #                                                                            
-'''
+
+"""
+Module pymp_MDCTDico
+====================
+                                                                          
+This class inherits from :class:`.pymp_Dico` and is used to represent and manipulate multiscale MDCT dictionaries.
+Dictionaries are mostly implemented as a collection of :class:`pymp_MDCTBlock` of various kind, according to the
+type of pursuit that is seeked.                                                                      
+                                                                                                                                              
+This module describes 3 kind of blocks:
+    - :class:`pymp_MDCTDico`  is a Dico based on the standard MDCT transform. Which means atoms localizations
+                 are constrained by the scale of the transform
+                 The atom selected is simple the one that maximizes the correlation with the residual
+                 it is directly indexes by the max absolute value of the MDCT bin
+                 No further optimization of the selected atom is performed
+
+    - :class:`pymp_LODico`   is a dictionary that performs a local optimization of the time localization of the selected atom
+
+    - :class:`pymp_FullDico`  this object simulates a dictionary where atoms at all time localizations are available
+                  This kind of dictionary can be thought of as a Toeplitz matrix
+                  BEWARE: memory consumption and CPU load will be very high! only use with very small signals 
+                  (e.g. 1024 samples or so) Fairly intractable at higher dimensions
+"""
+
 
 from Classes.pymp_Dico import pymp_Dico
 from Classes import pymp_Log

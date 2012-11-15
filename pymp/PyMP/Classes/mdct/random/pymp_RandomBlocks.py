@@ -1,6 +1,6 @@
-'''
+#
 #                                                                            
-#                       Classes.mdct.pymp_RandomBlocks                                     
+#                       Classes.mdct.random.pymp_RandomBlocks                                     
 #                                                                            
 #                                                
 #                                                                            
@@ -24,6 +24,10 @@
 #  Boston, MA  02111-1307, USA.                                              
 #   
 
+"""
+Module pymp_RandomBlocks
+========================
+
 Please refer to superclass for documentation
 
 This file handle blocks that are used in Randomized Matching Pursuits
@@ -33,19 +37,15 @@ see [1] for details
 "Matching Pursuits with Random Sequential Subdictionaries"
 Signal Processing, vol. 92, pp. 2532-2544 2012.
                                                                          
-'''
+"""
 
 from Classes import  PyWinServer , pymp_Log
 from Classes.mdct.pymp_MDCTBlock import pymp_MDCTBlock 
 from Classes.mdct import pymp_MDCTAtom
-from numpy.fft import fft
-from numpy import array , zeros , ones ,concatenate , sin , pi , random , abs , argmax ,max, sum,multiply,nan_to_num
-from scipy.stats import gmean 
-from math import sqrt , floor
-from cmath import exp
-import matplotlib.pyplot as plt
-from Tools import  Xcorr , Misc 
-import parallelProjections, sys
+from numpy import zeros, random , abs ,max
+from math import  floor
+from Tools import   Misc 
+import parallelProjections
 
 
 # declare global PyWinServer shared by all MDCT blocks instances
@@ -54,7 +54,18 @@ _PyServer = PyWinServer.PyServer()
 _Logger = pymp_Log.pymp_Log('RandomMDCTBlock', level = 0)
 
 class pymp_RandomBlock(pymp_MDCTBlock):
-    """ block in which the time-shift pattern is predefined """
+    """ block implementing the Randomized Pursuit 
+    
+    Attributes:
+    
+        `randomType`: The type of time-shift sequence, available choices are *scale* , *random* , *gaussian* , *binom* , *dicho* , *jump* , *binary* default is *random* which use a uniform pseudo-random generator
+    
+        `TSsequence`: The actual sequence of subdictionary time-shifts
+    
+        `currentTS`: The current time-shift
+        
+        `nbSim`: Number of consecutive iterations with the same time-shift (default is 1) 
+    """
     
     # properties
     randomType = 'random'
@@ -112,7 +123,7 @@ class pymp_RandomBlock(pymp_MDCTBlock):
         
     # The update method is nearly the same as CCBlock
     def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1 ,iterationNumber=0):
-        """ at each update, one need to pick a time shift from the sequence """ 
+        """ Same as superclass except that at each update, one need to pick a time shift from the sequence """ 
         
         # change the current Time-Shift if enough iterations have been done
         if (self.nbSim > 0 ):
@@ -222,153 +233,4 @@ class pymp_RandomBlock(pymp_MDCTBlock):
     
         return Atom
     
-class pymp_SubRandomBlock(pymp_RandomBlock):   
-    """ Everything is inherited from the above class but the max atom is searched for in a subset of window frames """
-    def __init__(self , length = 0 , resSignal = None , frameLen = 0 ,randomType='scale' , nbSim = 1 , windowType = None, subFactor = 2):
-        
-        self.scale = length;
-        self.residualSignal = resSignal;
-        
-        if frameLen==0:
-            self.frameLength = length/2;
-        else:
-            self.frameLength = frameLen;        
-        if self.residualSignal ==None:
-            raise ValueError("no signal given")
-
-        self.enframedDataMatrix = self.residualSignal.dataVec;
-        self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
-        self.projectionMatrix = zeros(len(self.enframedDataMatrix));
-        
-        self.randomType = randomType
-
-#        elif self.randomType == 'random':
-        # For now we just care about the uniform case : we have to add the subsampling factor so as to cover for the entire space
-        self.TSsequence = [floor(subFactor*(self.scale/2)* (i-0.5) ) for i in random.random(self.scale)]
- 
-#        else:
-#            self.TSsequence = zeros(self.scale/2)
-    
-        self.nbSim = nbSim
-        self.windowType = windowType     
-     
-    # SPECIFIC PARAMETER: SUBSAMPLING FACTOR
-        self.subFactor = subFactor;
-     
-    def computeTransform(self,   startingFrame=1 , endFrame = -1 ):
-        if self.wLong is None:
-            self.initialize()
-            
-        if endFrame <0:
-            endFrame = self.frameNumber - (self.subFactor +1)
-        
-        if startingFrame<self.subFactor:
-            startingFrame = self.subFactor +1
-
-
-        ############" changes  ##############
-        # C calculus : do not compute the odd frames
-        parallelProjections.subproject(self.enframedDataMatrix, self.bestScoreTree,
-                                                 self.projectionMatrix , 
-                                                 self.locCoeff , 
-                                                 self.post_twidVec ,
-                                                 startingFrame,
-                                                 endFrame,
-                                                 self.scale ,
-                                                 int(self.currentTS),
-                                                 self.subFactor)
-
-
-class pymp_VarSizeRandomBlock(pymp_RandomBlock):   
-    """ Everything is inherited from the above class but the max atom is searched for in a subset of window frames. 
-    The subset size may change at each iteration """
-    def __init__(self , length = 0 , resSignal = None , frameLen = 0 ,randomType='scale' , nbSim = 1 , windowType = None, subFactorList = 2):
-        
-        self.scale = length;
-        self.residualSignal = resSignal;
-        
-        if frameLen==0:
-            self.frameLength = length/2;
-        else:
-            self.frameLength = frameLen;        
-        if self.residualSignal ==None:
-            raise ValueError("no signal given")
-
-        self.enframedDataMatrix = self.residualSignal.dataVec;
-        self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
-        self.projectionMatrix = zeros(len(self.enframedDataMatrix));
-        
-        self.randomType = randomType
-
-        if isinstance(subFactorList, (int, long)):
-            self.subFactorList = ones((self.scale,))*subFactorList;
-               
-        else:
-            self.subFactorList = subFactorList;  
-        
-#        elif self.randomType == 'random':
-        # For now we just care about the uniform case : we have to add the subsampling factor so as to cover for the entire space
-        
-         
-        randomsS = random.random(len(self.subFactorList));
-        self.TSsequence = [floor(self.subFactorList[i]*(self.scale/2)* (randomsS[i]-0.5) ) for i in range(len(self.subFactorList))]
- 
-#        else:
-#            self.TSsequence = zeros(self.scale/2)
-    
-        self.nbSim = nbSim
-        self.windowType = windowType     
-    
-    # The update method is nearly the same as RandomBlock
-    def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1 ,iterationNumber=0):
-        """ at each update, one need to pick a time shift from the sequence """ 
-        
-        # change the current Time-Shift if enough iterations have been done
-        if (self.nbSim > 0 ):
-            if (  iterationNumber % self.nbSim == 0):
-                self.currentTS = self.TSsequence[(iterationNumber / self.nbSim) % len(self.TSsequence)]     
-                self.currentSubF = self.subFactorList[(iterationNumber / self.nbSim) % len(self.subFactorList)]                   
-        self.residualSignal = newResidual;
-        
-        if stopFrameIdx <0:
-            endFrameIdx = self.frameNumber -1
-        else:
-            endFrameIdx = stopFrameIdx        
-        L = self.scale
-
-        # update residual signal
-        self.enframedDataMatrix[startFrameIdx*L/2 : endFrameIdx*L/2 + L] = self.residualSignal.dataVec[startFrameIdx*self.frameLength : endFrameIdx*self.frameLength + 2*self.frameLength]
-        
-        # TODO changes here
-        self.computeTransform(startFrameIdx , stopFrameIdx ) ;
-        
-        # TODO changes here
-        self.getMaximum() 
-     
-    def computeTransform(self,   startingFrame=1 , endFrame = -1 ):
-        if self.wLong is None:
-            self.initialize()
-            
-        if endFrame <0:
-            endFrame = self.frameNumber - (self.currentSubF +1)
-        
-        if startingFrame<self.currentSubF:
-            startingFrame = self.currentSubF +1
-
-        self.bestScoreTree = zeros(self.frameNumber);
-        ############" changes  ##############
-        # C calculus : do not compute the odd frames
-#        print int(self.currentSubF)
-        parallelProjections.subproject(self.enframedDataMatrix, self.bestScoreTree,
-                                                 self.projectionMatrix , 
-                                                 self.locCoeff , 
-                                                 self.post_twidVec ,
-                                                 startingFrame,
-                                                 endFrame,
-                                                 self.scale ,
-                                                 int(self.currentTS),
-                                                 int(self.currentSubF))
-
-
-
 

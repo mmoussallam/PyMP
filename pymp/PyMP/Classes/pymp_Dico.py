@@ -25,6 +25,12 @@
 #                                                                            */
 #*****************************************************************************'''
 
+'''
+Module pymp_Dico
+================
+                                                                          
+'''
+
 
 class pymp_Dico():
     """ This class creates an interface that any type of dictionary should reproduce 

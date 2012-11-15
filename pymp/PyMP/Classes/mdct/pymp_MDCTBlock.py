@@ -1,4 +1,6 @@
-'''
+#!/usr/bin/python
+# -*- coding: iso-8859-15 -*-
+
 #                                                                            
 #                       Classes.mdct.pymp_MDCTBlock                                   
 #                                                                            
@@ -24,22 +26,31 @@
 #  Boston, MA  02111-1307, USA.                                              
 # 
 
+"""
+
+Module pymp_MDCTBlock
+====================
+                                                                          
+This class inherits from :class:`.pymp_Block` and is used to represent and manipulate MDCT atoms.
+:class:`pymp_MDCTAtom` Objects can either be constructed or recovered from Xml using :func:`pymp_MDCTAtom.fromXml`
+                                                                          
+
 MDCT Blocks are the objects encapsulating the actual atomic projections and the selection step of MP 
                                                                            
 This module describes 3 kind of blocks:
-- `pymp_MDCTBlock`  is a block based on the standard MDCT transform. Which means atoms localizations
+    - :class:`pymp_MDCTBlock`  is a block based on the standard MDCT transform. Which means atoms localizations
                  are constrained by the scale of the transform
                  The atom selected is simple the one that maximizes the correlation with the residual
                  it is directly indexes by the max absolute value of the MDCT bin
                  No further optimization of the selected atom is performed
 
-- `pymp_LOBlock`   is a block that performs a local optimization of the time localization of the selected atom
+    - :class:`pymp_LOBlock`   is a block that performs a local optimization of the time localization of the selected atom
 
-- `pymp_FullBlock`  this block simulates a dictionary where atoms at all time localizations are available
+    - :class:`pymp_FullBlock`  this block simulates a dictionary where atoms at all time localizations are available
                   This kind of dictionary can be thought of as a Toeplitz matrix
                   BEWARE: memory consumption and CPU load will be very high! only use with very small signals 
                   (e.g. 1024 samples or so) Fairly intractable at higher dimensions
-'''
+"""
 
 # imports
 from Classes import  PyWinServer , pymp_Log
@@ -131,7 +142,7 @@ class pymp_MDCTBlock(pymp_Block):
         
     # compute mdct of the residual and instantiate various windows and twiddle coefficients
     def initialize(self ):        
-        
+        """ Compute mdct of the residual and instantiate various windows and twiddle coefficients"""
         #Windowing  
         L = self.scale;
         
@@ -161,6 +172,8 @@ class pymp_MDCTBlock(pymp_Block):
     # Search among the inner products the one that maximizes correlation
     # the best candidate for each frame is already stored in the bestScoreTree
     def getMaximum(self):
+        """Search among the inner products the one that maximizes correlation
+        the best candidate for each frame is already stored in the bestScoreTree """
         treeMaxIdx = self.bestScoreTree.argmax();        
         
         maxIdx = abs(self.projectionMatrix[treeMaxIdx*self.scale/2 : (treeMaxIdx+1)*self.scale/2]).argmax()                
@@ -181,6 +194,8 @@ class pymp_MDCTBlock(pymp_Block):
     
     # construct the atom that best correlates with the signal
     def getMaxAtom(self , HF = False):    
+        """ construct the atom that best correlates with the signal"""
+        
         if not HF:
             self.maxFrameIdx = floor(self.maxIdx / (0.5*self.scale));
             self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5*self.scale)         
@@ -205,8 +220,9 @@ class pymp_MDCTBlock(pymp_Block):
     def getWindow(self):
         return self.wLong
     
-    # update the part of the residual that has been changed and update inner products    
+    # 
     def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1):
+        """ update the part of the residual that has been changed and update inner products    """
 #        print "block update called : " , self.scale , newResidual.length , self.frameNumber
         self.residualSignal = newResidual;
         
@@ -225,6 +241,7 @@ class pymp_MDCTBlock(pymp_Block):
         
     # inner product computation through MDCT
     def computeTransform(self, startingFrame=1 , endFrame = -1):
+        """ inner product computation through MDCT """
         if self.wLong is None:
             self.initialize()
             
@@ -300,6 +317,8 @@ class pymp_MDCTBlock(pymp_Block):
         
     # synthesizes the best atom through ifft computation (much faster than closed form)
     def synthesizeAtom(self , value=None):
+        """ synthesizes the best atom through ifft computation (much faster than closed form) 
+            New version uses the PyWinServer to serve waveforms"""
         ###################" new version ############"
         global _PyServer
 #        print len(_PyServer.Waveforms)
@@ -573,9 +592,10 @@ class pymp_LOBlock(pymp_MDCTBlock):
                   + " p :"+ str(maxFrameIdx) 
                   +" , k: "+ str(maxBinIdx)
                   +" , l: "+ str(self.maxTimeShift) )
+
         
 class pymp_FullBlock(pymp_MDCTBlock):
-    
+    """ Class that inherit classic MDCT block class and but contains all time localizations """
     # parameters
     maxKidx = 0
     maxLidx = 0

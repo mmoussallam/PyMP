@@ -25,6 +25,13 @@
 #                                                                            */
 #*****************************************************************************
 
+'''
+Module pymp_Approx
+==================
+
+The main class is :class:`pymp_Approx`
+                                                                          
+'''
 
 import pymp_Atom , pymp_Signal , pymp_Log
 from numpy import math , array , zeros , sum , NINF , PINF, log2

@@ -26,8 +26,8 @@
 #******************************************************************************
 
 '''
-MP.py 
-=====
+Module MP 
+=========
 
 A Simple MP algorithm using the pymp objects
 --------------------------------------------
@@ -90,9 +90,9 @@ def MP( originalSignal ,
          
          `decay`:   A list of residual's energy across iterations
     
-    :Example:
+    Example::
                 
-        approx,decay = MP.MP(x, D, 10, 1000)
+        >>> approx,decay = MP.MP(x, D, 10, 1000)
         
     For decomposing the signal x on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
     x must be a :class:`.pymp_Signal` and D a :class:`.pymp_Dico` object
