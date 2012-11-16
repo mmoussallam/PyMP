@@ -61,10 +61,11 @@ PyPursuit command line arguments looks as follow:
 '''
 
 from Classes import pymp_Signal, pymp_Approx
-from Classes.mdct import pymp_MDCTDico , pymp_RandomDicos
+from Classes.mdct import pymp_MDCTDico 
+from Classes.mdct.random import  pymp_RandomDicos
 import MP
 import matplotlib.pyplot as plt
-import sys , getopt , math
+import sys , getopt 
 
 
 def usage():

@@ -25,7 +25,7 @@
 #  
 '''
 Module pymp_Signal
-==============
+==================
 
 The main class is :class:`pymp_Signal`, it can be instantiated from a numpy array using
 the main constructor (mutlichannel is allowed).
@@ -384,7 +384,7 @@ def InitFromFile(filepath , forceMono = False , doNormalize= False , debugLevel=
 class pymp_LongSignal(pymp_Signal):
     """ A class handling long audio signals
     
-        Subclass of :class:`.pymp_signal' where the data is not loaded at once for memory consumptions purposes 
+        Subclass of :class:`.pymp_signal` where the data is not loaded at once for memory consumptions purposes 
         Instead, the data is sliced in frames that can be loaded later individually. very useful to 
         process large files such as audio archives
         

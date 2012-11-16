@@ -29,7 +29,7 @@
 """
 
 Module pymp_MDCTBlock
-====================
+=====================
                                                                           
 This class inherits from :class:`.pymp_Block` and is used to represent and manipulate MDCT atoms.
 :class:`pymp_MDCTAtom` Objects can either be constructed or recovered from Xml using :func:`pymp_MDCTAtom.fromXml`

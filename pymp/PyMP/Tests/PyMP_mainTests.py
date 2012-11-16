@@ -1,10 +1,11 @@
-'''
+"""
 Python test file for PyMP engine
 
 testing normal behavior of most MP functions and classes
 
 M.Moussallam
-'''
+"""
+
 import unittest
 from Classes import *
 from Tools import mdct
@@ -21,8 +22,6 @@ from Classes import pymp_Approx as Approx
 from Classes import pymp_Signal as Signal
 import MP
 audioFilePath = '../../data/'
-
-
 
 
 #import scipy.io

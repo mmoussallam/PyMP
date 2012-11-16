@@ -55,17 +55,25 @@ class pymp_MDCTAtom(pymp_Atom):
 
     .. math::
     
-        \phi_{L,p,k}^{MDCT}[n]=w_{L}[u]\sqrt{\frac{2}{L}}\cos\left[\frac{\pi}{L}\left(u+\frac{L+1}{2}\right)\left(k+\frac{1}{2}\right)\right]
+        \phi_{L,p,k}[n]=w_{L}[u]\sqrt{\\frac{2}{L}} \cos [ \\frac{\pi}{L} \left(u+ \\frac{L+1}{2}\\right) (k+\\frac{1}{2}) ]
     
     Additionnal attributes are:
-            - frequencyBin : MDCT frequency bin index (default is 0)
-            - frame : the frame index of the atom
-            - reducedFrequency: corresponding sampling frequency (default is 0)
-            - mdctValue : the atom mdct coefficient 
+    
+            - `frequencyBin` : MDCT frequency bin index (default is 0)
+            
+            - `frame` : the frame index of the atom
+            
+            - `reducedFrequency`: corresponding sampling frequency (default is 0)
+            
+            - `mdctValue` : the atom mdct coefficient 
             
     Additionnal parameters for time-shifted atoms:
-            - timeShift: time shift in samples related to the closest MDCT grid index
-            - projectionScore: useful when atom is reprojected using say.. LOMP algorithm"""
+    
+            - `timeShift`: time shift in samples related to the closest MDCT grid index*
+            
+            - `projectionScore`: useful when atom is reprojected using say.. LOMP algorithm
+            
+    """
 
     # MDCT attibutes
     nature = 'MDCT'

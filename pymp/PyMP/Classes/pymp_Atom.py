@@ -35,15 +35,24 @@ class pymp_Atom:
     """ Abstract Atom class interface: 
     
     To implement a new type of atom, you must derive from this class. 
-    The minimum fields are :
-        - type: A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT
-        - length: Sample length of the atom (default is 0)
-        - timePosition: The index of the first atom sample in a signal
-        - waveform: a numpy array that will contain the atom waveform 
-        - amplitude: the atom amplitude
-        - samplingFrequency: the atom sampling frequency""" 
+    
+    Attributes:
+    
+        - `nature`: A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT
+        
+        - `length: Sample length of the atom (default is 0)
+        
+        - `timePosition`: The index of the first atom sample in a signal
+        
+        - `waveform`: a numpy array that will contain the atom waveform 
+        
+        - `amplitude`: the atom amplitude
+        
+        - `samplingFrequency`: the atom sampling frequency
+        
+    """ 
 
-    # attributes
+    # default values
     nature = 'Abstract';
     length = 0 ;
     timePosition = 0;
@@ -58,12 +67,8 @@ class pymp_Atom:
     
     # mandatory functions
     def getWaveform(self):
-        """ A function to retrieve the atom waveform """
+        # A function to retrieve the atom waveform 
         return self.waveform;
     
-    def synthesize(self):
-        """ Handles the synthesis of the atom """
-    
-        
-    
+
 
