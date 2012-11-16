@@ -18,7 +18,9 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('../PyMP'))
 sys.path.append(os.path.abspath('../PyMP/Classes'))
-sys.path.append(os.path.abspath('../Examples'))
+sys.path.append(os.path.abspath('../PyMP/Tools'))
+sys.path.append(os.path.abspath('../PyMP/Tests'))
+
 
 #sys.path.append(os.path.abspath('/tsi/devel/linux-x86_64/squeeze/python2.7/Sphinx-1.1.2/lib/python2.7/site-packages/Sphinx-1.1.2-py2.7.egg/sphinx/ext'))
 # -- General configuration -----------------------------------------------------
@@ -70,7 +72,7 @@ release = '0.9.1'
 #today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
-#unused_docs = []
+unused_docs = ['code.rst']
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.

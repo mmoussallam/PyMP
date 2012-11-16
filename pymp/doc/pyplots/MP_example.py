@@ -46,7 +46,7 @@ approx, decay = MP.MP(pySig, dico, 50, Natom);
 # plotting the results
 timeVec = np.arange(0,float(pySig.length))/pySig.samplingFrequency;
 
-plt.figure(figsize=(14,7))
+plt.figure(figsize=(10,6))
 axOrig = plt.axes([0.05, 0.55, .4, .4])
 axOrig.plot(timeVec, pySig.dataVec)
 axOrig.set_title('(a)')

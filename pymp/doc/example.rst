@@ -1,6 +1,6 @@
 
-PyMP Tutorial
-=============
+PyMP Tutorial 1. Signal decomposition 
+=====================================
 
 This Tutorial will describe how pymp works, and mostly how to use it to perform audio signal decompositions on multiscale MDCT dictionaries
 for any question feel free to contact me (firstname.lastname@gmail.com)
@@ -211,3 +211,4 @@ This gives the following results:
 .. plot:: pyplots/RSSMP_example.py
 
 And that's it.
+
