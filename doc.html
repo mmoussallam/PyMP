@@ -143,10 +143,26 @@ next topic.</p>
 <h2>How to have it work?<a class="headerlink" href="#how-to-have-it-work" title="Permalink to this headline">¶</a></h2>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">You will need to have <em>fftw</em>  and <em>openMP</em> libraries installed and header accessible.
-Installation has been succesfully tested on linux machines but not on windows.
-Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries I recommend the use of cygwin on Windows Platform</p>
+<p>You will need to have <em>fftw</em>  and <em>openMP</em> libraries installed and header accessible. On Debian-based OS you&#8217;ll need the following packages:</p>
+<blockquote>
+<div><ul class="simple">
+<li>libfftw3-dev</li>
+<li>python-dev</li>
+</ul>
+</div></blockquote>
+<p class="last">Installation has been succesfully tested on linux machines but not on windows.
+Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries
+I recommend the use of cygwin on Windows Platform, although it appears matplotlib installation on cygwin
+may not be as straightforward as it should.</p>
 </div>
+<p>Additionnaly you&#8217;ll want to have the following Python packages installed:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Numpy</li>
+<li>Matplotlib</li>
+<li>Scipy</li>
+</ul>
+</div></blockquote>
 <p>PyMP is mainly a collection of pure python modules, which installation is quite traditionnal.
 However, in order to accelerate the inner product computations, it uses a low-level pure C library that is
 used through a python C extension module.</p>
@@ -175,7 +191,9 @@ in the root directory. Simply run:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>
 </div>
-<p class="last">And it should be fine...</p>
+<p class="last">And (provided all headers and libraries are present and accessible) it should be fine.
+This should compile the C extension and install all sources and packages in your dist-package local directory
+You may need to have writing rights to perform this operation (e.g. using <em>sudo</em>).</p>
 </div>
 </div>
 <div class="section" id="bibliography">

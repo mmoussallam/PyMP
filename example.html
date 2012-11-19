@@ -121,12 +121,19 @@ Documentation for the modules that we&#8217;re using here is provided in the nex
 <div class="section" id="reading-and-writing">
 <h3>Reading and Writing<a class="headerlink" href="#reading-and-writing" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> has a static method called <a class="reference internal" href="classes.html#Classes.pymp_Signal.InitFromFile" title="Classes.pymp_Signal.InitFromFile"><tt class="xref py py-func docutils literal"><span class="pre">InitFromFile()</span></tt></a> that can be used to load a wav from from disk.
-This is internally done using the <strong>wave</strong> python module. Assuming your current directory is pymp/src you can
-load a signal doing:</p>
+This is internally done using the <strong>wave</strong> python module. Assuming you&#8217;ve correctly set the PYTHONPATH variable so that it contains
+the pymp/PyMP/ directory, you can simply type in a python shell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span>  <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="s">&#39;data/glocs.wav&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>If you have Import errors, it means you&#8217;re PYTHONPATH does not point to the PyMP source package location,
+you can remedy this inline.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;pathToYourPyMPDirectory&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where you&#8217;re PyMP directory is the one containing the sources, and notably <em>MP.py</em>.</p>
 <p>As for many pymp Objects, you can specify a debug level that manages info and warning printing degrees. Try for example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span>  <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="s">&#39;data/glocs.wav&#39;</span><span class="p">,</span><span class="n">debugLevel</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>

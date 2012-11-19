@@ -67,7 +67,6 @@
 <li><a class="reference internal" href="#encoding-of-standard-mp-decompositions">Encoding of standard MP decompositions</a></li>
 <li><a class="reference internal" href="#encoding-of-locally-optimized-mp-decompositions">Encoding of Locally Optimized MP decompositions</a></li>
 <li><a class="reference internal" href="#encoding-of-rss-mp-decompositions">Encoding of RSS MP decompositions</a></li>
-<li><a class="reference internal" href="#comparisons">Comparisons</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#additionnal-documentation">Additionnal documentation</a></li>
@@ -214,13 +213,63 @@ when using this type of dictionaries. Only two way to get rid of it:</p>
 </div>
 <div class="section" id="encoding-of-locally-optimized-mp-decompositions">
 <h3>Encoding of Locally Optimized MP decompositions<a class="headerlink" href="#encoding-of-locally-optimized-mp-decompositions" title="Permalink to this headline">¶</a></h3>
-<p>So</p>
+<p>Running a locally-optimized MP in an equivalent configuration accounts to using the appropriate dictionary.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pyLODico</span> <span class="o">=</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_LODico</span><span class="p">(</span><span class="n">scales</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lompApprox</span> <span class="p">,</span> <span class="n">lompDecay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyLODico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">beware to set the option <em>padSignal</em> to <cite>False</cite>. Otherwise zeroes are added by default to the signal edges each time
+you call MP on the same <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> object, this can mess up the bitrate since it is in bps!</p>
+</div>
+<p>An estimation of the SNR and bitrate achieved is done using the same function <a class="reference internal" href="#MPCoder.SimpleMDCTEncoding" title="MPCoder.SimpleMDCTEncoding"><tt class="xref py py-func docutils literal"><span class="pre">SimpleMDCTEncoding()</span></tt></a> but with
+the <em>TsPenalty</em> argument set to <cite>True</cite> in order to take the additionnal parameter cost into account</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNRlo</span><span class="p">,</span> <span class="n">bitratelo</span><span class="p">,</span> <span class="n">quantizedApproxLO</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">lompApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">TsPenalty</span><span class="o">=</span><span class="bp">True</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Then one can check that the encoding is more efficient:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNRlo</span><span class="p">,</span> <span class="n">bitratelo</span><span class="p">)</span>
+<span class="go">(18.309961590573952, 2006.3726570767478)</span>
+</pre></div>
+</div>
+<p>For the same bitrate of 2 kbps, we now have an SNR of nearly 20 dB where a standard MP yielded a mere 16 dB.
+Each atom is more expensive, but also creates less dark energy. One can verify that the coder has used a
+lower number of Locally-optimized atoms:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atomNumber</span> <span class="p">,</span> <span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">atomNumber</span><span class="p">)</span>
+<span class="go">(326, 249)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="encoding-of-rss-mp-decompositions">
 <h3>Encoding of RSS MP decompositions<a class="headerlink" href="#encoding-of-rss-mp-decompositions" title="Permalink to this headline">¶</a></h3>
+<p>Using RSS MP, one need not encode the additionnal time-shift parameter per atom, since we assume the pseudo-random
+sequence of subdictionaries is known both at the coder and decoder side. This is possible because this sequence is
+not signal-dependant.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes.mdct.random</span> <span class="kn">import</span> <span class="n">pymp_RandomDicos</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pyRSSDico</span> <span class="o">=</span> <span class="n">pymp_RandomDicos</span><span class="o">.</span><span class="n">pymp_RandomDico</span><span class="p">(</span><span class="n">scales</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rssApprox</span> <span class="p">,</span> <span class="n">rssDecay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyRSSDico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SNRrss</span><span class="p">,</span> <span class="n">bitraterss</span><span class="p">,</span> <span class="n">quantizedApproxRSS</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">rssApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+</pre></div>
 </div>
-<div class="section" id="comparisons">
-<h3>Comparisons<a class="headerlink" href="#comparisons" title="Permalink to this headline">¶</a></h3>
+<p>Now we can check that RSSMP atoms are much more efficient at representing the signal than the ones selected in a
+fixed dictionary, but the cost of each atom is the same thus:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNRrss</span><span class="p">,</span><span class="n">bitraterss</span><span class="p">)</span>
+<span class="go">(18.938171653961721, 2003.7309194613388)</span>
+</pre></div>
+</div>
+<p>And we can verify:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atomNumber</span><span class="p">,</span>  <span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">atomNumber</span> <span class="p">,</span> <span class="n">quantizedApproxRSS</span><span class="o">.</span><span class="n">atomNumber</span><span class="p">)</span>
+<span class="go">(326, 249, 326)</span>
+</pre></div>
+</div>
+<p>You can now compare these approach for different signals and dictionaries either directly with the given SNR and bitrate values,
+or by listening to the diverse solutions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">recomposedSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_LOMP_quantized_2kbps.wav&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApproxRSS</span><span class="o">.</span><span class="n">recomposedSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_RSSMP_quantized_2kbps.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And that concludes this tutorial.</p>
 </div>
 </div>
 <div class="section" id="additionnal-documentation">
