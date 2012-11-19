@@ -8,11 +8,11 @@ Created on 14 nov. 2012
 from distutils.core import setup
 
 # First step: it needs to install the C extension module
-import os,sys
+import os, platform,sys
 import commands
 import string
 
-info = os.uname();
+info = platform.uname();
 
 arch = string.lower(info[0]) + '-' + info[4];
 pythonVersion = sys.version[0:3];
@@ -27,7 +27,7 @@ if os.name == 'posix':
     print commands.getoutput('mv build/lib.'+arch+'-'+pythonVersion+'/parallelProjections.so ../parallelProjections.so')
 
 elif os.name == 'nt':
-    print os.popen('python setup.py install').read()
+    print os.popen('python '+targetPath+' install').read()
     
 print "---- Test import du module!"
 import parallelProjections
@@ -40,6 +40,6 @@ setup(name='PyMP',
       author_email='manuel.moussallam@gmail.com',
       url='https://github.com/mmoussallam/PyMP',
       #package_dir = {'': 'src'},
-      packages=[ 'PyMP.Tools','PyMP.Classes','PyMP.Tests'],
-      py_modules = ['PyMP.MP',]
+      packages=[ 'PyMP.Tools','PyMP.Classes','PyMP.Tests','PyMP.Classes.mdct','PyMP.Classes.mdct.random'],
+      py_modules = ['PyMP.MP','PyMP.MPcmd','PyMP.MPCoder']
      )

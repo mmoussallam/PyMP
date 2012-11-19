@@ -6,6 +6,11 @@ testing normal behavior of most MP functions and classes
 M.Moussallam
 """
 
+import os , sys
+mainClassesPath = os.path.abspath('..')
+sys.path.append(mainClassesPath);
+
+
 import unittest
 from Classes import *
 from Tools import mdct
@@ -13,7 +18,7 @@ import matplotlib.pyplot as plt
 from numpy import  random , zeros , array
 import time
 
-import cProfile , os , math
+import cProfile , math
 global _Logger
 from Classes.mdct import *
 #from Classes.gabor import *

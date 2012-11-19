@@ -54,9 +54,24 @@ How to have it work?
 --------------------
 .. warning::
 		
-	You will need to have *fftw*  and *openMP* libraries installed and header accessible. 
+	You will need to have *fftw*  and *openMP* libraries installed and header accessible. On Debian-based OS you'll need the following packages:
+	
+		- libfftw3-dev
+		
+		- python-dev
+	
 	Installation has been succesfully tested on linux machines but not on windows. 
-	Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries I recommend the use of cygwin on Windows Platform
+	Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries 
+	I recommend the use of cygwin on Windows Platform, although it appears matplotlib installation on cygwin
+	may not be as straightforward as it should.
+	
+Additionnaly you'll want to have the following Python packages installed:
+	
+		- Numpy
+		
+		- Matplotlib
+		
+		- Scipy 
 
 
 PyMP is mainly a collection of pure python modules, which installation is quite traditionnal. 
@@ -84,8 +99,11 @@ Which means there are three installation steps:
 	
 	>>> python setup.py install
 	
-	And it should be fine...
-	
+	And (provided all headers and libraries are present and accessible) it should be fine. 
+	This should compile the C extension and install all sources and packages in your dist-package local directory
+	You may need to have writing rights to perform this operation (e.g. using *sudo*).
+
+
 
 Bibliography
 ------------

@@ -14,11 +14,19 @@ First thing you may want to do is load, analyse, plot and write signals. These o
 Reading and Writing
 *******************
 :class:`.pymp_Signal` has a static method called :func:`.InitFromFile` that can be used to load a wav from from disk. 
-This is internally done using the **wave** python module. Assuming your current directory is pymp/src you can 
-load a signal doing::
+This is internally done using the **wave** python module. Assuming you've correctly set the PYTHONPATH variable so that it contains
+the pymp/PyMP/ directory, you can simply type in a python shell:
 
 >>> from Classes import *
 >>> myPympSignal =  pymp_Signal.InitFromFile('data/glocs.wav')
+
+If you have Import errors, it means you're PYTHONPATH does not point to the PyMP source package location,
+you can remedy this inline. 
+
+>>> import sys
+>>> sys.path.append('pathToYourPyMPDirectory')
+
+where you're PyMP directory is the one containing the sources, and notably *MP.py*.
 
 As for many pymp Objects, you can specify a debug level that manages info and warning printing degrees. Try for example::
 

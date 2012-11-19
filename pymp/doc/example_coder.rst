@@ -115,14 +115,63 @@ when using this type of dictionaries. Only two way to get rid of it:
 Encoding of Locally Optimized MP decompositions
 ***********************************************
 
-So
+Running a locally-optimized MP in an equivalent configuration accounts to using the appropriate dictionary.
+
+>>> pyLODico = pymp_MDCTDico.pymp_LODico(scales);
+>>> lompApprox , lompDecay = MP.MP(myPympSignal, pyLODico, 20, 2000,padSignal=False);  
+
+.. warning::
+
+	beware to set the option *padSignal* to `False`. Otherwise zeroes are added by default to the signal edges each time 
+	you call MP on the same :class:`.pymp_Signal` object, this can mess up the bitrate since it is in bps!
+
+An estimation of the SNR and bitrate achieved is done using the same function :func:`.SimpleMDCTEncoding` but with
+the *TsPenalty* argument set to `True` in order to take the additionnal parameter cost into account
+
+>>> SNRlo, bitratelo, quantizedApproxLO = MPCoder.SimpleMDCTEncoding(lompApprox, 2000, Q=14, TsPenalty=True);
+
+Then one can check that the encoding is more efficient:
+
+>>> (SNRlo, bitratelo)
+(18.309961590573952, 2006.3726570767478)
+
+For the same bitrate of 2 kbps, we now have an SNR of nearly 20 dB where a standard MP yielded a mere 16 dB. 
+Each atom is more expensive, but also creates less dark energy. One can verify that the coder has used a 
+lower number of Locally-optimized atoms:
+
+>>> (quantizedApprox.atomNumber , quantizedApproxLO.atomNumber)
+(326, 249)
 
 Encoding of RSS MP decompositions
 *********************************
 
-Comparisons
-***********
+Using RSS MP, one need not encode the additionnal time-shift parameter per atom, since we assume the pseudo-random 
+sequence of subdictionaries is known both at the coder and decoder side. This is possible because this sequence is 
+not signal-dependant.
 
+>>> from Classes.mdct.random import pymp_RandomDicos 
+>>> pyRSSDico = pymp_RandomDicos.pymp_RandomDico(scales);
+>>> rssApprox , rssDecay = MP.MP(myPympSignal, pyRSSDico, 20, 2000,padSignal=False);  
+>>> SNRrss, bitraterss, quantizedApproxRSS = MPCoder.SimpleMDCTEncoding(rssApprox, 2000, Q=14);
+
+Now we can check that RSSMP atoms are much more efficient at representing the signal than the ones selected in a 
+fixed dictionary, but the cost of each atom is the same thus:
+
+>>> (SNRrss,bitraterss)
+(18.938171653961721, 2003.7309194613388)
+
+And we can verify:
+
+>>> (quantizedApprox.atomNumber,  quantizedApproxLO.atomNumber , quantizedApproxRSS.atomNumber)
+(326, 249, 326)
+
+You can now compare these approach for different signals and dictionaries either directly with the given SNR and bitrate values,
+or by listening to the diverse solutions:
+
+>>> quantizedApproxLO.recomposedSignal.write('data/ClocheB_LOMP_quantized_2kbps.wav')
+>>> quantizedApproxRSS.recomposedSignal.write('data/ClocheB_RSSMP_quantized_2kbps.wav')
+
+And that concludes this tutorial.
 
 Additionnal documentation
 -------------------------

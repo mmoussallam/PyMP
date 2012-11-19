@@ -391,7 +391,7 @@ class pymp_Approx:
                                
                 height = 1.0 # BUGFIX
            
-            print xy , f
+#            print xy , f
             colorvalue = math.sqrt(valueArray[i])
 
             if multicolor:
