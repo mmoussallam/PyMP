@@ -1,0 +1,518 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Union of MDCT basis Classes documentation : &mdash; PyMP 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="next" title="Tests" href="test.html" />
+    <link rel="prev" title="Classes Package Documentation:" href="classes.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="test.html" title="Tests"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="classes.html" title="Classes Package Documentation:"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Union of MDCT basis Classes documentation :</a><ul>
+<li><a class="reference internal" href="#classes-for-standard-algorithm">Classes for Standard Algorithm</a></li>
+<li><a class="reference internal" href="#classes-for-random-matching-pursuit">Classes for Random Matching Pursuit</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="classes.html"
+                        title="previous chapter">Classes Package Documentation:</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="test.html"
+                        title="next chapter">Tests</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/Mdct.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="union-of-mdct-basis-classes-documentation">
+<h1>Union of MDCT basis Classes documentation :<a class="headerlink" href="#union-of-mdct-basis-classes-documentation" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><span class="target" id="module-Classes.mdct"></span></div></blockquote>
+<div class="section" id="classes-for-standard-algorithm">
+<h2>Classes for Standard Algorithm<a class="headerlink" href="#classes-for-standard-algorithm" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><span class="target" id="module-Classes.mdct.pymp_MDCTAtom"></span><div class="section" id="module-pymp-mdctatom">
+<h3>Module pymp_MDCTAtom<a class="headerlink" href="#module-pymp-mdctatom" title="Permalink to this headline">¶</a></h3>
+<p>This class inherits from <a class="reference internal" href="classes.html#Classes.pymp_Atom.pymp_Atom" title="Classes.pymp_Atom.pymp_Atom"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Atom</span></tt></a> and is used to represent and manipulate MDCT atoms.
+<a class="reference internal" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom" title="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom"><tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTAtom</span></tt></a> Objects can either be constructed or recovered from Xml using <tt class="xref py py-func docutils literal"><span class="pre">pymp_MDCTAtom.fromXml()</span></tt></p>
+<dl class="function">
+<dt id="Classes.mdct.pymp_MDCTAtom.fromXml">
+<tt class="descclassname">Classes.mdct.pymp_MDCTAtom.</tt><tt class="descname">fromXml</tt><big>(</big><em>xmlNode</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.fromXml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an Object from the corresponding XML Node</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTAtom.</tt><tt class="descname">pymp_MDCTAtom</tt><big>(</big><em>len=0</em>, <em>amp=0</em>, <em>timePos=0</em>, <em>freqBin=0</em>, <em>Fs=0</em>, <em>mdctCoeff=0</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>MDCT atom class : implement real domain MDCT atoms of scale defined by the atom length</p>
+<p>An MDCT atom is defined for a length L, a frequency localization k and a frame parameter p by:</p>
+<img src="_images/mathmpl/math-f017b011b8.png" class="center" /><p>Additionnal attributes are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>frequencyBin</cite> : MDCT frequency bin index (default is 0)</li>
+<li><cite>frame</cite> : the frame index of the atom</li>
+<li><cite>reducedFrequency</cite>: corresponding sampling frequency (default is 0)</li>
+<li><cite>mdctValue</cite> : the atom mdct coefficient</li>
+</ul>
+</div></blockquote>
+<p>Additionnal parameters for time-shifted atoms:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>timeShift</cite>: time shift in samples related to the closest MDCT grid index*</li>
+<li><cite>projectionScore</cite>: useful when atom is reprojected using say.. LOMP algorithm</li>
+</ul>
+</div></blockquote>
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>copycat routine</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.getWaveform">
+<tt class="descname">getWaveform</tt><big>(</big><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.getWaveform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the atom waveform</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.innerProd">
+<tt class="descname">innerProd</tt><big>(</big><em>otherAtom</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.innerProd" title="Permalink to this definition">¶</a></dt>
+<dd><p>DEPRECATED returns the inner product between current atom and the other one 
+This method should be as fast as possible</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.synthesize">
+<tt class="descname">synthesize</tt><big>(</big><em>value=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.synthesize" title="Permalink to this definition">¶</a></dt>
+<dd><p>synthesizes the waveform
+Specifies the amplitude, otherwise it will be initialiazed as unit-normed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.synthesizeIFFT">
+<tt class="descname">synthesizeIFFT</tt><big>(</big><em>newValue=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.synthesizeIFFT" title="Permalink to this definition">¶</a></dt>
+<dd><p>DEPRECATED synthesis using Python fftw3 wrapper but no waveform server... a lot slower</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.toXml">
+<tt class="descname">toXml</tt><big>(</big><em>xmlDoc</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom.toXml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Useful routine to output the object as an XML node</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-Classes.mdct.pymp_MDCTBlock"></span><div class="section" id="module-pymp-mdctblock">
+<h3>Module pymp_MDCTBlock<a class="headerlink" href="#module-pymp-mdctblock" title="Permalink to this headline">¶</a></h3>
+<p>This class inherits from <a class="reference internal" href="classes.html#Classes.pymp_Block.pymp_Block" title="Classes.pymp_Block.pymp_Block"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Block</span></tt></a> and is used to represent and manipulate MDCT atoms.
+<tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTAtom</span></tt> Objects can either be constructed or recovered from Xml using <tt class="xref py py-func docutils literal"><span class="pre">pymp_MDCTAtom.fromXml()</span></tt></p>
+<p>MDCT Blocks are the objects encapsulating the actual atomic projections and the selection step of MP</p>
+<dl class="docutils">
+<dt>This module describes 3 kind of blocks:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock" title="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock"><tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTBlock</span></tt></a>  is a block based on the standard MDCT transform. Which means atoms localizations</dt>
+<dd><p class="first last">are constrained by the scale of the transform
+The atom selected is simple the one that maximizes the correlation with the residual
+it is directly indexes by the max absolute value of the MDCT bin
+No further optimization of the selected atom is performed</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><a class="reference internal" href="#Classes.mdct.pymp_MDCTBlock.pymp_LOBlock" title="Classes.mdct.pymp_MDCTBlock.pymp_LOBlock"><tt class="xref py py-class docutils literal"><span class="pre">pymp_LOBlock</span></tt></a>   is a block that performs a local optimization of the time localization of the selected atom</p>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#Classes.mdct.pymp_MDCTBlock.pymp_FullBlock" title="Classes.mdct.pymp_MDCTBlock.pymp_FullBlock"><tt class="xref py py-class docutils literal"><span class="pre">pymp_FullBlock</span></tt></a>  this block simulates a dictionary where atoms at all time localizations are available</dt>
+<dd><p class="first last">This kind of dictionary can be thought of as a Toeplitz matrix
+BEWARE: memory consumption and CPU load will be very high! only use with very small signals 
+(e.g. 1024 samples or so) Fairly intractable at higher dimensions</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_FullBlock">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTBlock.</tt><tt class="descname">pymp_FullBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_FullBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that inherit classic MDCT block class and but contains all time localizations</p>
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_FullBlock.plotScores">
+<tt class="descname">plotScores</tt><big>(</big><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_FullBlock.plotScores" title="Permalink to this definition">¶</a></dt>
+<dd><p>For debug purposes only...</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_LOBlock">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTBlock.</tt><tt class="descname">pymp_LOBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>tinvOptim=True</em>, <em>useC=True</em>, <em>forceHF=False</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_LOBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that inherit classic MDCT block class and deals with local optimization
+This is the main class for differentiating LOMP from MP</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTBlock.</tt><tt class="descname">pymp_MDCTBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>useC=True</em>, <em>forceHF=False</em>, <em>debugLevel=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is a basic MDCT block. It handles a set of routines that allows greedy
+decomposition algorithms (MP, OMP , GP ...) to iteratively project the ongoing residual 
+onto a specified MDCT base and to retrieve the maximum inner product</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>IMPORTANT: the computation of the inner products relies on a C-written module parallelProjections </dt>
+<dd>that needs being compiled first on whatever your plateform. 
+Run the test file: parallelProjections/install_and_test.py in order to compile it 
+and perform some basic execution tests</dd>
+</dl>
+</div></blockquote>
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.computeTransform">
+<tt class="descname">computeTransform</tt><big>(</big><em>startingFrame=1</em>, <em>endFrame=-1</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.computeTransform" title="Permalink to this definition">¶</a></dt>
+<dd><p>inner product computation through MDCT</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.getMaxAtom">
+<tt class="descname">getMaxAtom</tt><big>(</big><em>HF=False</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.getMaxAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>construct the atom that best correlates with the signal</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.getMaximum">
+<tt class="descname">getMaximum</tt><big>(</big><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.getMaximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search among the inner products the one that maximizes correlation
+the best candidate for each frame is already stored in the bestScoreTree</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute mdct of the residual and instantiate various windows and twiddle coefficients</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.synthesizeAtom">
+<tt class="descname">synthesizeAtom</tt><big>(</big><em>value=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.synthesizeAtom" title="Permalink to this definition">¶</a></dt>
+<dd><p>synthesizes the best atom through ifft computation (much faster than closed form) 
+New version uses the PyWinServer to serve waveforms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.update">
+<tt class="descname">update</tt><big>(</big><em>newResidual</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_MDCTBlock.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>update the part of the residual that has been changed and update inner products</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_SpreadBlock">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTBlock.</tt><tt class="descname">pymp_SpreadBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>useC=True</em>, <em>forceHF=False</em>, <em>debugLevel=None</em>, <em>penalty=0.5</em>, <em>maskSize=1</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_SpreadBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spread MP is a technique in which you penalize the selection of atoms near existing ones
+in a  predefined number of iterations, or you specify a perceptual TF masking to enforce the selection of
+different features. The aim is to have maybe a loss in compressibility in the first iteration but
+to have the most characteristics / discriminant atoms be chosen in the first iterations</p>
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTBlock.pymp_SpreadBlock.getMaximum">
+<tt class="descname">getMaximum</tt><big>(</big><em>it=-1</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTBlock.pymp_SpreadBlock.getMaximum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the mask to the projection before choosing the maximum</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-Classes.mdct.pymp_MDCTDico"></span><div class="section" id="module-pymp-mdctdico">
+<h3>Module pymp_MDCTDico<a class="headerlink" href="#module-pymp-mdctdico" title="Permalink to this headline">¶</a></h3>
+<p>This class inherits from <a class="reference internal" href="classes.html#Classes.pymp_Dico.pymp_Dico" title="Classes.pymp_Dico.pymp_Dico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Dico</span></tt></a> and is used to represent and manipulate multiscale MDCT dictionaries.
+Dictionaries are mostly implemented as a collection of <tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTBlock</span></tt> of various kind, according to the
+type of pursuit that is seeked.</p>
+<dl class="docutils">
+<dt>This module describes 3 kind of blocks:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico" title="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTDico</span></tt></a>  is a Dico based on the standard MDCT transform. Which means atoms localizations</dt>
+<dd><p class="first last">are constrained by the scale of the transform
+The atom selected is simple the one that maximizes the correlation with the residual
+it is directly indexes by the max absolute value of the MDCT bin
+No further optimization of the selected atom is performed</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><a class="reference internal" href="#Classes.mdct.pymp_MDCTDico.pymp_LODico" title="Classes.mdct.pymp_MDCTDico.pymp_LODico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_LODico</span></tt></a>   is a dictionary that performs a local optimization of the time localization of the selected atom</p>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="#Classes.mdct.pymp_MDCTDico.pymp_FullDico" title="Classes.mdct.pymp_MDCTDico.pymp_FullDico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_FullDico</span></tt></a>  this object simulates a dictionary where atoms at all time localizations are available</dt>
+<dd><p class="first last">This kind of dictionary can be thought of as a Toeplitz matrix
+BEWARE: memory consumption and CPU load will be very high! only use with very small signals 
+(e.g. 1024 samples or so) Fairly intractable at higher dimensions</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="function">
+<dt id="Classes.mdct.pymp_MDCTDico.fromXml">
+<tt class="descclassname">Classes.mdct.pymp_MDCTDico.</tt><tt class="descname">fromXml</tt><big>(</big><em>xmlNode</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.fromXml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export routine NOT FULLY TESTED</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_FullDico">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTDico.</tt><tt class="descname">pymp_FullDico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_FullDico" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class handles blocks were MDCT products are computed for 
+each and every possible time localization. Therefore Iterations 
+are very slow but convergence should be optimum</p>
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_FullDico.initProjMatrix">
+<tt class="descname">initProjMatrix</tt><big>(</big><em>itNumbers</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_FullDico.initProjMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>method used for monitoring the projection along iterations</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_FullDico.updateProjMatrix">
+<tt class="descname">updateProjMatrix</tt><big>(</big><em>projMatrix</em>, <em>iterationNumber</em>, <em>normedProj=False</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_FullDico.updateProjMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>method used for monitoring the projection along iterations</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_LODico">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTDico.</tt><tt class="descname">pymp_LODico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>hrsizes=None</em>, <em>useC=True</em>, <em>debugLevel=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_LODico" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shift invariant MDCT dictionary
+Only difference is in the constructor and initialization: need to use LOBlocks</p>
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_LODico.getProjections">
+<tt class="descname">getProjections</tt><big>(</big><em>indexes</em>, <em>sigLength</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_LODico.getProjections" title="Permalink to this definition">¶</a></dt>
+<dd><p>additional method provided for Gradient Pursuits 
+indexes formalism: key as in the py_pursuit_Approx Object :
+int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.pymp_MDCTDico.</tt><tt class="descname">pymp_MDCTDico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>useC=True</em>, <em>forceHF=False</em>, <em>parallel=False</em>, <em>debugLevel=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico" title="Permalink to this definition">¶</a></dt>
+<dd><p>class to handle multiscale MDCT dictionaries using MDCT blocks</p>
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.computeTouchZone">
+<tt class="descname">computeTouchZone</tt><big>(</big><em>previousBestAtom</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.computeTouchZone" title="Permalink to this definition">¶</a></dt>
+<dd><p>update zone computed from the previously selected atom</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.getAtomKey">
+<tt class="descname">getAtomKey</tt><big>(</big><em>atom</em>, <em>sigLength</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.getAtomKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the atom index in the dictionary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.getBlock">
+<tt class="descname">getBlock</tt><big>(</big><em>size</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.getBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the index of the block corresponding to the given size or None if not found</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.getProjections">
+<tt class="descname">getProjections</tt><big>(</big><em>indexes</em>, <em>sigLength</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.getProjections" title="Permalink to this definition">¶</a></dt>
+<dd><p>additional method provided for Gradient Pursuits 
+indexes formalism: key as in the py_pursuit_Approx Object :
+int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.initProjMatrix">
+<tt class="descname">initProjMatrix</tt><big>(</big><em>itNumbers</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.initProjMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>method used for monitoring the projection along iterations 
+ONLY for DEV purposes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>residualSignal</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the collection of blocks specified by the MDCT sizes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.toXml">
+<tt class="descname">toXml</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.toXml" title="Permalink to this definition">¶</a></dt>
+<dd><p>A routine to convert the dictionary to an XML node</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.update">
+<tt class="descname">update</tt><big>(</big><em>residualSignal</em>, <em>iteratioNumber=0</em>, <em>debug=0</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the projections in each block, only where it needs to be done as specified</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.updateProjMatrix">
+<tt class="descname">updateProjMatrix</tt><big>(</big><em>projMatrix</em>, <em>iterationNumber</em>, <em>normedProj=False</em><big>)</big><a class="headerlink" href="#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico.updateProjMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>method used for monitoring the projection along iterations 
+ONLY for DEV purposes</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="classes-for-random-matching-pursuit">
+<h2>Classes for Random Matching Pursuit<a class="headerlink" href="#classes-for-random-matching-pursuit" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><span class="target" id="module-Classes.mdct.random.pymp_RandomBlocks"></span><div class="section" id="module-pymp-randomblocks">
+<h3>Module pymp_RandomBlocks<a class="headerlink" href="#module-pymp-randomblocks" title="Permalink to this headline">¶</a></h3>
+<p>Please refer to superclass for documentation</p>
+<p>This file handle blocks that are used in Randomized Matching Pursuits
+see [1] for details</p>
+<p>[1] M. Moussallam, L. Daudet, et G. Richard, 
+&#8220;Matching Pursuits with Random Sequential Subdictionaries&#8221;
+Signal Processing, vol. 92, pp. 2532-2544 2012.</p>
+<dl class="class">
+<dt id="Classes.mdct.random.pymp_RandomBlocks.pymp_RandomBlock">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.random.pymp_RandomBlocks.</tt><tt class="descname">pymp_RandomBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>randomType='random'</em>, <em>nbSim=1</em>, <em>windowType=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.random.pymp_RandomBlocks.pymp_RandomBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>block implementing the Randomized Pursuit</p>
+<p>Attributes:</p>
+<blockquote>
+<div><p><cite>randomType</cite>: The type of time-shift sequence, available choices are <em>scale</em> , <em>random</em> , <em>gaussian</em> , <em>binom</em> , <em>dicho</em> , <em>jump</em> , <em>binary</em> default is <em>random</em> which use a uniform pseudo-random generator</p>
+<p><cite>TSsequence</cite>: The actual sequence of subdictionary time-shifts</p>
+<p><cite>currentTS</cite>: The current time-shift</p>
+<p><cite>nbSim</cite>: Number of consecutive iterations with the same time-shift (default is 1)</p>
+</div></blockquote>
+<dl class="method">
+<dt id="Classes.mdct.random.pymp_RandomBlocks.pymp_RandomBlock.update">
+<tt class="descname">update</tt><big>(</big><em>newResidual</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em>, <em>iterationNumber=0</em><big>)</big><a class="headerlink" href="#Classes.mdct.random.pymp_RandomBlocks.pymp_RandomBlock.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as superclass except that at each update, one need to pick a time shift from the sequence</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-Classes.mdct.random.pymp_RandomDicos"></span><div class="section" id="module-pymp-randomdicos">
+<h3>Module pymp_RandomDicos<a class="headerlink" href="#module-pymp-randomdicos" title="Permalink to this headline">¶</a></h3>
+<p>This file handle dctionaries that are used in Randomized Matching Pursuits
+see [1] for details.</p>
+<p>[1] M. Moussallam, L. Daudet, et G. Richard, 
+&#8220;Matching Pursuits with Random Sequential Subdictionaries&#8221;
+Signal Processing, vol. 92, pp. 2532-2544 2012.</p>
+<dl class="class">
+<dt id="Classes.mdct.random.pymp_RandomDicos.pymp_RandomDico">
+<em class="property">class </em><tt class="descclassname">Classes.mdct.random.pymp_RandomDicos.</tt><tt class="descname">pymp_RandomDico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>randomType='random'</em>, <em>nbSame=1</em>, <em>windowType=None</em><big>)</big><a class="headerlink" href="#Classes.mdct.random.pymp_RandomDicos.pymp_RandomDico" title="Permalink to this definition">¶</a></dt>
+<dd><p>This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner     
+the shifts are controlled by the different blocks.</p>
+<p>Attributes:</p>
+<blockquote>
+<div><p><cite>randomType</cite>: The type of time-shift sequence, available choices are <em>scale</em>,*random*,*gaussian*,*binom*,*dicho*,*jump*,*binary* default is <em>random</em> which use a uniform pseudo-random generator</p>
+<p><cite>nbSim</cite>: Number of consecutive iterations with the same time-shift (default is 1)</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="test.html" title="Tests"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="classes.html" title="Classes Package Documentation:"
+             >previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Manuel Moussallam.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

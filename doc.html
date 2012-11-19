@@ -1,0 +1,218 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>What is PyMP? &mdash; PyMP 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="next" title="PyMP Tutorial 1. Signal decomposition" href="example.html" />
+    <link rel="prev" title="PyMP’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="PyMP Tutorial 1. Signal decomposition"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyMP’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">What is PyMP?</a><ul>
+<li><a class="reference internal" href="#architecture">Architecture</a><ul>
+<li><a class="reference internal" href="#a-few-notions">A few notions</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-have-it-work">How to have it work?</a></li>
+<li><a class="reference internal" href="#bibliography">Bibliography</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">PyMP&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="example.html"
+                        title="next chapter">PyMP Tutorial 1. Signal decomposition</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/doc.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="what-is-pymp">
+<h1>What is PyMP?<a class="headerlink" href="#what-is-pymp" title="Permalink to this headline">¶</a></h1>
+<p>PyMP is a collection of classes and scripts mostly written in Python
+during my PhD to perform fast decomposition of audio signals on
+multiscale time-frequency dictionaries.</p>
+<p>For now, it can only handle MDCT-based dictionaries</p>
+<div class="section" id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h2>
+<p>PyMP is very much structured like the MPTK toolbox from INRIA .
+Some of my research required that I would rewrite the core
+decomposition algorithm in order to design variants of it. In
+particular, the rewriting allows the use of Randomized Algorithms,
+such as the Matching Pursuit with Random Sequences of subdictionaries
+(RSSMP [1]). If you don&#8217;t intend to use this kind of variants, I
+recommend you use one of the existing implementation (indeed MPTK) as
+it can be fairly faster and more thoroughly tested that this piece of
+software.</p>
+<p>In the opposite case let&#8217;s have a look at how this is built:</p>
+<div class="section" id="a-few-notions">
+<h3>A few notions<a class="headerlink" href="#a-few-notions" title="Permalink to this headline">¶</a></h3>
+<p>This section only recall MP in order to describe the meaning of PyMP
+methods and classes. This is NOT an introduction to greedy algorithms.</p>
+<p>MP will decompose a signal <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> into a linear combination of atoms <img src="_images/mathmpl/math-e22cc525ec.png" style="position: relative; bottom: -7px"/> taken from a dictionary <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/> by iteratively selecting them according to their correlation to the
+signal. Thus, the algorithm builds an <em>approximant</em> <img src="_images/mathmpl/math-c69356f997.png" style="position: relative; bottom: -8px"/> of <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> in <img src="_images/mathmpl/math-88d9a1501b.png" style="position: relative; bottom: -3px"/> iterations such that:</p>
+<img src="_images/mathmpl/math-6791c2506d.png" class="center" /></div>
+<div class="section" id="implementation">
+<h3>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h3>
+<p>PyMP provide an Object-Oriented implementation of the MP algorithm in the following manner:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Signals (such as <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> objects</li>
+<li>Dictionaries (such as <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#Classes.pymp_Dico.pymp_Dico" title="Classes.pymp_Dico.pymp_Dico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Dico</span></tt></a> objects</li>
+<li>Approximants (such as <img src="_images/mathmpl/math-c69356f997.png" style="position: relative; bottom: -8px"/>) are handled through <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> objects</li>
+</ul>
+</div></blockquote>
+<p>The algorithm itself is performed using funnction from the <a class="reference internal" href="MP.html#module-MP" title="MP"><tt class="xref py py-mod docutils literal"><span class="pre">MP</span></tt></a> module.  A comprehensive view of how it works is provided in the
+next topic.</p>
+</div>
+</div>
+<div class="section" id="how-to-have-it-work">
+<h2>How to have it work?<a class="headerlink" href="#how-to-have-it-work" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You will need to have <em>fftw</em>  and <em>openMP</em> libraries installed and header accessible.
+Installation has been succesfully tested on linux machines but not on windows.
+Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries I recommend the use of cygwin on Windows Platform</p>
+</div>
+<p>PyMP is mainly a collection of pure python modules, which installation is quite traditionnal.
+However, in order to accelerate the inner product computations, it uses a low-level pure C library that is
+used through a python C extension module.</p>
+<p>Which means there are three installation steps:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Compile the pure C library: located in <em>root/lib/fastPursuit/</em></p>
+</li>
+<li><p class="first">Build and install the Python C extension module called <em>parallelProjections</em></p>
+</li>
+<li><p class="first">Build and install the pure Python packages among which:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="classes.html#module-Classes" title="Classes"><tt class="xref py py-mod docutils literal"><span class="pre">Classes</span></tt></a>: a package where all the Objects are stored</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">Tools</span></tt>: a collection of tools</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">Tests</span></tt>: a package of tests</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Hopefully you won&#8217;t need to perform these operations, it will be done for you by executing by the <em>setup.py</em> script
+in the root directory. Simply run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p class="last">And it should be fine...</p>
+</div>
+</div>
+<div class="section" id="bibliography">
+<h2>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>[1]. M. Moussallam , L. Daudet , et G. Richard , &#8220;Matching Pursuits with Random Sequential Subdictionaries&#8221;
+Signal Processing, vol. 92, pp. 2532-2544, 2012. <a class="reference external" href="http://dx.doi.org/10.1016/j.sigpro.2012.03.019">pdf</a> .</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="PyMP Tutorial 1. Signal decomposition"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="PyMP’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Manuel Moussallam.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyMP Tutorial 1. Signal decomposition &mdash; PyMP 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="next" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" />
+    <link rel="prev" title="What is PyMP?" href="doc.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="doc.html" title="What is PyMP?"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyMP Tutorial 1. Signal decomposition</a><ul>
+<li><a class="reference internal" href="#manipulating-signals">Manipulating Signals</a><ul>
+<li><a class="reference internal" href="#reading-and-writing">Reading and Writing</a></li>
+<li><a class="reference internal" href="#signal-edition">Signal Edition</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#approximation-objects">Approximation objects</a><ul>
+<li><a class="reference internal" href="#creation">Creation</a></li>
+<li><a class="reference internal" href="#approximation-in-a-mp-context">Approximation in a MP context</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#standard-mp-over-a-union-of-mdct-basis">Standard MP over a union of MDCT Basis</a><ul>
+<li><a class="reference internal" href="#standard-algorithm">Standard Algorithm</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#locally-optimized-mp">Locally Optimized MP</a></li>
+<li><a class="reference internal" href="#mp-with-random-sequential-subdictionaries">MP with Random Sequential Subdictionaries</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="doc.html"
+                        title="previous chapter">What is PyMP?</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="example_coder.html"
+                        title="next chapter">PyMP Tutorial 2. Audio compression</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/example.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pymp-tutorial-1-signal-decomposition">
+<h1>PyMP Tutorial 1. Signal decomposition<a class="headerlink" href="#pymp-tutorial-1-signal-decomposition" title="Permalink to this headline">¶</a></h1>
+<p>This Tutorial will describe how pymp works, and mostly how to use it to perform audio signal decompositions on multiscale MDCT dictionaries
+for any question feel free to contact me (<a class="reference external" href="mailto:firstname&#46;lastname&#37;&#52;&#48;gmail&#46;com">firstname<span>&#46;</span>lastname<span>&#64;</span>gmail<span>&#46;</span>com</a>)
+Documentation for the modules that we&#8217;re using here is provided in the next sections.</p>
+<div class="section" id="manipulating-signals">
+<h2>Manipulating Signals<a class="headerlink" href="#manipulating-signals" title="Permalink to this headline">¶</a></h2>
+<p>First thing you may want to do is load, analyse, plot and write signals. These operations are handled using the
+<a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> class.</p>
+<div class="section" id="reading-and-writing">
+<h3>Reading and Writing<a class="headerlink" href="#reading-and-writing" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> has a static method called <a class="reference internal" href="classes.html#Classes.pymp_Signal.InitFromFile" title="Classes.pymp_Signal.InitFromFile"><tt class="xref py py-func docutils literal"><span class="pre">InitFromFile()</span></tt></a> that can be used to load a wav from from disk.
+This is internally done using the <strong>wave</strong> python module. Assuming your current directory is pymp/src you can
+load a signal doing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span>  <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="s">&#39;data/glocs.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As for many pymp Objects, you can specify a debug level that manages info and warning printing degrees. Try for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span>  <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="s">&#39;data/glocs.wav&#39;</span><span class="p">,</span><span class="n">debugLevel</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> object <cite>myPympSignal</cite> mainly wraps the content of <em>glocs.wav</em> as a numpy array and descriptors such as
+sampling frequency, sample format, etc.. you can access the samples directly as a numpy array by doing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">dataVec</span>
+</pre></div>
+</div>
+<p>Alternatively, you can visualize the data using the <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Writing a signal is also quite straightforward:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;newDestFile.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="signal-edition">
+<h3>Signal Edition<a class="headerlink" href="#signal-edition" title="Permalink to this headline">¶</a></h3>
+<p>Often you need to edit signals, e.g. crop them or pad them with zeroes on the borders, this can be done easily:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&#39;Before cropping Length of &#39;</span> <span class="p">,</span> <span class="n">myPympSignal</span><span class="o">.</span><span class="n">length</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span> <span class="p">,</span> <span class="mi">2048</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&#39;After cropping Length of &#39;</span><span class="p">,</span> <span class="n">myPympSignal</span><span class="o">.</span><span class="n">length</span>
+</pre></div>
+</div>
+<p>will plot the new signal length.
+Revesely you can pad signals with zeroes, this is done on both sides with pad and depad methods.
+For example, we can create a signal with only ones and pad it with zeroes on the edges:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">newSig</span> <span class="o">=</span> <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">pymp_Signal</span><span class="p">(</span><span class="n">ones</span><span class="p">((</span><span class="mi">8</span><span class="p">,)),</span> <span class="mi">1</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newSig</span><span class="o">.</span><span class="n">dataVec</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;Padding&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newSig</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newSig</span><span class="o">.</span><span class="n">dataVec</span>
+</pre></div>
+</div>
+<p>Removing the zeroes is also straightforward:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;De-Padding&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newSig</span><span class="o">.</span><span class="n">depad</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">newSig</span><span class="o">.</span><span class="n">dataVec</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="approximation-objects">
+<h2>Approximation objects<a class="headerlink" href="#approximation-objects" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> objects are the equivalent of <em>Book</em> objects in MPTK.
+They handle the approximation of a signal on a given dictionary.</p>
+</div>
+<div class="section" id="creation">
+<h3>Creation<a class="headerlink" href="#creation" title="Permalink to this headline">¶</a></h3>
+<p>A trivial creation takes no further arguments.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pyApprox</span> <span class="o">=</span> <span class="n">pymp_Approx</span><span class="o">.</span><span class="n">pymp_Approx</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Basically, an approximant is just a collection of atoms, this means we can enrich this object py adding some atoms to it.
+For example we can add 3 MDCT atoms of different scales, time and frequency localization to obtain an approximant
+as in the following example:</p>
+<p>[<a class="reference external" href="./plot_directive/pyplots/approx_ex1.py">source code</a>, <a class="reference external" href="./plot_directive/pyplots/approx_ex1.hires.png">hires.png</a>, <a class="reference external" href="./plot_directive/pyplots/approx_ex1.pdf">pdf</a>]</p>
+<div class="figure">
+<img alt="_images/approx_ex1.png" src="_images/approx_ex1.png" />
+</div>
+<p>This example use the <a class="reference internal" href="Mdct.html#Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom" title="Classes.mdct.pymp_MDCTAtom.pymp_MDCTAtom"><tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTAtom</span></tt></a> objects. The long atom (2048 samples or 256 ms at a sampling rate of 8000 Hz) is built using the command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">atomLong</span> <span class="o">=</span> <span class="n">pymp_MDCTAtom</span><span class="o">.</span><span class="n">pymp_MDCTAtom</span><span class="p">(</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>where we have specified its size, amplitude (Deprecated, always put 1 in there) , time localization (0) , frequency bin (40 which corresponds to 156 Hz) and mdct_coefficient value (1)
+then the atom&#8217;s waveform is synthesized using internal routine and used to create a <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">atomLong</span><span class="o">.</span><span class="n">synthesize</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span>  <span class="o">=</span> <span class="n">pymp_Approx</span><span class="o">.</span><span class="n">pymp_Approx</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="p">[],</span> <span class="bp">None</span><span class="p">,</span> <span class="n">atomLong</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">atomLong</span><span class="o">.</span><span class="n">samplingFrequency</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Other atoms can be added</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">addAtom</span><span class="p">(</span><span class="n">pymp_MDCTAtom</span><span class="o">.</span><span class="n">pymp_MDCTAtom</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="approximation-in-a-mp-context">
+<h3>Approximation in a MP context<a class="headerlink" href="#approximation-in-a-mp-context" title="Permalink to this headline">¶</a></h3>
+<p>Although you can manipulate <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> objects on their own, it is much more interesting to link them to existing signals and to a dictionary.
+For example, let us define a dictionary as a union of 3 MDCT basis:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes.mdct</span> <span class="kn">import</span> <span class="n">pymp_MDCTDico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pyDico</span> <span class="o">=</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_MDCTDico</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">8192</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>We can now create an approximation of a specified signal on this dictionary this way:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span>  <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="s">&#39;data/glocs.wav&#39;</span><span class="p">,</span><span class="n">forceMono</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pyApprox</span> <span class="o">=</span> <span class="n">pymp_Approx</span><span class="o">.</span><span class="n">pymp_Approx</span><span class="p">(</span><span class="n">pyDico</span><span class="p">,</span> <span class="p">[],</span> <span class="n">myPympSignal</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>for now this approximation is empty (the <em>pyApprox.atoms</em> list is empty). But we can still add an atom to it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pyApprox</span><span class="o">.</span><span class="n">addAtom</span><span class="p">(</span><span class="n">pymp_MDCTAtom</span><span class="o">.</span><span class="n">pymp_MDCTAtom</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Now we have a reference signal and an approximant of it, we can evaluate the quality of the approximation using the Signal to Residual Ratio (SRR):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">pyApprox</span><span class="o">.</span><span class="n">computeSRR</span><span class="p">()</span>
+<span class="go">-116.6369995336029</span>
+</pre></div>
+</div>
+<p>Since we picked a random atom with no link to the signal, the SRR (in dB) is very poor. It will be much better when MP select atoms based on their correlation to the signal</p>
+</div>
+</div>
+<div class="section" id="standard-mp-over-a-union-of-mdct-basis">
+<h2>Standard MP over a union of MDCT Basis<a class="headerlink" href="#standard-mp-over-a-union-of-mdct-basis" title="Permalink to this headline">¶</a></h2>
+<p>All important objects have been introduced, let us present some examples of what PyMP does.</p>
+<div class="section" id="standard-algorithm">
+<h3>Standard Algorithm<a class="headerlink" href="#standard-algorithm" title="Permalink to this headline">¶</a></h3>
+<p>In this example, the standard algorithm is used to decomposed the glockenspiel signal over a union of 3 MDCT basis:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes</span> <span class="kn">import</span> <span class="n">pymp_Signal</span><span class="p">,</span> <span class="n">pymp_Approx</span><span class="p">;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes.mdct</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">8192</span><span class="p">];</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Natom</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span> <span class="o">=</span> <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="n">filePath</span><span class="o">+</span><span class="s">&#39;glocs.wav&#39;</span><span class="p">,</span><span class="n">forceMono</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">doNormalize</span><span class="o">=</span><span class="bp">True</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">3.5</span><span class="o">*</span><span class="n">pySig</span><span class="o">.</span><span class="n">samplingFrequency</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">8192</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span><span class="o">.</span><span class="n">dataVec</span> <span class="o">+=</span> <span class="mf">0.0001</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">pySig</span><span class="o">.</span><span class="n">length</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dico</span><span class="o">=</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_MDCTDico</span><span class="p">(</span><span class="n">sizes</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="p">,</span> <span class="n">decay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">pySig</span><span class="p">,</span> <span class="n">dico</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="n">Natom</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">IMPORTANT: the fact that we know it&#8217;s the standard algorithm that is used is because we choosed a <a class="reference internal" href="Mdct.html#Classes.mdct.pymp_MDCTDico.pymp_MDCTDico" title="Classes.mdct.pymp_MDCTDico.pymp_MDCTDico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTDico</span></tt></a> object as dictionary.</p>
+</div>
+<p>First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (absolute values) considered.
+(c) is the reconstructed signal, accessible via:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">recomposedSignal</span>
+</pre></div>
+</div>
+<p>and (d) is the time-frequency plot of the 1000 atoms that have been used to approximate the original glockenspiel signal</p>
+<p>[<a class="reference external" href="./plot_directive/pyplots/MP_example.py">source code</a>, <a class="reference external" href="./plot_directive/pyplots/MP_example.hires.png">hires.png</a>, <a class="reference external" href="./plot_directive/pyplots/MP_example.pdf">pdf</a>]</p>
+<div class="figure">
+<img alt="_images/MP_example.png" src="_images/MP_example.png" />
+</div>
+<p>You can evaluate the quality of the approximation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">computeSRR</span><span class="p">()</span>
+<span class="go">23.657038395028287</span>
+</pre></div>
+</div>
+<p>and save the result in various formats (see the <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> documentation):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">recomposedSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;outPutPath.wav&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="locally-optimized-mp">
+<h2>Locally Optimized MP<a class="headerlink" href="#locally-optimized-mp" title="Permalink to this headline">¶</a></h2>
+<p>To run a locally adaptive (or optimized) MP, all we have to do is to pick a <a class="reference internal" href="Mdct.html#Classes.mdct.pymp_MDCTDico.pymp_LODico" title="Classes.mdct.pymp_MDCTDico.pymp_LODico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_LODico</span></tt></a> object as a dictionary. The internal
+routines of its blocks will perform the local optimization so that at our level this is quite transparent:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approxMP</span><span class="p">,</span> <span class="n">decayMP</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">pySig</span><span class="p">,</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_MDCTDico</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span> <span class="p">,</span><span class="n">srr</span><span class="p">,</span><span class="n">nbAtom</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">True</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">approxLoMP</span><span class="p">,</span> <span class="n">decayLoMP</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">pySig</span><span class="p">,</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_LODico</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span><span class="n">nbAtom</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>[<a class="reference external" href="./plot_directive/pyplots/LoMP_example.py">source code</a>, <a class="reference external" href="./plot_directive/pyplots/LoMP_example.hires.png">hires.png</a>, <a class="reference external" href="./plot_directive/pyplots/LoMP_example.pdf">pdf</a>]</p>
+<div class="figure">
+<img alt="_images/LoMP_example.png" src="_images/LoMP_example.png" />
+</div>
+<p>In addition to plotting, we can compare the quality of the approximations, given a fixed number of atoms (here 500):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approxMP</span><span class="o">.</span><span class="n">computeSRR</span><span class="p">()</span> <span class="p">,</span> <span class="n">approxMP</span><span class="o">.</span><span class="n">atomNumber</span>
+<span class="go">(19.50500304181195, 500)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">approxLoMP</span><span class="o">.</span><span class="n">computeSRR</span><span class="p">()</span> <span class="p">,</span> <span class="n">approxLoMP</span><span class="o">.</span><span class="n">atomNumber</span>
+<span class="go">(23.205178754903638, 500)</span>
+</pre></div>
+</div>
+<p>The locally adaptive Matching pursuit has yielded a better decomposition (in the sense of mean squared error).
+Alternatively one can verify that for a given level of SRR, LoMP will use a smaller number of atoms.</p>
+</div>
+<div class="section" id="mp-with-random-sequential-subdictionaries">
+<h2>MP with Random Sequential Subdictionaries<a class="headerlink" href="#mp-with-random-sequential-subdictionaries" title="Permalink to this headline">¶</a></h2>
+<p>RSSMP is explained in the journal <a class="reference external" href="http://dx.doi.org/10.1016/j.sigpro.2012.03.019">paper</a> .</p>
+<p>Implementation of RSSMP is quite transparent, it&#8217;s done through the use of a <a class="reference internal" href="Mdct.html#Classes.mdct.random.pymp_RandomDicos.pymp_RandomDico" title="Classes.mdct.random.pymp_RandomDicos.pymp_RandomDico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_RandomDico</span></tt></a> object as dictionary:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes.mdct.random</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pyRandomDico</span> <span class="o">=</span> <span class="n">pymp_RandomDicos</span><span class="o">.</span><span class="n">pymp_RandomDico</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="s">&#39;random&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now compare the three strategies in terms of normalized reconstruction error</p>
+<img src="_images/mathmpl/math-e97de6ad9b.png" class="center" /><p>This gives the following results:</p>
+<p>[<a class="reference external" href="./plot_directive/pyplots/RSSMP_example.py">source code</a>, <a class="reference external" href="./plot_directive/pyplots/RSSMP_example.hires.png">hires.png</a>, <a class="reference external" href="./plot_directive/pyplots/RSSMP_example.pdf">pdf</a>]</p>
+<div class="figure">
+<img alt="_images/RSSMP_example.png" src="_images/RSSMP_example.png" />
+</div>
+<p>And that&#8217;s it.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="doc.html" title="What is PyMP?"
+             >previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Manuel Moussallam.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

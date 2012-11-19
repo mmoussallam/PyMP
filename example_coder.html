@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyMP Tutorial 2. Audio compression &mdash; PyMP 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="next" title="MP routines Documentation" href="MP.html" />
+    <link rel="prev" title="PyMP Tutorial 1. Signal decomposition" href="example.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MP.html" title="MP routines Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="PyMP Tutorial 1. Signal decomposition"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyMP Tutorial 2. Audio compression</a><ul>
+<li><a class="reference internal" href="#a-brief-introduction">A Brief Introduction</a><ul>
+<li><a class="reference internal" href="#simple-sparse-encoding-scheme">Simple Sparse Encoding Scheme</a></li>
+<li><a class="reference internal" href="#entropy-coding">Entropy coding</a></li>
+<li><a class="reference internal" href="#coding-additional-atom-parameters">Coding Additional atom parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#compressing-real-audio-signals">Compressing Real Audio Signals</a><ul>
+<li><a class="reference internal" href="#encoding-of-standard-mp-decompositions">Encoding of standard MP decompositions</a></li>
+<li><a class="reference internal" href="#encoding-of-locally-optimized-mp-decompositions">Encoding of Locally Optimized MP decompositions</a></li>
+<li><a class="reference internal" href="#encoding-of-rss-mp-decompositions">Encoding of RSS MP decompositions</a></li>
+<li><a class="reference internal" href="#comparisons">Comparisons</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additionnal-documentation">Additionnal documentation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="example.html"
+                        title="previous chapter">PyMP Tutorial 1. Signal decomposition</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="MP.html"
+                        title="next chapter">MP routines Documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/example_coder.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pymp-tutorial-2-audio-compression">
+<h1>PyMP Tutorial 2. Audio compression<a class="headerlink" href="#pymp-tutorial-2-audio-compression" title="Permalink to this headline">¶</a></h1>
+<p>We now assume you&#8217;re familiar with PyMP and the different Pursuit types that can be performed
+In this tutorial we illustrate the advantages of RSSMP in an audio compression context.</p>
+<div class="section" id="a-brief-introduction">
+<h2>A Brief Introduction<a class="headerlink" href="#a-brief-introduction" title="Permalink to this headline">¶</a></h2>
+<p>A much more detailed discussion on this can be found in the <a class="reference external" href="http://dx.doi.org/10.1016/j.sigpro.2012.03.019">paper</a> , let&#8217;s just introduce the basics</p>
+<div class="section" id="simple-sparse-encoding-scheme">
+<h3>Simple Sparse Encoding Scheme<a class="headerlink" href="#simple-sparse-encoding-scheme" title="Permalink to this headline">¶</a></h3>
+<p>To encode an approximation <img src="_images/mathmpl/math-19320b900b.png" style="position: relative; bottom: -8px"/> of <img src="_images/mathmpl/math-88d9a1501b.png" style="position: relative; bottom: -3px"/> atoms, one needs to encode two things:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The indexes of the atoms in the dictionary</li>
+<li>Their weights</li>
+</ul>
+</div></blockquote>
+<p>The simplest encoding scheme is to encode each atom separately. In this setup the cost of encoding
+an atom&#8217;s index is fixed and directly linked to the size of the dictionary. The cost of encoding
+an atom&#8217;s weight is also fixed if we use a static midtread quantizer with <img src="_images/mathmpl/math-6f18d98412.png" style="position: relative; bottom: -3px"/> steps.</p>
+</div>
+<div class="section" id="entropy-coding">
+<h3>Entropy coding<a class="headerlink" href="#entropy-coding" title="Permalink to this headline">¶</a></h3>
+<p>There are many more efficient way of encoding sparse representation. One way is to adapt the quantization of the weights
+to the exponentially decreasing bound of MP as done by Frossard et al 2004.</p>
+<p>Another way is to use en entropic coder or any other source coding method after the quantization step.
+Finally, atom indexes can be redundant over time (especially when considering signal frames closely related in time)
+All these scheme are situation-dependant and beyond the scope of this tutorial.</p>
+</div>
+<div class="section" id="coding-additional-atom-parameters">
+<h3>Coding Additional atom parameters<a class="headerlink" href="#coding-additional-atom-parameters" title="Permalink to this headline">¶</a></h3>
+<p>Indexes coding costs are linked to the dictionary size, but in the case of adaptative pursuits (such as LOMP)
+an additionnal parameter (e.g. a local optimal time-shift) must be transmitted as side-information.</p>
+</div>
+</div>
+<div class="section" id="compressing-real-audio-signals">
+<h2>Compressing Real Audio Signals<a class="headerlink" href="#compressing-real-audio-signals" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="encoding-of-standard-mp-decompositions">
+<h3>Encoding of standard MP decompositions<a class="headerlink" href="#encoding-of-standard-mp-decompositions" title="Permalink to this headline">¶</a></h3>
+<p>Let us perform a MP decomposition of a 1 second audio exceprt of Glockenspiel using a 3xMDCT dictionary:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes.mdct</span> <span class="kn">import</span> <span class="n">pymp_MDCTDico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MP</span> <span class="o">,</span> <span class="nn">MPCoder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span>  <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="s">&#39;data/ClocheB.wav&#39;</span><span class="p">,</span><span class="n">forceMono</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="c"># Load Signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">4.0</span><span class="o">*</span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">samplingFrequency</span><span class="p">)</span>     <span class="c"># Keep only 4 seconds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># atom of scales 8, 64 and 512 ms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scales</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span> <span class="o">*</span> <span class="n">myPympSignal</span><span class="o">.</span><span class="n">samplingFrequency</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">512</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Dictionary for Standard MP</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pyDico</span> <span class="o">=</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_MDCTDico</span><span class="p">(</span><span class="n">scales</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Launching decomposition, stops either at 20 dB of SRR or 2000 iterations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mpApprox</span> <span class="p">,</span> <span class="n">mpDecay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyDico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This should be relatively fast, the algorithm stops when it reaches 20 dB of SRR and a number of atoms determined by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mpApprox</span><span class="o">.</span><span class="n">atomNumber</span>
+<span class="go">565</span>
+</pre></div>
+</div>
+<p>From the <em>mpApprox</em> object constructed we can now evaluate a (theoretical) rate and an associated distorsion by quantizing
+the atoms weights and counting the cost of both indices and weights. To do that, we use the <a class="reference internal" href="#MPCoder.SimpleMDCTEncoding" title="MPCoder.SimpleMDCTEncoding"><tt class="xref py py-func docutils literal"><span class="pre">SimpleMDCTEncoding()</span></tt></a> method
+in the <a class="reference internal" href="#module-MPCoder" title="MPCoder"><tt class="xref py py-mod docutils literal"><span class="pre">MPCoder</span></tt></a> module. Here&#8217;s an example where we set a target of 8kbps with a midtread uniform quantizer with <img src="_images/mathmpl/math-96f9abdd5c.png" style="position: relative; bottom: -3px"/> steps</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>And we can check the results:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">)</span>
+<span class="go">(20.010662962811647, 3472.7238328087619)</span>
+</pre></div>
+</div>
+<p>In other words, we achieved a 20 dB SNR with a (theoretical) 3.4 kbps bitrate. We can change the coder properties,
+in particular the number of quantizing steps (recall this is <img src="_images/mathmpl/math-6f18d98412.png" style="position: relative; bottom: -3px"/>  and not directly Q!!):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">5</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">)</span>
+<span class="go">(20.010662962811647, 3472.7238328087619)</span>
+</pre></div>
+</div>
+<p>Indeed we have reduced the bitrate, but increased the distorsion. We can also fix the bitrate at a lower value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">)</span>
+<span class="go">(16.03645910615025, 2003.7309194613388)</span>
+</pre></div>
+</div>
+<p>The coder stopped when the given bitrate was reached, yieled a higher distorsion. If you wonder how many atoms where used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atomNumber</span>
+<span class="go">326</span>
+</pre></div>
+</div>
+<p>In order to listen to the results, you&#8217;ll need to save the approximant as wav files:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">recomposedSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_quantized_2kbps.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But a simple Time-Frequency plot already tells you there&#8217;s going to be some highly disturbing artefacts:</p>
+<p>[<a class="reference external" href="./plot_directive/pyplots/plot_encoded_cloche.py">source code</a>, <a class="reference external" href="./plot_directive/pyplots/plot_encoded_cloche.hires.png">hires.png</a>, <a class="reference external" href="./plot_directive/pyplots/plot_encoded_cloche.pdf">pdf</a>]</p>
+<div class="figure">
+<img alt="_images/plot_encoded_cloche.png" src="_images/plot_encoded_cloche.png" />
+</div>
+<p>Energy has appeared BEFORE the impact on the bell, this phenomemnon is called pre-echo artefact and is very common
+when using this type of dictionaries. Only two way to get rid of it:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Increase the number of atoms (but since we want to compress that&#8217;s not a good idea here)</li>
+<li>Select Atoms that have a better fine correlation to the signal. This is the topic of the next example.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="encoding-of-locally-optimized-mp-decompositions">
+<h3>Encoding of Locally Optimized MP decompositions<a class="headerlink" href="#encoding-of-locally-optimized-mp-decompositions" title="Permalink to this headline">¶</a></h3>
+<p>So</p>
+</div>
+<div class="section" id="encoding-of-rss-mp-decompositions">
+<h3>Encoding of RSS MP decompositions<a class="headerlink" href="#encoding-of-rss-mp-decompositions" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="comparisons">
+<h3>Comparisons<a class="headerlink" href="#comparisons" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="additionnal-documentation">
+<h2>Additionnal documentation<a class="headerlink" href="#additionnal-documentation" title="Permalink to this headline">¶</a></h2>
+<p>here&#8217;s the documentation of the method used in this tutorial</p>
+<blockquote>
+<div><span class="target" id="module-MPCoder"></span><div class="section" id="module-mpcoder">
+<h3>Module MPCoder<a class="headerlink" href="#module-mpcoder" title="Permalink to this headline">¶</a></h3>
+<p>A collection of method handling the (theoretical) encoding of sparse approximations.</p>
+<dl class="function">
+<dt id="MPCoder.SimpleMDCTEncoding">
+<tt class="descclassname">MPCoder.</tt><tt class="descname">SimpleMDCTEncoding</tt><big>(</big><em>approx</em>, <em>targetBitrate</em>, <em>Q=7</em>, <em>encodeCoeffs=True</em>, <em>encodeIndexes=True</em>, <em>subsampling=1</em>, <em>TsPenalty=False</em>, <em>saveOutputFilePath=None</em>, <em>outputAllIndexes=False</em><big>)</big><a class="headerlink" href="#MPCoder.SimpleMDCTEncoding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple encoder of a sparse approximation</p>
+<p>Arguments:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>approx</cite>: a <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> object containing atoms from the decomposition</li>
+<li><cite>targetBitrate</cite>: a float indicating the target bitrate. Atoms are considered in decreasing amplitude order.</li>
+</ul>
+<p>The encoding will stop either when the target Bitrate it reached or when all atoms of <cite>approx</cite> have been considered</p>
+<ul class="simple">
+<li><cite>Q</cite>: The number of midtread quantizer steps. Default is 7, increase this number for higher bitrates</li>
+<li><cite>TsPenalty</cite>: a boolean indicating whether LOMP algorithm has been used, and addition time-shift parameters must be encoded</li>
+</ul>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>SNR</cite>: The achieved Signal to Noise Ratio</li>
+<li><cite>Bitrate</cite>: The achieved bitrate, not necessarily equal to the given target</li>
+<li><cite>quantizedApprox</cite>: a <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> object containing the quantized atoms</li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MP.html" title="MP routines Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="example.html" title="PyMP Tutorial 1. Signal decomposition"
+             >previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Manuel Moussallam.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

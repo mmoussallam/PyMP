@@ -1,0 +1,194 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>MP routines Documentation &mdash; PyMP 0.9.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="next" title="Classes Package Documentation:" href="classes.html" />
+    <link rel="prev" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="classes.html" title="Classes Package Documentation:"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">MP routines Documentation</a><ul>
+<li><a class="reference internal" href="#main-module-providing-mp-methods">Main Module providing MP methods</a></li>
+<li><a class="reference internal" href="#alternative-command-line-utility">Alternative: Command Line utility</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="example_coder.html"
+                        title="previous chapter">PyMP Tutorial 2. Audio compression</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="classes.html"
+                        title="next chapter">Classes Package Documentation:</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/MP.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="mp-routines-documentation">
+<h1>MP routines Documentation<a class="headerlink" href="#mp-routines-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="main-module-providing-mp-methods">
+<h2>Main Module providing MP methods<a class="headerlink" href="#main-module-providing-mp-methods" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><span class="target" id="module-MP"></span><div class="section" id="module-mp">
+<h3>Module MP<a class="headerlink" href="#module-mp" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="a-simple-mp-algorithm-using-the-pymp-objects">
+<h4>A Simple MP algorithm using the pymp objects<a class="headerlink" href="#a-simple-mp-algorithm-using-the-pymp-objects" title="Permalink to this headline">¶</a></h4>
+<dl class="function">
+<dt id="MP.MP">
+<tt class="descclassname">MP.</tt><tt class="descname">MP</tt><big>(</big><em>originalSignal</em>, <em>dictionary</em>, <em>targetSRR</em>, <em>maxIteratioNumber</em>, <em>debug=0</em>, <em>padSignal=True</em>, <em>itClean=False</em>, <em>silentFail=False</em>, <em>plot=False</em>, <em>debugSpecific=-1</em>, <em>cutBorders=False</em><big>)</big><a class="headerlink" href="#MP.MP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Common Matching Pursuit Loop Options are detailed below:</p>
+<p>Args:</p>
+<blockquote>
+<div><p><cite>originalSignal</cite>:    the original signal (as a <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> object) <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> to decompose</p>
+<p><cite>dictionary</cite>:        the dictionary (as a <a class="reference internal" href="classes.html#Classes.pymp_Dico.pymp_Dico" title="Classes.pymp_Dico.pymp_Dico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Dico</span></tt></a> object) <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/> on which to decompose :math:x</p>
+<p><cite>targetSRR</cite>:         a target Signal to Residual Ratio</p>
+<p><cite>maxIteratioNumber</cite>: maximum number of iteration allowed</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p><cite>approx</cite>:  A <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> object encapsulating the approximant</p>
+<p><cite>decay</cite>:   A list of residual&#8217;s energy across iterations</p>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="p">,</span><span class="n">decay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For decomposing the signal x on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
+x must be a <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> and D a <a class="reference internal" href="classes.html#Classes.pymp_Dico.pymp_Dico" title="Classes.pymp_Dico.pymp_Dico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Dico</span></tt></a> object</p>
+</dd></dl>
+
+</div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="alternative-command-line-utility">
+<h2>Alternative: Command Line utility<a class="headerlink" href="#alternative-command-line-utility" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><span class="target" id="module-MPcmd"></span><div class="section" id="module-mpcmd">
+<h3>Module MPcmd<a class="headerlink" href="#module-mpcmd" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt>PyPursuit command line arguments looks as follow:</dt>
+<dd><p class="first">-h or &#8211;help : print this help</p>
+<p>-f [filePath] : specifies the path to the audiofile, only wav files supported for now</p>
+<p>-w : flag for writing the output (approx and recomposedSignal) to output files</p>
+<p>-o [outPutFilePath] : path for the output</p>
+<p>-m [maxAtomNumber] :  specifies the maximum number of selected atoms</p>
+<p>-s [SRR] : specifies the target Signal-To-Residual Ratio</p>
+<p>-d [dictionarySizes] : specifies the sizes: e.g -d 128,1024,8192</p>
+<p>-t or &#8211;type [&#8216;MP&#8217; | &#8216;LOMP&#8217;] : specify the chosen decomposition algorithm</p>
+<p>&#8211;debug=[0|1|2|3] : debug level. Default is 0</p>
+<p>-a or &#8211;pad pad signal with zeroes , default is 1</p>
+<p>-p or &#8211;plot plots the approximation using matplotib</p>
+<p>-l [segmentDuration] : length of the segments</p>
+<p>Example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">MPcmd</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">f</span> <span class="n">sndFile</span><span class="o">.</span><span class="n">wav</span> <span class="o">-</span><span class="n">m</span> <span class="mi">100</span> <span class="o">-</span><span class="n">s</span> <span class="mi">10</span> <span class="o">-</span><span class="n">d</span> <span class="mi">128</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">8192</span> <span class="o">--</span><span class="n">debug</span><span class="o">=</span><span class="mi">1</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">p</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="classes.html" title="Classes Package Documentation:"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+             >previous</a> |</li>
+        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Manuel Moussallam.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
