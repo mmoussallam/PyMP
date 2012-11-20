@@ -32,19 +32,16 @@
  
 
 """
-import os,sys
+import os,sys,platform
 import commands
 import string
 
-info = os.uname();
+info = platform.uname();
 
-# CHANGE according to your configuration
-#arch = 'linux-x86_64'
 arch = string.lower(info[0]) + '-' + info[4];
 pythonVersion = sys.version[0:3];
 
 #pythonVersion = info[2]
-#localPyPursuitPath = '/home/manumouss/Bureau/Svn_Telecom/py_pursuit/'
 print os.getcwd()
 
 
@@ -61,10 +58,12 @@ print "---- Test import du module!"
 import parallelProjections
 print "---- OK"
 
+
     
 from Classes import *
 from Classes.mdct import *
-from Classes.gabor import *
+import MP
+#from Classes.gabor import *
 import cProfile
 
 
@@ -74,8 +73,6 @@ from cmath import exp , pi
 import matplotlib.pyplot as plt
 # ugly workaround
 
-import sys
-import ctypes
 
 
 
@@ -92,9 +89,9 @@ if parallelProjections.clean_plans() != 1:
     
     
 pySigOriginal = pymp_Signal.InitFromFile("../../data/ClocheB.wav" , True , True);        
-pyDico2 = pymp_MDCTDico.py_pursuit_MDCTDico(mdctDico) 
+pyDico2 = pymp_MDCTDico.pymp_MDCTDico(mdctDico) 
 
-pyDico_Lomp = pymp_MDCTDico.py_pursuit_CCDico(mdctDico) 
+pyDico_Lomp = pymp_MDCTDico.pymp_LODico(mdctDico) 
 residualSignal = pySigOriginal.copy();
 
 print " profiling test with C integration"
@@ -281,7 +278,7 @@ k = 14
 if parallelProjections.initialize_plans(np.array([scale]), np.array([2]))!= 1:
     print "Initialization Stage Failed"
 
-Atom_test = pymp_MDCTAtom.py_pursuit_MDCTAtom(scale, 1, 1200, k, 8000);
+Atom_test = pymp_MDCTAtom.pymp_MDCTAtom(scale, 1, 1200, k, 8000);
 #Atom_test.mdct_value = 0.57;
 Atom_test.synthesize(value=1);
 #
@@ -345,23 +342,23 @@ print sum(Atom_test.waveform * input1[scale/2-ts:scale/2-ts + Atom_test.length])
 #plt.plot(input2);
 #plt.legend(('origAtom','signal','newAtom'))
 #plt.show()
-
-k = 0
-wf = parallelProjections.get_atom(scale ,  k);
-wf_gab = parallelProjections.get_real_gabor_atom(scale ,  k , 0.45);
-
-gabAtom = pymp_GaborAtom.py_pursuit_GaborAtom(scale, 1, 1, k, 1, 0.45)
-wf_gab_test = gabAtom.synthesize()
+#
+#k = 0
+#wf = parallelProjections.get_atom(scale ,  k);
+#wf_gab = parallelProjections.get_real_gabor_atom(scale ,  k , 0.45);
+#
+#gabAtom = pymp_GaborAtom.py_pursuit_GaborAtom(scale, 1, 1, k, 1, 0.45)
+#wf_gab_test = gabAtom.synthesize()
 
 #plt.figure()
 #plt.plot(wf_gab)
 #plt.plot(wf_gab_test , 'r:')
-print sum((wf_gab_test - wf_gab)**2)
-
-print (sum(wf_gab**2)) , (sum(wf**2)) , (sum(wf_gab_test**2))
-
-if sum((wf_gab_test - wf_gab)**2) < 0.0000000001:
-    print "--- atom construction test OK"
+#print sum((wf_gab_test - wf_gab)**2)
+#
+#print (sum(wf_gab**2)) , (sum(wf**2)) , (sum(wf_gab_test**2))
+#
+#if sum((wf_gab_test - wf_gab)**2) < 0.0000000001:
+#    print "--- atom construction test OK"
 
 
 print "Cleaning"
