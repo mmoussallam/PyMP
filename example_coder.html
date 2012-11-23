@@ -179,7 +179,7 @@ in the <a class="reference internal" href="#module-MPCoder" title="MPCoder"><tt 
 in particular the number of quantizing steps (recall this is <img src="_images/mathmpl/math-6f18d98412.png" style="position: relative; bottom: -3px"/>  and not directly Q!!):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">5</span><span class="p">);</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">)</span>
-<span class="go">(20.010662962811647, 3472.7238328087619)</span>
+<span class="go">(12.556647717619505, 997.29788299389475)</span>
 </pre></div>
 </div>
 <p>Indeed we have reduced the bitrate, but increased the distorsion. We can also fix the bitrate at a lower value:</p>
