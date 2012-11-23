@@ -83,7 +83,7 @@ in particular the number of quantizing steps (recall this is :math:`2^Q`  and no
 
 >>> SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 8000, Q=5);
 >>> (SNR, bitrate)
-(20.010662962811647, 3472.7238328087619)
+(12.556647717619505, 997.29788299389475)
 
 Indeed we have reduced the bitrate, but increased the distorsion. We can also fix the bitrate at a lower value:
 

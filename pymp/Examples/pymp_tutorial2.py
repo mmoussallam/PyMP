@@ -27,6 +27,13 @@ pyDico = pymp_MDCTDico.pymp_MDCTDico(scales);
 mpApprox , mpDecay = MP.MP(myPympSignal, pyDico, 20, 2000,padSignal=False);  
 
 #mpApprox.atomNumber
+SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 8000, Q=14);
+print (SNR, bitrate)
+
+print "With Q=5"
+SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 8000, Q=5);
+print (SNR, bitrate)
+
 
 SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 2000, Q=14);
 print (SNR, bitrate)
