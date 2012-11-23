@@ -60,6 +60,7 @@ class pymp_Atom:
     samplingFrequency = 0;
     amplitude = 0;
     phase = None;
+    
     def __init__(self  ):
         self.length = 0;
         self.amplitude = 0;

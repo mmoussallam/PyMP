@@ -94,7 +94,7 @@ def SimpleMDCTEncoding(approx ,
                 maxValue = atom.mdct_value
 
     # deduce the Quantizer step width
-    quantizerWidth = maxValue/float(2**(Q+1))
+    quantizerWidth = maxValue/float(2**(Q-1))
     
     if quantizerWidth == 0:
         raise ValueError('zero found for quantizer step width...')

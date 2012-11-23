@@ -65,7 +65,7 @@ class pymp_MDCTAtom(pymp_Atom):
             
             - `reducedFrequency`: corresponding sampling frequency (default is 0)
             
-            - `mdctValue` : the atom mdct coefficient 
+            - `mdct_value` : the atom mdct coefficient 
             
     Additionnal parameters for time-shifted atoms:
     
@@ -80,7 +80,7 @@ class pymp_MDCTAtom(pymp_Atom):
     frequencyBin = 0;
     frame = 0;
     reducedFrequency = 0;
-    mdctValue = 0; 
+    
 
         
     # for time-shift invariant atoms
@@ -88,9 +88,9 @@ class pymp_MDCTAtom(pymp_Atom):
     projectionScore = None
     
     # constructor
-    def __init__(self , len=0 , amp = 0 , timePos=0 , freqBin = 0 , Fs = 0 , mdctCoeff = 0):
+    def __init__(self , scale=0 , amp = 0 , timePos=0 , freqBin = 0 , Fs = 0 , mdctCoeff = 0):
         ''' Basic constructor setting atom parameters '''
-        self.length = len
+        self.length = scale
         self.amplitude = amp
         self.timePosition = timePos
         self.frequencyBin = freqBin                

@@ -57,7 +57,7 @@ if os.name == 'posix':
                     define_macros = [('MAJOR_VERSION', '1'),
                                      ('MINOR_VERSION', '2')],
                     include_dirs = includeDirList,
-                    library_dirs = ['/usr/local/lib'  ],                                    
+#                    library_dirs = ['/usr/local/lib'],                                    
                     sources = [herePath+'parallelProjections.c' ],
                     extra_compile_args =['-fopenmp','-fPIC'] ,
                     extra_link_args = ['-lgomp','-lfftw3',fastPursuitPath+'/libfastPursuit.a' ])
