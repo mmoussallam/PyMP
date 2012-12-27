@@ -678,4 +678,229 @@ def OMP( originalSignal ,
     return currentApprox , resEnergy
 
 
+def JointMP( originalSignalList , 
+        dictionary ,  
+        targetSRR ,  
+        maxIteratioNumber , 
+        debug=0 , 
+        padSignal=True,
+        escape = False,
+        Threshold = 0.4,
+        ThresholdMap = None,
+        doEval=False,
+        sources=None,
+        interval=100,
+        doClean = True,
+        waitbar=True,
+        noAdapt=False,
+        silentFail=False):
+    """ Joint Matching Pursuit : Takes a bunch of signals in entry and decomposes the common part out of them
+        Gives The common model and the sparse residual for each signal in return """
+    
+    # back compatibility - use debug levels now
+    if debug is not None: 
+        _Logger.setLevel(debug)
+    _Logger.info("Call to MP.JointMP")
+    # We now work on a list of signals: we have a list of approx and residuals    
+    residualSignalList = [];
+    currentApproxList = [];
+    
+    
+    resEnergyList = [];
+    
+    approxSRRList = [];
+
+    if escape:
+        escapeApproxList = [];
+        escItList = [];
+        criterions = [];
+    if doEval:
+        SDRs = [];
+        SIRs = [];
+        SARs = [];
+#    dictionaryList = []
+    ThresholdDict = {};
+    if ThresholdMap is None:        
+        for size in dictionary.sizes:
+            ThresholdDict[size] = Threshold;
+    else:
+        for size,value in zip(dictionary.sizes,ThresholdMap):
+            ThresholdDict[size] = value;
+    
+    # create a mean approx of the background
+    meanApprox = Approx.pymp_Approx(dictionary, [], originalSignalList[0],  debugLevel=debug)
+    k = 1;
+    for originalSignal in originalSignalList:
+        
+        _Logger.debug("Initializing Signal Number " + str(k))
+        
+#        if padSignal:
+#            originalSignal.pad(dictionary.getN())    
+        residualSignalList.append(originalSignal.copy());
+    
+        # initialize approximant
+        currentApproxList.append(Approx.pymp_Approx(dictionary, [], originalSignal, debugLevel=debug));  
+        
+        if escape:
+            escapeApproxList.append(Approx.pymp_Approx(dictionary, [], originalSignal, debugLevel=debug));  
+            escItList.append([]);
+        # residualEnergy
+        resEnergyList.append([]);
+        approxSRRList.append(currentApproxList[-1].computeSRR());
+        k += 1;
+    
+    # initialize blocks using the first signal: they shoudl all have the same length        
+    _Logger.debug("Initializing Dictionary")
+    dictionary.initialize(residualSignalList)    
+        
+    # FFTW Optimization for C code: initialize module global variables
+    try:
+        if parallelProjections.initialize_plans(np.array(dictionary.sizes), np.array(dictionary.tolerances)) != 1:
+            raise ValueError("Something failed during FFTW initialization step ");
+    except:
+        _Logger.error("Initialization step failed");
+        raise;
+
+    iterationNumber = 0;
+
+    approxSRR = max(approxSRRList);
+    
+    # Decomposition loop: stopping criteria is either SNR or iteration number
+    while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
+           
+        _Logger.info("MP LOOP : iteration " + str(iterationNumber+1))   
+        # Compute inner products and selects the best atom
+        dictionary.update( residualSignalList , iterationNumber )     
+        
+        if debug>0:
+            maxScale = dictionary.bestCurrentBlock.scale
+            maxFrameIdx = math.floor(dictionary.bestCurrentBlock.maxIdx / (0.5*maxScale));
+            maxBinIdx = dictionary.bestCurrentBlock.maxIdx - maxFrameIdx * (0.5*maxScale)
+            
+            _Logger.debug("It: "+ str(iterationNumber)+ " Selected atom "+str(dictionary.bestCurrentBlock.maxIdx)+" of scale " + str(maxScale) + " frequency bin " + str(maxBinIdx)                                             
+                                            + " value : "  + str(dictionary.maxBlockScore)                                            
+                                            + " Frame : " + str(maxFrameIdx));
+        
+        # retrieve the best correlated atoms, locally adapted to the signal
+        bestAtomList = dictionary.getBestAtom(debug,noAdapt=noAdapt) ;
+        
+        if bestAtomList is None :
+            print 'No atom selected anymore'
+            raise ValueError('Failed to select an atom')                  
+        
+        escapeThisAtom = False;
+
+        if escape:
+            # Escape mechanism : if variance of amplitudes is too big : assign it to the biggest only
+            mean = np.mean([abs(atom.getAmplitude()) for atom in bestAtomList])
+            std = np.std([abs(atom.getAmplitude()) for atom in bestAtomList])
+            maxValue = np.max([abs(atom.getAmplitude()) for atom in bestAtomList])
+            _Logger.debug("Mean : " +str(mean)+" - STD : " + str(std))
+        
+            criterions.append(std/mean)
+#            print criterions[-1]
+            if (std/mean) > ThresholdDict[atom.length]:
+                escapeThisAtom = True;
+#                print "Escaping Iteration ",iterationNumber,": mean " , mean , " std " , std
+                _Logger.debug("Escaping!!")
+        
+        for sigIdx in range(len(residualSignalList)):    
+
+            if not escapeThisAtom:
+                # add atom to current regular approx
+                currentApproxList[sigIdx].addAtom(bestAtomList[sigIdx] , clean=False)
+                
+                dictionary.computeTouchZone(sigIdx ,bestAtomList[sigIdx])
+                
+                # subtract atom from residual
+                try:
+                    residualSignalList[sigIdx].subtract(bestAtomList[sigIdx] , debug)
+                except ValueError:
+                    if silentFail:
+                        continue
+                    else:
+                        raise ValueError("Subtraction of atom failed")
+            else:
+                # Add this atom to the escape approx only if this signal is a maxima
+                if abs(bestAtomList[sigIdx].getAmplitude()) == maxValue:
+#                if True:
+#                    print "Added Atom to signal " + str(sigIdx)
+                    escapeApproxList[sigIdx].addAtom(bestAtomList[sigIdx])
+                    currentApproxList[sigIdx].addAtom(bestAtomList[sigIdx])
+                    escItList[sigIdx].append(iterationNumber);
+            
+                    # subtract atom from residual
+                    residualSignalList[sigIdx].subtract(bestAtomList[sigIdx] , debug)
+                    
+                    dictionary.computeTouchZone(sigIdx ,bestAtomList[sigIdx] )
+                
+                else:
+                    _Logger.debug("Atom not subtracted in this signal");
+                    dictionary.computeTouchZone(sigIdx , bestAtomList[sigIdx])
+                    
+            # update energy decay curves
+            resEnergyList[sigIdx].append(residualSignalList[sigIdx].energy)
+            
+            if debug>0 or (iterationNumber %interval ==0):
+                approxSRRList[sigIdx] = currentApproxList[sigIdx].computeSRR(residualSignalList[sigIdx])
+    
+                _Logger.debug("Local adaptation of atom "+str(sigIdx)+
+                              " - Position : "  + str(bestAtomList[sigIdx].timePosition) + 
+                              " Amplitude : " + str(bestAtomList[sigIdx].projectionScore) +
+                              " TimeShift : " + str(bestAtomList[sigIdx].timeShift))
+#            if doClean and sigIdx>0:
+#                del bestAtomList[sigIdx].waveform;
+            
+        # also add the mean atom to the background model UNLESS this is an escaped atom
+        if not escapeThisAtom:     
+#            meanApprox.addAtom(bestAtomList[0] )
+            meanApprox.addAtom(dictionary.getMeanAtom(getFirstAtom=False) , clean=doClean)
+            _Logger.debug("Atom added to common rep ");
+        
+        if doClean:
+            for sigIdx in range(len(residualSignalList)):    
+                del bestAtomList[sigIdx].waveform;
+         
+#        dictionary.computeTouchZone()
+
+#        approxSRR = currentApprox.computeSRR();
+        
+        _Logger.debug("SRRs reached of " + str(approxSRRList) + " at iteration " + str(iterationNumber))
+
+#        if doEval and ( (iterationNumber+1) % interval ==0):            
+#            estimSources = np.zeros(sources.shape)
+#            # first estim the source for the common part
+#            estimSources[0, :,0] = meanApprox.recomposedSignal.dataVec
+#            
+#            for sigIdx in range(len(residualSignalList)):
+##                estimSources[sigIdx+1, :,0] = currentApproxList[sigIdx].recomposedSignal.dataVec + escapeApproxList[sigIdx].recomposedSignal.dataVec;
+#                estimSources[sigIdx+1, :,0] = escapeApproxList[sigIdx].recomposedSignal.dataVec;
+#            [SDR,ISR,SIR,SAR] = bss_eval_images_nosort(estimSources,sources)
+#            
+##            print SDR , SIR
+#            SDRs.append(SDR)
+#            SIRs.append(SIR)
+#            SARs.append(SAR)
+#
+##            print approxSRRList
+
+        iterationNumber += 1;
+        if (iterationNumber %interval ==0):
+            print iterationNumber
+            print [resEnergy[-1] for resEnergy in resEnergyList]
+    # VERY IMPORTANT CLEANING STAGE!
+    if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
+        raise ValueError("Something failed during FFTW cleaning stage ");
+#    if waitbar and (iterationNumber %(maxIteratioNumber/100) ==0):
+#        print float(iterationNumber)/float(maxIteratioNumber/100) , "%", 
+
+    if not escape:
+        return meanApprox, currentApproxList, resEnergyList , residualSignalList
+    else:
+        # time to add the escaped atoms to the corresponding residuals:
+#        for sigIdx in range(len(residualSignalList)):            
+#            residualSignalList[sigIdx].dataVec += escapeApproxList[sigIdx].recomposedSignal.dataVec;
+        if doEval:
+            return meanApprox, currentApproxList, resEnergyList , residualSignalList , escapeApproxList , criterions , SDRs, SIRs , SARs
+        return meanApprox, currentApproxList, resEnergyList , residualSignalList , escapeApproxList , escItList
 

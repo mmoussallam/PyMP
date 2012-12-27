@@ -34,7 +34,7 @@
 #include <omp.h>
 #include <unistd.h>
 
-#include <parProj.h>
+#include "parProj.h"
 #define PI 3.14159265359
 
 /* Basic feature 64  bits platform */

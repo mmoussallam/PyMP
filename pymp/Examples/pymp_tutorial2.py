@@ -50,7 +50,19 @@ print (SNRrss, bitraterss)
 
 print (quantizedApprox.atomNumber,  quantizedApproxLO.atomNumber , quantizedApproxRSS.atomNumber)
 
-quantizedApprox.plotTF()
-plt.show()
+#quantizedApprox.plotTF()
+#plt.show()
 
-#quantizedApprox.recomposedSignal.write('data/ClocheB_quantized_2kbps.wav')
+
+print " now at a much larger level : a SNR of nearly 50 dB and around 64 Kbps"
+mpApprox , mpDecay = MP.MP(myPympSignal, pyDico, 50, 20000,padSignal=False); 
+SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 64000, Q=16);
+print (SNR, bitrate)
+
+lompApprox , lompDecay = MP.MP(myPympSignal, pyLODico, 50, 20000,padSignal=False);  
+SNRlo, bitratelo, quantizedApproxLO = MPCoder.SimpleMDCTEncoding(lompApprox, 64000, Q=16, TsPenalty=True);
+print (SNRlo, bitratelo)
+
+rssApprox , rssDecay = MP.MP(myPympSignal, pyRSSDico, 50, 20000,padSignal=False);  
+SNRrss, bitraterss, quantizedApproxRSS = MPCoder.SimpleMDCTEncoding(rssApprox, 64000, Q=16);
+print (SNRrss, bitraterss)
