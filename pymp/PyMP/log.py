@@ -1,6 +1,6 @@
 #*****************************************************************************/
 #                                                                            */
-#                           pymp_Log.py                                      */
+#                           Log.py                                      */
 #                                                                            */
 #                        Matching Pursuit Library                            */
 #                                                                            */
@@ -26,7 +26,7 @@
 #******************************************************************************/
 
 '''
-Module pymp_Log
+Module Log
 ===============
                                                                           
 '''
@@ -43,7 +43,7 @@ Levels = {-1: logging.NOTSET,
 
 
 
-class pymp_Log():
+class Log():
     """ This object should be made static and used to Log warnings and error messages 
     debug Levels are handled that way:
         - level -1 : no messages at all 

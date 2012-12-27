@@ -44,7 +44,7 @@ PyPursuit command line arguments looks as follow:
              
              -d [dictionarySizes] : specifies the sizes: e.g -d 128,1024,8192
              
-             -t or --type ['MP' | 'LOMP'] : specify the chosen decomposition algorithm
+             -t or --type ['mp' | 'LOMP'] : specify the chosen decomposition algorithm
              
              --debug=[0|1|2|3] : debug level. Default is 0
              
@@ -61,9 +61,9 @@ PyPursuit command line arguments looks as follow:
 '''
 
 from Classes import pymp_Signal, pymp_Approx
-from Classes.mdct import pymp_MDCTDico 
+from Classes.mdct import Dico 
 from Classes.mdct.random import  pymp_RandomDicos
-import MP
+import mp
 import matplotlib.pyplot as plt
 import sys , getopt 
 
@@ -85,7 +85,7 @@ PyPursuit command line arguments looks as follow:
              
              -d [dictionarySizes] : specifies the sizes: e.g -d 128,1024,8192
              
-             -t or --type ['MP' | 'LOMP'] : specify the chosen decomposition algorithm
+             -t or --type ['mp' | 'LOMP'] : specify the chosen decomposition algorithm
              
              --debug=[0|1|2|3] : debug level. Default is 0
              
@@ -118,7 +118,7 @@ def main(argv):
     maxAtomNumber = 100
     targetSRR = 10
     padSignal = True
-    decType = 'MP'
+    decType = 'mp'
     mdctDico = [2**j for j in range(7,15)]
     matpipe = False
     segmentLength = 10
@@ -196,14 +196,14 @@ def main(argv):
 #        print "Cropping signal to ", originalSignal.length
     
     ####### Build dictionary - TODO more options and more dictionaries ############################
-    if decType == 'MP':
-        dictionary = pymp_MDCTDico.pymp_MDCTDico(mdctDico , useC=True)
+    if decType == 'mp':
+        dictionary = Dico.Dico(mdctDico , useC=True)
     elif decType == 'LOMP':
-        dictionary = pymp_MDCTDico.pymp_LODico(mdctDico, useC=True)
+        dictionary = Dico.LODico(mdctDico, useC=True)
     elif decType == 'RSSMP':
         dictionary = pymp_RandomDicos.pymp_RandomDico(mdctDico, useC=True)
     else:
-        print "unrecognized dictionary type for now, availables are MP and LOMP"
+        print "unrecognized dictionary type for now, availables are mp and LOMP"
         sys.exit()
     
     # main Decomposition algorithm
@@ -227,7 +227,7 @@ def main(argv):
     # initialize approx
 #    approx = py_pursuit_Approx.py_pursuit_Approx(dictionary, [], None, originalSignal.length + dictionary.getN(), originalSignal.samplingFrequency)
     
-    approxs = MP.MP_LongSignal(longSignal, dictionary, targetSRR, maxAtomNumber, 
+    approxs = mp.mp_long(longSignal, dictionary, targetSRR, maxAtomNumber, 
                                debug=_debug-1, padSignal=padSignal, outputDir='', doWrite=False)[0];
     
 #    for segidx in range(segmentNumber):    
@@ -240,7 +240,7 @@ def main(argv):
 ##            _debug =2;
 ##        else:
 ##            _debug=1;
-#        subApprox = MP.MP(subSignal,dictionary,targetSRR, maxAtomNumber, 
+#        subApprox = mp.mp(subSignal,dictionary,targetSRR, maxAtomNumber, 
 #                          debug=_debug-1,padSignal=padSignal, silentFail=True)[0]        
 #        # add all atoms to overall approx
 #        for atom in subApprox.atoms:

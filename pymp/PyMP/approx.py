@@ -1,6 +1,6 @@
 #*****************************************************************************/
 #                                                                            */
-#                               pymp_Approx.py                         */
+#                               Approx.py                         */
 #                                                                            */
 #                        Matching Pursuit Library                            */
 #                                                                            */
@@ -26,16 +26,17 @@
 #*****************************************************************************
 
 '''
-Module pymp_Approx
+Module approx
 ==================
 
-The main class is :class:`pymp_Approx`
+The main class is :class:`approx`
                                                                           
 '''
 
-import pymp_Atom , pymp_Signal , pymp_Log
+import signals , log
+from base import BaseAtom
 from numpy import math , array , zeros , sum , NINF , PINF, log2
-from Tools.mdct import imdct
+from tools.mdct import imdct
 import matplotlib.patches as mpatches
 import matplotlib
 import matplotlib.pyplot as plt
@@ -45,9 +46,9 @@ import matplotlib.colors as cc
 #from xml.dom.minidom import Document
 #import xml.dom.ext
 global _Logger
-_Logger = pymp_Log.pymp_Log('Approx')
+_Logger = log.Log('Approx')
 
-class pymp_Approx:
+class Approx:
     """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm
 
     This object handles MP constructed approximations 
@@ -57,19 +58,19 @@ class pymp_Approx:
     The object has following attributes:
     Attributes:
     
-        * `dico`     : the dictionary (as a :class:`.pymp_Dico` object) from which it has been constructed
+        * `dico`     : the dictionary (as a :class:`.BaseDico` object) from which it has been constructed
         
-        * `atoms`    : a list of :class:`.pymp_Atom` objets
+        * `atoms`    : a list of :class:`.Atom` objets
         
         * `atomNumber`    : the length of the atoms list
         
         * `SRR`           : the Signal to Residual Ratio achieved by the approximation
         
-        * `originalSignal`    : a :class:`.pymp_Signal` object that is the original signal
+        * `originalSignal`    : a :class:`.Signal` object that is the original signal
         
         * `length`        : Length in samples of the time signal, same as the one of `originalSignal`
     
-        * `recomposedSignal`   : a :class:`.pymp_Signal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
+        * `recomposedSignal`   : a :class:`.Signal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
         
     
     An approximant can be manipulated in various ways. Obviously atoms can be edited by several methods among which
@@ -77,7 +78,7 @@ class pymp_Approx:
     
     Measure of distorsion can be estimated by the method :func:`computeSRR`
     
-    pymp_Approx objets can be exported in various formats using 
+    Approx objets can be exported in various formats using 
     :func:`toDico` , 
     :func:`toSparseArray` , 
     :func:`toArray` , 
@@ -93,14 +94,14 @@ class pymp_Approx:
     
     """
     
-    dico = [];
-    atoms = [];
-    atomNumber = 0;
-    SRR = 0;
-    originalSignal = [];
-    frameNumber = 0;
-    frameLength = 0;
-    length = 0;
+    dico = []
+    atoms = []
+    atomNumber = 0
+    SRR = 0
+    originalSignal = []
+    frameNumber = 0
+    frameLength = 0
+    length = 0
     recomposedSignal = None
     samplingFrequency = 0
     
@@ -109,48 +110,48 @@ class pymp_Approx:
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
         
-        self.dico = dico;
-        self.atoms = atoms;
-        self.originalSignal = originalSignal;
+        self.dico = dico
+        self.atoms = atoms
+        self.originalSignal = originalSignal
         if originalSignal != None:
-            self.length = originalSignal.length;
+            self.length = originalSignal.length
             self.samplingFrequency = originalSignal.samplingFrequency
             isNormalized = originalSignal.isNormalized
         else:
-            self.length = length;
-            self.samplingFrequency = Fs;
+            self.length = length
+            self.samplingFrequency = Fs
             isNormalized = False
         if dico != None:    
             self.frameNumber = self.length / max(self.dico.sizes)
         if self.frameNumber > 0:
             self.frameLength = self.length / self.frameNumber
         
-        self.recomposedSignal = pymp_Signal.pymp_Signal(zeros(self.length), self.samplingFrequency )
+        self.recomposedSignal = signals.Signal(zeros(self.length), self.samplingFrequency )
         self.recomposedSignal.isNormalized = isNormalized
     
     def synthesize(self , method = 0 , forceReSynthesis = True):                
         """ function that will synthesise the approximant using the list of atoms
             this is mostly DEPRECATED"""
         if self.originalSignal == None:
-            _Logger.warning("No original Signal provided");
+            _Logger.warning("No original Signal provided")
 #            return None
         
         if (self.recomposedSignal == None) | forceReSynthesis:
             synthesizedSignal = zeros(self.length)
         
             if len(self.atoms) == 0:
-                _Logger.info("No Atoms");
+                _Logger.info("No Atoms")
                 return None
 
             # first method by inverse MDCT 
             if method == 0:
                 for mdctSize in self.dico.sizes:
-                    mdctVec = zeros(self.length);
+                    mdctVec = zeros(self.length)
                     for atom in self.atoms:
                         if atom.length == mdctSize:
                             # bugFIx
-                            n = atom.timePosition +1;                        
-                            frame = math.floor( float(n) / float(atom.length /2) ) +1;                        
+                            n = atom.timePosition +1                        
+                            frame = math.floor( float(n) / float(atom.length /2) ) +1                        
 #                            mdctVec[frame*float(atom.length /2) + atom.frequencyBin] += atom.amplitude
                             mdctVec[frame*float(atom.length /2) + atom.frequencyBin] += atom.mdct_value
                     synthesizedSignal += imdct(mdctVec , mdctSize)
@@ -161,7 +162,7 @@ class pymp_Approx:
             elif method == 1:
                 for atom in self.atoms:           
                     atom.synthesizeIFFT()         
-                    synthesizedSignal[atom.timePosition : atom.timePosition + atom.length] += atom.waveform;
+                    synthesizedSignal[atom.timePosition : atom.timePosition + atom.length] += atom.waveform
             
 
             
@@ -178,7 +179,7 @@ class pymp_Approx:
                     synthesizedSignal[atom.timePosition : atom.timePosition + atom.length] += atom.waveform
             
             
-            self.recomposedSignal = pymp_Signal.pymp_Signal(synthesizedSignal , self.samplingFrequency)
+            self.recomposedSignal = signals.Signal(synthesizedSignal , self.samplingFrequency)
             #return self.recomposedSignal
         # other case: we just give the existing synthesized Signal.
         return self.recomposedSignal
@@ -187,12 +188,12 @@ class pymp_Approx:
     # Filter the atom list by the given criterion
     def filterAtoms(self , mdctSize=0 , posInterv = None , freqInterv = None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
-        filteredApprox = pymp_Approx(self.dico,[], self.originalSignal, self.length, self.samplingFrequency)
+        filteredApprox = Approx(self.dico,[], self.originalSignal, self.length, self.samplingFrequency)
         doAppend = True       
         for atom in self.atoms:
 #            if atom.length == mdctSize:
 ##                print  atom.length , " appended "
-#                filteredApprox.addAtom(atom);
+#                filteredApprox.addAtom(atom)
             
             if atom.length == mdctSize:                
                 doAppend &= True
@@ -212,21 +213,21 @@ class pymp_Approx:
                     doAppend &= False
             if doAppend:
 #                print  atom.length , " appended "
-                filteredApprox.addAtom(atom);
+                filteredApprox.addAtom(atom)
 #        
         
-        return filteredApprox;
+        return filteredApprox
     
     
     
     # this function adds an atom to the collection and updates the internal signal approximant
     def addAtom(self , newAtom , window =None , clean =False,noWf=False):
         '''this function adds an atom to the collection and updates the internal signal approximant'''
-        if not isinstance(newAtom , pymp_Atom.pymp_Atom):
+        if not isinstance(newAtom , BaseAtom):
             raise TypeError("addAtom need a py_pursuit_Atom as parameter ")
         
-        self.atoms.append(newAtom);
-        self.atomNumber += 1;
+        self.atoms.append(newAtom)
+        self.atomNumber += 1
         # add atom waveform to the internal signal if exists
         if not noWf:
             if self.recomposedSignal != None:
@@ -241,10 +242,10 @@ class pymp_Approx:
     # 
     def removeAtom(self , atom): 
         ''' We need a routine to remove an atom , by default the last atom is removed '''
-        if not isinstance(atom , pymp_Atom.pymp_Atom):
+        if not isinstance(atom , BaseAtom):
             raise TypeError("addAtom need a py_pursuit_Atom as parameter ")       
         self.atoms.remove(atom)
-        self.atomNumber -= 1;
+        self.atomNumber -= 1
         
         if self.recomposedSignal != None:
             self.recomposedSignal.subtract(atom , preventEnergyIncrease=False)
@@ -257,20 +258,20 @@ class pymp_Approx:
         
             where :math:`\tilde{x}` is the reconstructed signal and :math:`x` the original
         '''
-        if not isinstance(self.recomposedSignal , pymp_Signal.pymp_Signal):
+        if not isinstance(self.recomposedSignal , signals.Signal):
             return NINF
                 
-#        recomposedEnergy = sum((self.recomposedSignal.dataVec)**2);
+#        recomposedEnergy = sum((self.recomposedSignal.dataVec)**2)
         recomposedEnergy = self.recomposedSignal.energy
         
         if recomposedEnergy <= 0:
             return NINF
         
         if residual is None:
-            resEnergy = sum((self.originalSignal.dataVec - self.recomposedSignal.dataVec)**2);
+            resEnergy = sum((self.originalSignal.dataVec - self.recomposedSignal.dataVec)**2)
         else:
             resEnergy = residual.energy
-#        resEnergy = sum((self.originalSignal.dataVec - self.recomposedSignal.dataVec)**2);
+#        resEnergy = sum((self.originalSignal.dataVec - self.recomposedSignal.dataVec)**2)
         if resEnergy == 0:
             return PINF
         
@@ -311,16 +312,16 @@ class pymp_Approx:
         """
 #        plt.figure()
         if french:
-            labx = "Temps (s)";
-            laby = "Frequence (Hz)";
+            labx = "Temps (s)"
+            laby = "Frequence (Hz)"
         else:
-            labx = "Time (s)";
-            laby = "Frequency (Hz)";
+            labx = "Time (s)"
+            laby = "Frequency (Hz)"
             
-        Fs = self.samplingFrequency;
+        Fs = self.samplingFrequency
         # first loop to recover max value
-        maxValue = 0;
-        maxFreq = 1.0;
+        maxValue = 0
+        maxFreq = 1.0
         minFreq = 22000.0
         if not keepValues:
             valueArray = array([math.log10(abs(atom.getAmplitude())) for atom in self.atoms])
@@ -330,7 +331,7 @@ class pymp_Approx:
             cmap = cc.LinearSegmentedColormap('jet',abs(valueArray) )
             for atom in self.atoms:
                 if abs(atom.mdct_value) > maxValue:
-                    maxValue = abs(atom.mdct_value);
+                    maxValue = abs(atom.mdct_value)
         
         # normalize to 0 -> 1
 #        if min(valueArray) < 0:
@@ -340,42 +341,42 @@ class pymp_Approx:
         
         # Get target axes
         if axes is None:
-            axes = plt.gca();
+            axes = plt.gca()
         
         # normalize the colors
 #        if multicolor:
 #            normedValues = cc.Normalize(valueArray)
         
         if maxAtoms is not None:        
-            maxTom = min(maxAtoms,len(self.atoms));
+            maxTom = min(maxAtoms,len(self.atoms))
         else:
-            maxTom = len(self.atoms);
+            maxTom = len(self.atoms)
             
         # Deal with static offsets 
         if recenter is not None:
-            yOffset= recenter[0];
-            xOffset= recenter[1]; 
+            yOffset= recenter[0]
+            xOffset= recenter[1] 
         else:
-            yOffset,xOffset = 0,0;
+            yOffset,xOffset = 0,0
         
 #        print yOffset,xOffset
         
         if Alpha:
-            alphaCoeff=0.6;
+            alphaCoeff=0.6
         else:
-            alphaCoeff=1;
-        patches = [];
-        colors = [];
+            alphaCoeff=1
+        patches = []
+        colors = []
         for i in range(maxTom):
             atom = self.atoms[i]
-            L = atom.length;
-            K = L/2;
+            L = atom.length
+            K = L/2
             freq = atom.frequencyBin
             f = float(freq)*float(Fs)/float(L)
-            bw = ( float(Fs) / float(K) ) ;#/ 2;
+            bw = ( float(Fs) / float(K) ) #/ 2
             p  = float(atom.timePosition + K) / float(Fs)
             l  = float(L - K/2) / float(Fs)
-#            print "f =  " ,f , " Hz";
+#            print "f =  " ,f , " Hz"
             if f>maxFreq:
                 maxFreq = f+bw+bw
             if f < minFreq:
@@ -398,27 +399,27 @@ class pymp_Approx:
                 patchtuplecolor = (math.sqrt(colorvalue), 
                                    math.exp(-((colorvalue - 0.35)**2)/(0.15)), 
                                    1-math.sqrt(colorvalue))
-                colors.append(colorvalue);
+                colors.append(colorvalue)
             else:
                 if patchColor is None:
                     patchtuplecolor = (1-math.sqrt(colorvalue),1- math.sqrt(colorvalue),1- math.sqrt(colorvalue))
-                    colors.append(colorvalue);
+                    colors.append(colorvalue)
                 else:
                     patchtuplecolor = patchColor
-                    colors.append(patchColor);
+                    colors.append(patchColor)
 #            patchtuplecolor = (colorvalue, colorvalue, colorvalue)
 #            patch = mpatches.Rectangle(xy, width, height, facecolor=patchtuplecolor, edgecolor=patchtuplecolor , zorder=colorvalue )
 #            xy = p + L/2 , f-bw,
             patch = mpatches.Ellipse(xy, width, height, facecolor=patchtuplecolor, edgecolor=patchtuplecolor , zorder=colorvalue )
             if keepValues:
-                patches.append(patch);
+                patches.append(patch)
             else:
                 axes.add_patch(patch)
         
         if keepValues:
             
             # first sort the patches by values
-            sortedIndexes = valueArray.argsort();
+            sortedIndexes = valueArray.argsort()
             PatchArray = array(patches)
             p = PatchCollection(PatchArray[sortedIndexes].tolist(),linewidths=0.,cmap=matplotlib.cm.copper_r,match_original=False, alpha=alphaCoeff)
     #        print array(colors).shape
@@ -453,15 +454,15 @@ class pymp_Approx:
         EXPERIMENTAL"""
         from mpl_toolkits.mplot3d import Axes3D
         if fig is None:
-            fig=plt.figure();
+            fig=plt.figure()
         
         # beware of compatibility issues here
-        ax = Axes3D(fig);
+        ax = Axes3D(fig)
         #for atom, idx in zip(self.atoms, range(self.atomNumber)):
-        ts = [atom.timePosition/float(self.samplingFrequency) for atom in self.atoms];
-        fs = [atom.reducedFrequency*self.samplingFrequency for atom in self.atoms];
+        ts = [atom.timePosition/float(self.samplingFrequency) for atom in self.atoms]
+        fs = [atom.reducedFrequency*self.samplingFrequency for atom in self.atoms]
         zs = range(self.atomNumber)
-#        ss = [float(atom.length)/float(self.samplingFrequency) for atom in self.atoms];
+#        ss = [float(atom.length)/float(self.samplingFrequency) for atom in self.atoms]
 
         # More complicated but not working
 #        ts = []
@@ -469,21 +470,21 @@ class pymp_Approx:
 #        zs=  []
 #        Fs = float(self.samplingFrequency)
 #        for atom,idx in zip(self.atoms, range(self.atomNumber)):            
-#            L = atom.length;
-#            K = L/2;
+#            L = atom.length
+#            K = L/2
 #            
-#            disp = log2(L);
+#            disp = log2(L)
 #            
 #            freq = atom.frequencyBin
 #            f = freq*Fs/float(L)
-#            bw = ( Fs / float(K) ) / 2;
+#            bw = ( Fs / float(K) ) / 2
 #             
 #            p  = float(atom.timePosition + K) / Fs
 #            l  = float(L - K/2) / Fs
 #            
 #            # hdispersion is disp - 7
-#            hdisp = int(math.floor(max(disp - 7,1)));
-#            vdisp = int(math.floor(max(15/(disp),1)));
+#            hdisp = int(math.floor(max(disp - 7,1)))
+#            vdisp = int(math.floor(max(15/(disp),1)))
 #            # vdispersion is 15/(disp - 7)
 #            for hdispIdx in range(hdisp):
 #                for vdispIdx in range(vdisp):
@@ -496,14 +497,14 @@ class pymp_Approx:
         ax.set_ylabel('Iteration ')
         ax.set_zlabel('Frequence (Hz) ')
         
-#        allAtoms = len(self.atoms);
-#        nbplots = allAtoms/itStep;
+#        allAtoms = len(self.atoms)
+#        nbplots = allAtoms/itStep
 #        if nbplots >10:
-#            raise ValueError('Seriously? WTF dude?');
+#            raise ValueError('Seriously? WTF dude?')
 #        
 #        for plotIdx in range(nbplots):
-#            subAx = Axes3D(fig);
-#            self.plotTF(axes=subAx, maxAtoms=plotIdx*itStep);
+#            subAx = Axes3D(fig)
+#            self.plotTF(axes=subAx, maxAtoms=plotIdx*itStep)
         
             
         
@@ -511,8 +512,8 @@ class pymp_Approx:
     def dumpToDisk(self, dumpFileName, dumpFilePath='./'):
         import cPickle
         
-        output = open(dumpFilePath + dumpFileName, 'wb');
-        _Logger.info("Dumping approx to  "+dumpFilePath + dumpFileName);
+        output = open(dumpFilePath + dumpFileName, 'wb')
+        _Logger.info("Dumping approx to  "+dumpFilePath + dumpFileName)
         cPickle.dump(self, output, protocol=0)
         _Logger.info("Done ")
 
@@ -526,7 +527,7 @@ class pymp_Approx:
         doc = xml.dom.minidom.Document()
         
         # populate root node information
-        _Logger.info("Retrieving Root node attributes");
+        _Logger.info("Retrieving Root node attributes")
         ApproxNode = doc.createElement("Approx")
         ApproxNode.setAttribute('length' , str(self.length))
         ApproxNode.setAttribute('originalLocation', self.originalSignal.location)
@@ -539,7 +540,7 @@ class pymp_Approx:
         # now add as many nodes as atoms
         AtomsNode = doc.createElement("Atoms")
         AtomsNode.setAttribute('number', str(self.atomNumber))
-        _Logger.info("Getting Child info for "+str(self.atomNumber)+" existing atoms");
+        _Logger.info("Getting Child info for "+str(self.atomNumber)+" existing atoms")
         for atom in self.atoms:
             AtomsNode.appendChild(atom.toXml(doc))
         
@@ -553,21 +554,21 @@ class pymp_Approx:
         # flush to external file
         
 #        xml.dom.ext.PrettyPrint(doc, open(outputXmlPath + xmlFileName, "w"))
-        _Logger.info("Written Xml to : " + outputXmlPath + xmlFileName);
+        _Logger.info("Written Xml to : " + outputXmlPath + xmlFileName)
         return doc    
     
     def toDico(self):
         """ Returns the approximant as a sparse dictionary object , 
         key is the index of the atom and values are atom objects"""
-        dico = {};
+        dico = {}
             
         for atom in self.atoms:
             block = [i for i in range(len(self.dico.sizes)) if self.dico.sizes[i]==atom.length][0]
-            n = atom.timePosition +1;                        
-            frame = math.floor( float(n) / float(atom.length /2) ) +1;  
+            n = atom.timePosition +1                        
+            frame = math.floor( float(n) / float(atom.length /2) ) +1  
 #            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) - atom.timePosition)
 #            dico[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = atom
-            key = int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin);
+            key = int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)
             if key in dico:
                 dico[key].append(atom)
             else:
@@ -578,49 +579,49 @@ class pymp_Approx:
     
     def toSparseArray(self):
         """ Returns the approximant as a sparse dictionary object , key is the index of the atom and value is its amplitude"""
-        sparseArray = {};
+        sparseArray = {}
         # quickly creates a dictionary for block numbering
         blockIndexes = {}
         for i in range(len(self.dico.sizes)):
-            blockIndexes[self.dico.sizes[i]] = i;
+            blockIndexes[self.dico.sizes[i]] = i
             
         for atom in self.atoms:
             block = blockIndexes[atom.length]
-            n = atom.timePosition +1;                        
-            frame = math.floor( float(n) / float(atom.length /2) ) +1;  
+            n = atom.timePosition +1                        
+            frame = math.floor( float(n) / float(atom.length /2) ) +1  
 #            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) - atom.timePosition)
             sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , atom.timePosition)
         return sparseArray
     
 #    def toSparseMatrix(self):
 #        """ Returns the approximant as a sparse dictionary object , key is the index of the atom and value is its amplitude"""
-#        sparseArray = {};
+#        sparseArray = {}
 #        # quickly creates a dictionary for block numbering
 #        blockIndexes = {}
 #        for i in range(len(self.dico.sizes)):
-#            blockIndexes[self.dico.sizes[i]] = i;
+#            blockIndexes[self.dico.sizes[i]] = i
 #            
 #        for atom in self.atoms:
 #            block = blockIndexes[atom.length]
-#            n = atom.timePosition +1;                        
-#            frame = math.floor( float(n) / float(atom.length /2) ) +1;  
+#            n = atom.timePosition +1                        
+#            frame = math.floor( float(n) / float(atom.length /2) ) +1  
 ##            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) - atom.timePosition)
 #            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , atom.timePosition)
 #        return sparseArray
     
     def toArray(self):
         """ Returns the approximant as an array object , key is the index of the atom and value is its amplitude"""
-        sparseArray = zeros(len(self.dico.sizes)*self.length);
-        timeShifts = zeros(len(self.dico.sizes)*self.length);
+        sparseArray = zeros(len(self.dico.sizes)*self.length)
+        timeShifts = zeros(len(self.dico.sizes)*self.length)
         # quickly creates a dictionary for block numbering
         blockIndexes = {}
         for i in range(len(self.dico.sizes)):
-            blockIndexes[self.dico.sizes[i]] = i;
+            blockIndexes[self.dico.sizes[i]] = i
             
         for atom in self.atoms:
             block = blockIndexes[atom.length]
-            n = atom.timePosition +1;                        
-            frame = math.floor( float(n) / float(atom.length /2) ) +1;  
+            n = atom.timePosition +1                        
+            frame = math.floor( float(n) / float(atom.length /2) ) +1  
             sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = atom.mdct_value
             timeShifts[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = frame*float(atom.length /2) - atom.timePosition - atom.length/4
         return sparseArray , timeShifts
@@ -642,7 +643,7 @@ def readFromXml(InputXmlFilePath , xmlDoc=None , buildSignal =True):
     
     from xml.dom.minidom import Document
     import xml.dom
-    from MatchingPursuit.mdct import py_pursuit_MDCTDico , py_pursuit_MDCTAtom
+    from classes.mdct import Dico , Atom
     # check if reading from file is needed
     if xmlDoc == None:
         xmlDoc = xml.dom.minidom.parse(InputXmlFilePath)
@@ -654,19 +655,19 @@ def readFromXml(InputXmlFilePath , xmlDoc=None , buildSignal =True):
     ApproxNode = xmlDoc.getElementsByTagName('Approx')[0]
     
     # retrieve the dictionary
-    Dico = py_pursuit_MDCTDico.fromXml(xmlDoc.getElementsByTagName('Dictionary')[0])
+    Dico = Dico.fromXml(xmlDoc.getElementsByTagName('Dictionary')[0])
     
     # retrieve atom list
     AtomsNode = xmlDoc.getElementsByTagName('Atoms')[0]
     atoms = []
-    approx =  pymp_Approx(Dico, atoms, None, int(ApproxNode.getAttribute('length')),
+    approx =  Approx(Dico, atoms, None, int(ApproxNode.getAttribute('length')),
                                    int(ApproxNode.getAttribute('Fs')))
     for node in AtomsNode.childNodes:
         if node.localName == 'Atom':
             if buildSignal:
-                approx.addAtom(py_pursuit_MDCTAtom.fromXml(node))
+                approx.addAtom(Atom.fromXml(node))
             else:
-                approx.atoms.append(py_pursuit_MDCTAtom.fromXml(node))
+                approx.atoms.append(Atom.fromXml(node))
 #            atoms.append(py_pursuit_Atom.fromXml(node))
 #    if not buildSignal:
 #        approx.atomNumber = len(approx.atoms)
@@ -683,13 +684,13 @@ def ReadFromMatStruct(matl_struct):
     routine and you loaded it back using scipy.io.loadmat"""
 
     # Convert to object struct    
-    appObject = matl_struct[0,0];
-    dico = appObject.dico[0,0];
+    appObject = matl_struct[0,0]
+    dico = appObject.dico[0,0]
     # TODO proper lecture of dictionary objects
     
     # So far we only read the parameters
     
-    approx = pymp_Approx(None, [], None, appObject.length[0,0], appObject.samplingFrequency[0,0])
+    approx = Approx(None, [], None, appObject.length[0,0], appObject.samplingFrequency[0,0])
     return approx
 
 def FusionApproxs( approxCollection , unPad = True):
@@ -705,7 +706,7 @@ def FusionApproxs( approxCollection , unPad = True):
         approxLength -= 2*dico.sizes[-1] * len(approxCollection)
     Fs = approxCollection[0].samplingFrequency
     
-    approx =  pymp_Approx(dico, [], None, approxLength,Fs)
+    approx =  Approx(dico, [], None, approxLength,Fs)
     for segIdx in range(len(approxCollection) ):
         currentApprox = approxCollection[segIdx]
         offset = segIdx * currentApprox.length

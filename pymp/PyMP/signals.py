@@ -1,6 +1,6 @@
 #
 #                                                                            */
-#                           pymp_Signal.py                                   */
+#                           Signal.py                                   */
 #                                                                            */
 #                        Matching Pursuit Library                            */
 #                                                                            */
@@ -24,33 +24,34 @@
 #  Boston, MA  02111-1307, USA.                                              */
 #  
 '''
-Module pymp_Signal
+Module signals
 ==================
 
-The main class is :class:`pymp_Signal`, it can be instantiated from a numpy array using
+The main class is :class:`Signal`, it can be instantiated from a numpy array using
 the main constructor (mutlichannel is allowed).
 
 It can also be created from a wav file using the :func:`InitFromFile` static routine
 
-Longer Signals are handled with :class:`pymp_LongSignal` objects.
+Longer Signals are handled with :class:`LongSignal` objects.
                                                                           
 '''
 
 
 
-from Tools import SoundFile
+from tools import SoundFile
 from numpy import array , min , concatenate , zeros, ones , fromstring, sum , sin , pi , arange, dot , conj, floor,abs, exp, real , isnan
 import matplotlib.pyplot as plt
-import pymp_Atom , pymp_Log
+from base import BaseAtom
+import log
 import math , wave , struct
 global _Logger
-_Logger = pymp_Log.pymp_Log('Signal', imode=False)
+_Logger = log.Log('Signal', imode=False)
 #from operator import add, mul
-class pymp_Signal:
+class Signal(object):
     """This file defines the main class handling audio signal in the Pymp Framework.
 
-    A pymp_Signal is fairly a numpy array (called dataVec) and a collection of attributes.
-    Longer signals should not be loaded in memory. the `pymp_LongSignal` class allows
+    A Signal is fairly a numpy array (called dataVec) and a collection of attributes.
+    Longer signals should not be loaded in memory. the `LongSignal` class allows
     to define this kind of signal, and slice it in frames overlapping or not.
     
     Attributes:
@@ -161,7 +162,7 @@ class pymp_Signal:
         self.length = stopIndex - startIndex    
     
     def copy(self):
-        copiedSignal = pymp_Signal(self.dataVec.copy() , self.samplingFrequency)
+        copiedSignal = Signal(self.dataVec.copy() , self.samplingFrequency)
         copiedSignal.location = self.location
         copiedSignal.channelNumber = self.channelNumber
         copiedSignal.sampleWidth = self.sampleWidth
@@ -171,7 +172,7 @@ class pymp_Signal:
     def subtract(self , atom , debug=0 , preventEnergyIncrease = True):
         ''' Subtracts the atom waveform from the signal, at the position specified by the atom.timeLocalization property
             if preventEnergyIncrease is True, an error will be raised if subtracting the atom increases the signal's energy '''
-        if not isinstance(atom , pymp_Atom.pymp_Atom):
+        if not isinstance(atom , BaseAtom):
             raise TypeError("argument provided is not an atom")                    
         if atom.waveform is None:
 #            print "Resynth"
@@ -224,7 +225,7 @@ class pymp_Signal:
        
     def add(self , atom , window = None):
         ''' adds the contribution of the atom at the position specified by the atom.timeLocalization property '''
-        if not isinstance(atom , pymp_Atom.pymp_Atom):
+        if not isinstance(atom , BaseAtom):
             raise TypeError("argument provided is not an atom")
         
         if atom.waveform is None:
@@ -360,7 +361,7 @@ class pymp_Signal:
         return W;
     
 def InitFromFile(filepath , forceMono = False , doNormalize= False , debugLevel=None):
-    ''' Static method to create a pymp_Signal from a wav file on the disk 
+    ''' Static method to create a Signal from a wav file on the disk 
         This is based on the wave Python library through the use of the Tools.SoundFile class
         '''        
     if debugLevel is not None:
@@ -371,20 +372,20 @@ def InitFromFile(filepath , forceMono = False , doNormalize= False , debugLevel=
     if forceMono:
         reshapedData = reshapedData[: , 0]
     
-    Signal = pymp_Signal(reshapedData , Sf.sampleRate , doNormalize)    
-    Signal.sampleWidth = Sf.sampleWidth
-    Signal.location = filepath
+    sig = Signal(reshapedData , Sf.sampleRate , doNormalize)    
+    sig.sampleWidth = Sf.sampleWidth
+    sig.location = filepath
     
-    _Logger.info("Created Signal of length " + str(Signal.length) +" samples of " + str(Signal.channelNumber) + "channels");
+    _Logger.info("Created Signal of length " + str(sig.length) +" samples of " + str(sig.channelNumber) + "channels");
     #print "Created Signal of length " + str(Signal.length) +" samples " #of " + str(Signal.channelNumber) + "channels"
-    return Signal
+    return sig
 
 
 
-class pymp_LongSignal(pymp_Signal):
+class LongSignal(Signal):
     """ A class handling long audio signals
     
-        Subclass of :class:`.pymp_signal` where the data is not loaded at once for memory consumptions purposes 
+        Subclass of :class:`.Signal` where the data is not loaded at once for memory consumptions purposes 
         Instead, the data is sliced in frames that can be loaded later individually. very useful to 
         process large files such as audio archives
         
@@ -465,11 +466,11 @@ class pymp_LongSignal(pymp_Signal):
         
         :Returns:
         
-            a :class:`pymp_Signal` object
+            a :class:`Signal` object
             
         :Example:
         
-            longSig = pymp_LongSignal(**myLongSigFilePath**, frameDuration=5) # Initialize long signal
+            longSig = LongSignal(**myLongSigFilePath**, frameDuration=5) # Initialize long signal
             subSig = longSig.getSubSignal(0,10) # Loads the first 50 seconds of data
         
         """
@@ -493,7 +494,7 @@ class pymp_LongSignal(pymp_Signal):
                 
             reshapedData = reshapedData.reshape(nFrames , )
     
-        SubSignal = pymp_Signal(reshapedData , self.samplingFrequency , doNormalize)    
+        SubSignal = Signal(reshapedData , self.samplingFrequency , doNormalize)    
         SubSignal.location = self.location
         
         if padSignal != 0:

@@ -25,7 +25,7 @@
 #
 
 """
-Module pymp_MDCTAtom
+Module mdct.atom
 ====================
                                                                           
 This class inherits from :class:`.pymp_Atom` and is used to represent and manipulate MDCT atoms.
@@ -34,10 +34,10 @@ This class inherits from :class:`.pymp_Atom` and is used to represent and manipu
 """
 
 
-from Classes.pymp_Atom import pymp_Atom
-from Classes import  PyWinServer
+from base import BaseAtom
+import  win_server
 from numpy import math , zeros
-from Tools.mdct import imdct
+from tools.mdct import imdct
 
 try:
     from xml.dom.minidom import Document , Element
@@ -46,9 +46,9 @@ except ImportError:
         
 global _PyServer , _Logger
 # Initializing the waveform server as a global variable
-_PyServer = PyWinServer.PyServer()
+_PyServer = win_server.PyServer()
 
-class pymp_MDCTAtom(pymp_Atom):
+class Atom(BaseAtom):
     """ MDCT atom class : implement real domain MDCT atoms of scale defined by the atom length
         
     An MDCT atom is defined for a length L, a frequency localization k and a frame parameter p by:
@@ -125,7 +125,7 @@ class pymp_MDCTAtom(pymp_Atom):
     
     def __eq__(self, other):
         ''' overloaded equality operator, allows testing equality between atom objects '''
-        if not isinstance(other , pymp_Atom):
+        if not isinstance(other , BaseAtom):
             return False
         return ( (self.length == other.length) & (self.timePosition == other.timePosition) & (self.frequencyBin == other.frequencyBin))
     
@@ -178,7 +178,7 @@ class pymp_MDCTAtom(pymp_Atom):
   
     def copy(self):
         '''copycat routine '''
-        copyAtom = pymp_MDCTAtom(self.length, 
+        copyAtom = Atom(self.length, 
                                    self.amplitude, 
                                    self.timePosition, 
                                    self.frequencyBin, 
@@ -201,7 +201,7 @@ def fromXml(xmlNode):
     if not isinstance(xmlNode, Element):
         raise TypeError('Xml element not provided')
     
-    atom = pymp_MDCTAtom(int(xmlNode.getAttribute('length')), 
+    atom = Atom(int(xmlNode.getAttribute('length')), 
                               1, 
                               int(xmlNode.getAttribute('tP')), 
                               int(xmlNode.getAttribute('fB')), 

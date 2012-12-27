@@ -1,6 +1,6 @@
 #*****************************************************************************/
 #                                                                            */
-#                               MP.py                                        */
+#                               mp.py                                        */
 #                                                                            */
 #                        Matching Pursuit Library                            */
 #                                                                            */
@@ -26,21 +26,20 @@
 #******************************************************************************
 
 '''
-Module MP 
+Module mp 
 =========
 
-A Simple MP algorithm using the pymp objects
+A Simple mp algorithm using the pymp objects
 --------------------------------------------
 
 '''
 
 
 #from MatchingPursuit import py_pursuit_Atom as Atom 
-from Classes import pymp_Approx as Approx
-from Classes import pymp_Dico as Dico
-from Classes import pymp_Signal as Signal
-from Classes import PyWinServer as Server
-from Classes import pymp_Log as Log
+import approx as Approx
+from base import BaseDico as Dico
+import signals as Signal
+import log, win_server
 import math;
 #from numpy import math
 import numpy as np
@@ -58,10 +57,10 @@ except ImportError:
 #from MatchingPursuit.TwoD.py_pursuit_2DApprox import py_pursuit_2DApprox
 # declare gloabl waveform server
 global _PyServer , _Logger
-_PyServer = Server.PyServer()
-_Logger = Log.pymp_Log('MP' , noContext=True)
+_PyServer = win_server.PyServer()
+_Logger = log.Log('mp' , noContext=True)
 
-def MP( originalSignal , 
+def mp( originalSignal , 
         dictionary ,  
         targetSRR ,  
         maxIteratioNumber , 
@@ -76,9 +75,9 @@ def MP( originalSignal ,
     
     Args:
     
-         `originalSignal`:    the original signal (as a :class:`.pymp_Signal` object) :math:`x` to decompose
+         `originalSignal`:    the original signal (as a :class:`.Signal` object) :math:`x` to decompose
          
-         `dictionary`:        the dictionary (as a :class:`.pymp_Dico` object) :math:`\Phi` on which to decompose :math:x
+         `dictionary`:        the dictionary (as a :class:`.Dico` object) :math:`\Phi` on which to decompose :math:x
          
          `targetSRR`:         a target Signal to Residual Ratio
          
@@ -86,16 +85,16 @@ def MP( originalSignal ,
          
     Returns:
     
-         `approx`:  A :class:`.pymp_Approx` object encapsulating the approximant
+         `approx`:  A :class:`.Approx` object encapsulating the approximant
          
          `decay`:   A list of residual's energy across iterations
     
     Example::
                 
-        >>> approx,decay = MP.MP(x, D, 10, 1000)
+        >>> approx,decay = mp.mp(x, D, 10, 1000)
         
     For decomposing the signal x on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
-    x must be a :class:`.pymp_Signal` and D a :class:`.pymp_Dico` object
+    x must be a :class:`.Signal` and D a :class:`.Dico` object
     
     """
     
@@ -119,7 +118,7 @@ def MP( originalSignal ,
     dictionary.initialize(residualSignal)
     
     # initialize approximant
-    currentApprox = Approx.pymp_Approx(dictionary, [], originalSignal, debugLevel=debug);    
+    currentApprox = Approx.Approx(dictionary, [], originalSignal, debugLevel=debug);    
     
     # residualEnergy
     resEnergy = []
@@ -238,10 +237,10 @@ def MP( originalSignal ,
 
 
 
-def MPContinue(currentApprox , originalSignal , dictionary ,  targetSRR ,  maxIteratioNumber , debug=0 , padSignal=True ):
+def mp_continue(currentApprox , originalSignal , dictionary ,  targetSRR ,  maxIteratioNumber , debug=0 , padSignal=True ):
     """ routine that restarts a decomposition from an existing, incomplete approximation """
     
-    if not isinstance(currentApprox, Approx.pymp_Approx):
+    if not isinstance(currentApprox, Approx.Approx):
         raise TypeError("provided object is not a py_pursuit_Approx");
             
     # optional add zeroes to the edge
@@ -351,9 +350,9 @@ def MPContinue(currentApprox , originalSignal , dictionary ,  targetSRR ,  maxIt
     return currentApprox , resEnergy
     
 
-def MP_LongSignal(originalLongSignal , dictionary , targetSRR = 10 , maxIteratioNumber=100 , debug=False , padSignal =True , outputDir='',doWrite=False):
+def mp_long(originalLongSignal , dictionary , targetSRR = 10 , maxIteratioNumber=100 , debug=False , padSignal =True , outputDir='',doWrite=False):
     """NOT FULLY TESTED treats long signals , return a collection of approximants , one by segment 
-        You can use the FusionApprox method of the pymp_Approx class to recover a single approx object from this 
+        You can use the FusionApprox method of the Approx class to recover a single approx object from this 
         collection"""
     
     outputDir = outputDir + str(targetSRR) + '/'
@@ -362,10 +361,10 @@ def MP_LongSignal(originalLongSignal , dictionary , targetSRR = 10 , maxIteratio
         os.makedirs(outputDir)
     
     # test inputs
-    if not isinstance(originalLongSignal , Signal.pymp_LongSignal):
+    if not isinstance(originalLongSignal , Signal.LongSignal):
         raise TypeError('Signal is not a py_pursuitLongSignal object - TODO correct')
     
-    if not isinstance(dictionary , Dico.pymp_Dico):
+    if not isinstance(dictionary , Dico):
         raise TypeError('Dico is not a py_pursuit_Dico object - TODO correct')
     
     Nsegments = int(originalLongSignal.segmentNumber)
@@ -379,7 +378,7 @@ def MP_LongSignal(originalLongSignal , dictionary , targetSRR = 10 , maxIteratio
             print 'Starting work on segment ' +str(segIdx)+ ' over ' + str(Nsegments)
 #        subSignal = originalLongSignal.getSubSignal( segIdx , 1 ,forceMono=True, doNormalize=False , padSignal = (dictionary.getN())/2)
         subSignal = originalLongSignal.getSubSignal( segIdx , 1 ,True, False , 0 , 0)
-        approx , decay = MP(subSignal, dictionary, targetSRR, maxIteratioNumber, debug=debug, padSignal=padSignal)
+        approx , decay = mp(subSignal, dictionary, targetSRR, maxIteratioNumber, debug=debug, padSignal=padSignal)
         approximants.append(approx)
         decays.append(decay)
         
@@ -416,7 +415,7 @@ def GP( originalSignal ,
     dictionary.initialize(residualSignal)
     
     # initialize approximant
-    currentApprox = Approx.pymp_Approx(dictionary, [], originalSignal);    
+    currentApprox = Approx.Approx(dictionary, [], originalSignal);    
     
     # residualEnergy
     resEnergy = []
@@ -434,7 +433,7 @@ def GP( originalSignal ,
     indexes = []
     
     gains = [];
-    # loop is same as MP except for orthogonal projection of the atom on the residual
+    # loop is same as mp except for orthogonal projection of the atom on the residual
     while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
         maxBlockScore = 0;
         bestBlock = None;
@@ -583,7 +582,7 @@ def OMP( originalSignal ,
     dictionary.initialize(residualSignal)
     
     # initialize approximant
-    currentApprox = Approx.pymp_Approx(dictionary, [], originalSignal);    
+    currentApprox = Approx.Approx(dictionary, [], originalSignal);    
     
     # residualEnergy
     resEnergy = []
@@ -594,7 +593,7 @@ def OMP( originalSignal ,
 #    projMatrix = np.zeros((originalSignal.length,1))
     projMatrix = []
     atomKeys = [];
-    # loop is same as MP except for orthogonal projection of the atom on the residual
+    # loop is same as mp except for orthogonal projection of the atom on the residual
     while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
         maxBlockScore = 0;
         bestBlock = None;
@@ -678,7 +677,7 @@ def OMP( originalSignal ,
     return currentApprox , resEnergy
 
 
-def JointMP( originalSignalList , 
+def mp_joint( originalSignalList , 
         dictionary ,  
         targetSRR ,  
         maxIteratioNumber , 
@@ -700,7 +699,7 @@ def JointMP( originalSignalList ,
     # back compatibility - use debug levels now
     if debug is not None: 
         _Logger.setLevel(debug)
-    _Logger.info("Call to MP.JointMP")
+    _Logger.info("Call to mp.mp_joint")
     # We now work on a list of signals: we have a list of approx and residuals    
     residualSignalList = [];
     currentApproxList = [];
@@ -714,10 +713,10 @@ def JointMP( originalSignalList ,
         escapeApproxList = [];
         escItList = [];
         criterions = [];
-    if doEval:
-        SDRs = [];
-        SIRs = [];
-        SARs = [];
+#    if doEval:
+#        SDRs = [];
+#        SIRs = [];
+#        SARs = [];
 #    dictionaryList = []
     ThresholdDict = {};
     if ThresholdMap is None:        
@@ -728,7 +727,7 @@ def JointMP( originalSignalList ,
             ThresholdDict[size] = value;
     
     # create a mean approx of the background
-    meanApprox = Approx.pymp_Approx(dictionary, [], originalSignalList[0],  debugLevel=debug)
+    meanApprox = Approx.Approx(dictionary, [], originalSignalList[0],  debugLevel=debug)
     k = 1;
     for originalSignal in originalSignalList:
         
@@ -739,10 +738,10 @@ def JointMP( originalSignalList ,
         residualSignalList.append(originalSignal.copy());
     
         # initialize approximant
-        currentApproxList.append(Approx.pymp_Approx(dictionary, [], originalSignal, debugLevel=debug));  
+        currentApproxList.append(Approx.Approx(dictionary, [], originalSignal, debugLevel=debug));  
         
         if escape:
-            escapeApproxList.append(Approx.pymp_Approx(dictionary, [], originalSignal, debugLevel=debug));  
+            escapeApproxList.append(Approx.Approx(dictionary, [], originalSignal, debugLevel=debug));  
             escItList.append([]);
         # residualEnergy
         resEnergyList.append([]);
@@ -768,7 +767,7 @@ def JointMP( originalSignalList ,
     # Decomposition loop: stopping criteria is either SNR or iteration number
     while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
            
-        _Logger.info("MP LOOP : iteration " + str(iterationNumber+1))   
+        _Logger.info("mp LOOP : iteration " + str(iterationNumber+1))   
         # Compute inner products and selects the best atom
         dictionary.update( residualSignalList , iterationNumber )     
         
@@ -900,7 +899,7 @@ def JointMP( originalSignalList ,
         # time to add the escaped atoms to the corresponding residuals:
 #        for sigIdx in range(len(residualSignalList)):            
 #            residualSignalList[sigIdx].dataVec += escapeApproxList[sigIdx].recomposedSignal.dataVec;
-        if doEval:
-            return meanApprox, currentApproxList, resEnergyList , residualSignalList , escapeApproxList , criterions , SDRs, SIRs , SARs
+#        if doEval:
+#            return meanApprox, currentApproxList, resEnergyList , residualSignalList , escapeApproxList , criterions , SDRs, SIRs , SARs
         return meanApprox, currentApproxList, resEnergyList , residualSignalList , escapeApproxList , escItList
 

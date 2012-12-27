@@ -23,7 +23,7 @@
  This class tests whether the extension C module parallelProjections is correctly
  installed and accessible.
  
- This module is intended to greatly accelerate calculations projections step of MP
+ This module is intended to greatly accelerate calculations projections step of mp
  using MDCT and Gabor Dictionaries by using optimized C routines and fftw library
  
  Before proceeding, make sure FFTW library is available on your system and that
@@ -62,7 +62,7 @@ print "---- OK"
     
 from Classes import *
 from Classes.mdct import *
-import MP
+import mp
 #from Classes.gabor import *
 import cProfile
 
@@ -76,7 +76,7 @@ import matplotlib.pyplot as plt
 
 
 
-print "-----Test MP sur multi-echelle MDCT"
+print "-----Test mp sur multi-echelle MDCT"
 mdctDico = [32,64,128 , 256 , 512 , 1024 , 2048 , 4096, 8192 , 16384] ;
 tol = [2 for i in mdctDico];
 
@@ -88,16 +88,16 @@ if parallelProjections.clean_plans() != 1:
     print "Initiliazing Stage Failed"
     
     
-pySigOriginal = pymp_Signal.InitFromFile("../../data/ClocheB.wav" , True , True);        
-pyDico2 = pymp_MDCTDico.pymp_MDCTDico(mdctDico) 
+pySigOriginal = Signal.InitFromFile("../../data/ClocheB.wav" , True , True);        
+pyDico2 = Dico.Dico(mdctDico) 
 
-pyDico_Lomp = pymp_MDCTDico.pymp_LODico(mdctDico) 
+pyDico_Lomp = Dico.LODico(mdctDico) 
 residualSignal = pySigOriginal.copy();
 
 print " profiling test with C integration"
-cProfile.runctx('MP.MP(pySigOriginal, pyDico2, 20, 200 ,0)' , globals() , locals())     
+cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 200 ,0)' , globals() , locals())     
 
-cProfile.runctx('MP.MP(pySigOriginal, pyDico_Lomp, 20, 200 ,0)' , globals() , locals())     
+cProfile.runctx('mp.mp(pySigOriginal, pyDico_Lomp, 20, 200 ,0)' , globals() , locals())     
 
 
 

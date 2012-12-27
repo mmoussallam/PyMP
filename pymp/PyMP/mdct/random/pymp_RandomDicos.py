@@ -37,17 +37,17 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.
                                                                       
 """
 
-from Classes.mdct.pymp_MDCTDico import pymp_MDCTDico
-from Classes import pymp_Log
+from Classes.mdct.pymp_MDCTDico import Dico
+from Classes import Log
 import pymp_RandomBlocks as Block
 import math
 from numpy import  abs
 #from xml.dom.minidom import Document 
 
 global _Logger
-_Logger = pymp_Log.pymp_Log('RandomMDCTDico', level=0)
+_Logger = Log.Log('RandomMDCTDico', level=0)
 
-class pymp_RandomDico(pymp_MDCTDico):
+class pymp_RandomDico(Dico):
     """ This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner     
         the shifts are controlled by the different blocks.
         
