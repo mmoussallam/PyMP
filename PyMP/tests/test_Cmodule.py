@@ -20,8 +20,8 @@
 #     
 
 """
- This class tests whether the extension C module parallelProjections is correctly
- installed and accessible.
+ This class tests whether the extension C module parallelProjections is
+ correctly installed and accessible.
  
  This module is intended to greatly accelerate calculations projections step of mp
  using MDCT and Gabor Dictionaries by using optimized C routines and fftw library
@@ -32,37 +32,18 @@
  
 
 """
-import os,sys,platform
+import os, sys, platform
 import commands
 import string
 
-info = platform.uname();
-
-arch = string.lower(info[0]) + '-' + info[4];
-pythonVersion = sys.version[0:3];
-
-#pythonVersion = info[2]
-print os.getcwd()
-
-
-# Unix Systems
-if os.name == 'posix':    
-    print commands.getoutput('python setup.py build --verbose')    
-    print commands.getoutput('python setup.py install')  
-    print commands.getoutput('mv build/lib.'+arch+'-'+pythonVersion+'/parallelProjections.so ../parallelProjections.so')
-
-elif os.name == 'nt':
-    print os.popen('python setup.py install').read()
-    
 print "---- Test import du module!"
 import parallelProjections
 print "---- OK"
 
 
-    
-from Classes import *
-from Classes.mdct import *
-import mp
+from PyMP import mp , signals
+from PyMP.mdct import dico
+from PyMP.mdct import atom
 #from Classes.gabor import *
 import cProfile
 
@@ -88,10 +69,10 @@ if parallelProjections.clean_plans() != 1:
     print "Initiliazing Stage Failed"
     
     
-pySigOriginal = Signal.InitFromFile("../../data/ClocheB.wav" , True , True);        
-pyDico2 = Dico.Dico(mdctDico) 
+pySigOriginal = signals.InitFromFile("../../data/ClocheB.wav" , True , True);        
+pyDico2 = dico.Dico(mdctDico) 
 
-pyDico_Lomp = Dico.LODico(mdctDico) 
+pyDico_Lomp = dico.LODico(mdctDico) 
 residualSignal = pySigOriginal.copy();
 
 print " profiling test with C integration"
@@ -278,7 +259,7 @@ k = 14
 if parallelProjections.initialize_plans(np.array([scale]), np.array([2]))!= 1:
     print "Initialization Stage Failed"
 
-Atom_test = pymp_MDCTAtom.pymp_MDCTAtom(scale, 1, 1200, k, 8000);
+Atom_test = atom.Atom(scale, 1, 1200, k, 8000);
 #Atom_test.mdct_value = 0.57;
 Atom_test.synthesize(value=1);
 #
