@@ -1,31 +1,7 @@
-#
-#                                                                            
-#                       Classes.mdct.random.pymp_RandomBlocks                                     
-#                                                                            
-#                                                
-#                                                                            
-# M. Moussallam                             Created on Nov 12, 2012  
-# -----------------------------------------------------------------------
-#                                                                            
-#                                                                            
-#  This program is free software; you can redistribute it and/or             
-#  modify it under the terms of the GNU General Public License               
-#  as published by the Free Software Foundation; either version 2            
-#  of the License, or (at your option) any later version.                    
-#                                                                            
-#  This program is distributed in the hope that it will be useful,          
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             
-#  GNU General Public License for more details.                              
-#                                                                            
-#  You should have received a copy of the GNU General Public License         
-#  along with this program; if not, write to the Free Software               
-#  Foundation, Inc., 59 Temple Place - Suite 330,                            
-#  Boston, MA  02111-1307, USA.                                              
-#   
+
 
 """
-Module pymp_RandomBlocks
+Module mdct.random.block
 ========================
 
 Please refer to superclass for documentation
@@ -39,21 +15,22 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.
                                                                          
 """
 
-from Classes import  PyWinServer , pymp_Log
-from Classes.mdct.pymp_MDCTBlock import pymp_MDCTBlock 
-from Classes.mdct import pymp_MDCTAtom
+import  win_server , log
+import mdct.block as mdct_block 
+import mdct.atom as mdct_atom
+
 from numpy import zeros, random , abs ,max
 from math import  floor
-from Tools import   Misc 
+from tools import   Misc 
 import parallelProjections
 
 
-# declare global PyWinServer shared by all MDCT blocks instances
+# declare global win_server shared by all MDCT blocks instances
 global _PyServer , _Logger
-_PyServer = PyWinServer.PyServer()
-_Logger = pymp_Log.pymp_Log('RandomMDCTBlock', level = 0)
+_PyServer = win_server.PyServer()
+_Logger = log.Log('RandomMDCTBlock', level = 0)
 
-class pymp_RandomBlock(pymp_MDCTBlock):
+class RandomBlock(mdct_block.Block):
     """ block implementing the Randomized Pursuit 
     
     Attributes:
@@ -217,7 +194,7 @@ class pymp_RandomBlock(pymp_MDCTBlock):
     def getMaxAtom(self):    
         self.maxFrameIdx = floor(self.maxIdx / (0.5*self.scale));
         self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5*self.scale)   
-        Atom = pymp_MDCTAtom.pymp_MDCTAtom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0) , self.maxBinIdx , self.residualSignal.samplingFrequency)
+        Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0) , self.maxBinIdx , self.residualSignal.samplingFrequency)
         Atom.frame = self.maxFrameIdx;
         Atom.mdct_value =  self.maxValue;
         

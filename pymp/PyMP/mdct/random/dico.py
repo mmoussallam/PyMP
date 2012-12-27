@@ -37,17 +37,17 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.
                                                                       
 """
 
-from Classes.mdct.pymp_MDCTDico import Dico
-from Classes import Log
-import pymp_RandomBlocks as Block
+from mdct.dico import Dico
+import log
+import mdct.random.block as block
 import math
 from numpy import  abs
 #from xml.dom.minidom import Document 
 
 global _Logger
-_Logger = Log.Log('RandomMDCTDico', level=0)
+_Logger = log.Log('RandomMDCTDico', level=0)
 
-class pymp_RandomDico(Dico):
+class RandomDico(Dico):
     """ This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner     
         the shifts are controlled by the different blocks.
         
@@ -81,7 +81,7 @@ class pymp_RandomDico(Dico):
         
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
-            self.blocks.append(Block.pymp_RandomBlock(mdctSize , residualSignal ,randomType = self.randomType , nbSim = self.nbSim , windowType = self.windowType));
+            self.blocks.append(block.RandomBlock(mdctSize , residualSignal ,randomType = self.randomType , nbSim = self.nbSim , windowType = self.windowType));
 
     def computeTouchZone(self, previousBestAtom):
         # if the current time shift is about to change: need to recompute all the scores

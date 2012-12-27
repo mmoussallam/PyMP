@@ -24,8 +24,8 @@ global _Logger
 from mdct import atom as mdct_atom
 from mdct import dico as mdct_dico
 from mdct import block as mdct_block
-from base import BaseAtom, BaseDico, BaseBlock
-
+from base import BaseAtom, BaseDico
+from mdct.random import dico as random_dico
 import approx , log , signals
 #from signal import Signal
 import mp
@@ -670,7 +670,7 @@ class py_mpTest2Bis(unittest.TestCase):
         ApproxPath = "../Approxs/"
 #        ext = ".png"
                               
-        pyRandomDico = RandomDicos.RandomDico([256 , 2048 , 8192] , 'scale') 
+        pyRandomDico = random_dico.RandomDico([256 , 2048 , 8192] , 'scale') 
         pyDico = mdct_dico.Dico([256 , 2048 , 8192])         
         
         pySigOriginal = signals.InitFromFile(audioFilePath +"ClocheB.wav" , True , True);            

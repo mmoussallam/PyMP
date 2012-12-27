@@ -201,7 +201,7 @@ def main(argv):
     elif decType == 'LOMP':
         dictionary = Dico.LODico(mdctDico, useC=True)
     elif decType == 'RSSMP':
-        dictionary = pymp_RandomDicos.pymp_RandomDico(mdctDico, useC=True)
+        dictionary = pymp_RandomDicos.RandomDico(mdctDico, useC=True)
     else:
         print "unrecognized dictionary type for now, availables are mp and LOMP"
         sys.exit()
