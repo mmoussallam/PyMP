@@ -4,39 +4,38 @@ Created on 14 nov. 2012
 @author: mmoussallam
 '''
 
-from distutils.core import setup, Extension
-# First step: it needs to install the C extension module
 import os
-import platform
-import sys
-import commands
-import string
-
-import numpy.core
-NUMPYDIR = os.path.dirname(numpy.core.__file__)
-libraries = ['fftw3']
-include_dirs = [os.path.join(NUMPYDIR, r'include/numpy')]
-library_dirs = ['/usr/lib/openmpi/lib/openmpi/']
-
-ext_module = Extension('parallelProjections',
-                libraries=libraries,
-                include_dirs=include_dirs,
-                library_dirs=library_dirs,
-                sources=['PyMP/src/parProj.c',
-                    'PyMP/src/parallelProjections.c'],
-                extra_compile_args=['-fopenmp', '-fPIC', '-DDEBUG=0'],
-                extra_link_args=['-lgomp'])
+from numpy.distutils.core import setup
 
 
-setup(name='PyMP',
-      version='1.0',
-      description='Python Matching Pursuit Modules',
-      author='Manuel Moussallam',
-      author_email='manuel.moussallam@gmail.com',
-      url='https://github.com/mmoussallam/PyMP',
-      #package_dir = {'': 'src'},
-      packages=['PyMP.tools', 'PyMP.mdct', 'PyMP.mdct.random'],
-      py_modules=['PyMP.mp', 'PyMP.base', 'PyMP.approx', 'PyMP.signals',
-          'PyMP.mp_cmd', 'PyMP.log', 'PyMP.win_server', 'PyMP.mp_coder'],
-      ext_modules=[ext_module]
-     )
+def configuration(parent_package='', top_path=None):
+    if os.path.exists('MANIFEST'):
+        os.remove('MANIFEST')
+
+    from numpy.distutils.misc_util import Configuration
+    config = Configuration(None, parent_package, top_path)
+
+    # Avoid non-useful msg:
+    # "Ignoring attempt to set 'name' (from ... "
+    config.set_options(ignore_setup_xxx_py=True,
+                       assume_default_configuration=True,
+                       delegate_options_to_subpackages=True,
+                       quiet=True)
+
+    config.add_subpackage('PyMP')
+
+    return config
+
+if __name__ == '__main__':
+    setup(configuration=configuration,
+          name='PyMP',
+          version='1.0',
+          description='Python Matching Pursuit Modules',
+          author='Manuel Moussallam',
+          author_email='manuel.moussallam@gmail.com',
+          url='https://github.com/mmoussallam/PyMP',
+          #package_dir = {'': 'src'},
+          packages=['PyMP.tools', 'PyMP.mdct', 'PyMP.mdct.random'],
+          py_modules=['PyMP.mp', 'PyMP.base', 'PyMP.approx', 'PyMP.signals',
+              'PyMP.mp_cmd', 'PyMP.log', 'PyMP.win_server', 'PyMP.mp_coder'],
+         )
