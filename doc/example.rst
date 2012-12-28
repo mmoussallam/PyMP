@@ -188,7 +188,7 @@ where we have specified its size, amplitude (Deprecated, always put 1 in there) 
 then the atom's waveform is synthesized using internal routine and used to create a :class:`.pymp_Approx` object::
 
 >>> atomLong.synthesize()
->>> approx  = Approx(None, [], None, atomLong.length, atomLong.samplingFrequency)
+>>> approx  = Approx(None, [], None, atomLong.length, atomLong.fs)
 
 Other atoms can be added ::
 
@@ -214,7 +214,7 @@ for now this approximation is empty (the *pyApprox.atoms* list is empty). But we
 
 Now we have a reference signal and an approximant of it, we can evaluate the quality of the approximation using the Signal to Residual Ratio (SRR):
 
->>> print pyApprox.computeSRR()
+>>> print pyApprox.compute_srr()
 -116.6369995336029
 
 Since we picked a random atom with no link to the signal, the SRR (in dB) is very poor. It will be much better when MP select atoms based on their correlation to the signal

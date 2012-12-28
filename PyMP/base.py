@@ -27,7 +27,7 @@ class BaseAtom(object):
 
         - `amplitude`: the atom amplitude
 
-        - `samplingFrequency`: the atom sampling frequency
+        - `fs`: the atom sampling frequency
 
     """
 

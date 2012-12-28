@@ -145,6 +145,14 @@ class Signal(object):
             self.energy = sum(self.data ** 2)
             _Logger.info('Signal created with energy: ' + str(self.energy))
 
+
+    def __getitem__(self,item):
+        if isinstance(item, slice):            
+            return Signal(self.data[item], self.fs, normalize=False)
+        else:
+            raise TypeError("Argumrnt not recongnized as a slice")
+        
+        
     def normalize(self):
         ''' makes sure all values of the array are between -1 and 1 '''
         _Logger.info('Normalizing Signal')
