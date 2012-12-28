@@ -450,14 +450,24 @@ class ApproxTest(unittest.TestCase):
 
         # testing filtering
         self.assertEqual(
-            pyAtom, pyApprox.filter(1024, None, None).atoms[0])
-        self.assertEqual(pyAtom, pyApprox.filter(1024, [
+            pyAtom, pyApprox.filter_atoms(1024, None, None).atoms[0])
+        self.assertEqual(pyAtom, pyApprox.filter_atoms(1024, [
             12000, 15000], None).atoms[0])
 
         print pyApprox.compute_srr()
         # TODO testing du SRR
 
         #testing the write_to_xml and read_from_xml methods
+        pyCCDico = mdct_dico.LODico([256, 2048, 8192])
+        approx_LOmp = mp.mp(pySigOriginal, pyCCDico, 10, 100, False)[0]
+        sliceApprox = approx_LOmp[:10]
+        
+        plt.figure()
+        plt.subplot(121)
+        approx_LOmp.plot_tf()
+        plt.subplot(122)
+        sliceApprox.plot_tf()
+        plt.plot()
 
         del pySigOriginal
 
@@ -503,7 +513,7 @@ class ApproxTest(unittest.TestCase):
         del doc, newApprox
         # test writing with LOmp atoms
         pyCCDico = mdct_dico.LODico([256, 2048, 8192])
-        approx_LOmp = mp.mp(pySigOriginal, pyCCDico, 10, 10, False)[0]
+        approx_LOmp = mp.mp(pySigOriginal, pyCCDico, 10, 100, False)[0]
 
         outputXmlPath = "approxLOmp_test.xml"
         doc = approx_LOmp.write_to_xml(outputXmlPath)
@@ -529,6 +539,9 @@ class ApproxTest(unittest.TestCase):
         self.assertEqual(newApprox.length, approx_LOmp.length)
         self.assertAlmostEqual(
             sum(newApprox.to_array()[0] - approx_LOmp.to_array()[0]), 0)
+
+        del newApprox
+
 
 
 class py_mpTest2(unittest.TestCase):
@@ -963,14 +976,14 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-    suite.addTest(py_mpTest3())
-    suite.addTest(py_mpTest())
-    suite.addTest(py_mpTest2())
+#    suite.addTest(py_mpTest3())
+#    suite.addTest(py_mpTest())
+#    suite.addTest(py_mpTest2())
     suite.addTest(ApproxTest())
-    suite.addTest(AtomTest())
-    suite.addTest(DicoTest())
-    suite.addTest(BlockTest())
-    suite.addTest(Signaltest())
+#    suite.addTest(AtomTest())
+#    suite.addTest(DicoTest())
+#    suite.addTest(BlockTest())
+#    suite.addTest(Signaltest())
 ##
     unittest.TextTestRunner(verbosity=2).run(suite)
 

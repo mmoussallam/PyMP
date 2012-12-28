@@ -8,18 +8,18 @@
 # -------------------------------------------------------------------------- */
 #                                                                            */
 #                                                                            */
-#  This program is free software; you can redistribute it and/or             */
+#  This program is free software you can redistribute it and/or             */
 #  modify it under the terms of the GNU General Public License               */
-#  as published by the Free Software Foundation; either version 2            */
+#  as published by the Free Software Foundation either version 2            */
 #  of the License, or (at your option) any later version.                    */
 #                                                                            */
 #  This program is distributed in the hope that it will be useful,           */
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            */
+#  but WITHOUT ANY WARRANTY without even the implied warranty of            */
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
 #  GNU General Public License for more details.                              */
 #                                                                            */
 #  You should have received a copy of the GNU General Public License         */
-#  along with this program; if not, write to the Free Software               */
+#  along with this program if not, write to the Free Software               */
 #  Foundation, Inc., 59 Temple Place - Suite 330,                            */
 #  Boston, MA  02111-1307, USA.                                              */
 #                                                                            */
@@ -193,8 +193,34 @@ class Approx:
         # other case: we just give the existing synthesized Signal.
         return self.recomposed_signal
 
+
+    def __getitem__(self, item):
+        ''' Get the waveform built by only the subAtomNumber first atoms 
+            Outputs:
+            
+                *  a py_pursuit_Signal array '''
+        if isinstance(item, slice):
+            start, stop, step = item.start, item.stop , item.step
+        elif isinstance(item, int):
+            start = item
+            stop = item
+            
+        else:
+            raise TypeError("not recognized")
+    
+        if step is None:
+            step=1
+        output_approx = Approx(self.dico, [], self.original_signal, self.length, self.fs)
+        if stop > self.atom_number:
+            raise ValueError('Dude you asked fore more than I can give you..')
+        
+        for atomIdx in range(start,stop,step):
+            output_approx.add(self.atoms[atomIdx])
+        
+        return output_approx
+
     # Filter the atom list by the given criterion
-    def filter(self, mdctSize=0, posInterv=None, freqInterv=None):
+    def filter_atoms(self, mdctSize=0, posInterv=None, freqInterv=None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
         filteredApprox = Approx(self.dico, [], self.original_signal,
              self.length, self.fs)
@@ -229,7 +255,7 @@ class Approx:
 
     # this function adds an atom to the collection and updates the internal
     # signal approximant
-    def add(self, newAtom, window=None, clean=False, noWf=False):
+    def add(self, newAtom, clean=False, noWf=False):
         '''this function adds an atom to the collection and updates the internal signal approximant'''
         if not isinstance(newAtom, BaseAtom):
             raise TypeError("add need a py_pursuit_Atom as parameter ")
@@ -248,6 +274,8 @@ class Approx:
                 del newAtom.waveform
 
     #
+    
+    
     def remove(self, atom):
         ''' We need a routine to remove an atom , by default the last atom is removed '''
         if not isinstance(atom, BaseAtom):

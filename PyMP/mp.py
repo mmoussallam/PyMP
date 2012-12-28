@@ -54,8 +54,7 @@ import os.path
 try:
     import parallelProjections
 except ImportError:
-    print ''' Failed to load the parallelProjections extension module
-            Please run parallelProjections/install_and_test.py for further details'''
+    print ''' Failed to load the parallelProjections extension module'''
 #from MatchingPursuit.TwoD.py_pursuit_2DApprox import py_pursuit_2DApprox
 # declare gloabl waveform server
 global _PyServer, _Logger
@@ -213,8 +212,7 @@ def mp(originalSignal,
             resEnergy.append(np.sum(residualSignal.data[padd:-padd] ** 2))
 
         # add atom to dictionary
-        currentApprox.add(
-            bestAtom, dictionary.bestCurrentBlock.getWindow())
+        currentApprox.add(bestAtom)
 
         # compute new SRR and increment iteration Number
         approxSRR = currentApprox.compute_srr(residualSignal)
