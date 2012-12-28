@@ -55,7 +55,7 @@ This module describes 3 kind of blocks:
 import sys
 
 from numpy.fft import fft
-from numpy import array, zeros, ones, concatenate, sin, pi,  abs, argmax, max, sum
+import numpy as np
 
 from math import sqrt, floor
 from cmath import exp
@@ -137,7 +137,7 @@ class Block(BaseBlock):
 
         self.enframedDataMatrix = self.residualSignal.dataVec
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
-        self.projectionMatrix = zeros(len(self.enframedDataMatrix))
+        self.projectionMatrix = np.zeros(len(self.enframedDataMatrix))
         self.useC = useC
         self.HF = forceHF
         _Logger.info('new MDCT block constructed size : ' + str(self.scale))
@@ -150,12 +150,12 @@ class Block(BaseBlock):
         #Windowing
         L = self.scale
 
-        self.wLong = array([sin(float(l + 0.5) * (pi / L)) for l in range(L)])
+        self.wLong = np.array([np.sin(float(l + 0.5) * (np.pi / L)) for l in range(L)])
 
         # twidlle coefficients
-        self.pre_twidVec = array([exp(n * (-1j) * pi / L) for n in range(L)])
-        self.post_twidVec = array(
-            [exp((float(n) + 0.5) * -1j * pi * (L / 2 + 1) / L) for n in range(L / 2)])
+        self.pre_twidVec = np.array([exp(n * (-1j) * np.pi / L) for n in range(L)])
+        self.post_twidVec = np.array(
+            [exp((float(n) + 0.5) * -1j * np.pi * (L / 2 + 1) / L) for n in range(L / 2)])
 
         if self.windowType == 'half1':
             self.wLong[0:L / 2] = 0
@@ -165,10 +165,10 @@ class Block(BaseBlock):
 #        self.normaCoeffs = sqrt(1/float(L))
 
         # score tree - first version simplified
-        self.bestScoreTree = zeros(self.frameNumber)
+        self.bestScoreTree = np.zeros(self.frameNumber)
 
         if self.HF:
-            self.bestScoreHFTree = zeros(self.frameNumber)
+            self.bestScoreHFTree = np.zeros(self.frameNumber)
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
@@ -410,7 +410,7 @@ class LOBlock(Block):
         # only difference , here, we keep the complex values for the cross
         # correlation
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrix) , complex)
-        self.projectionMatrix = zeros(len(self.enframedDataMatrix), float)
+        self.projectionMatrix = np.zeros(len(self.enframedDataMatrix), float)
 
 # only the update method is interesting for us : we're hacking it to experiment
 #    def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1):
@@ -473,7 +473,7 @@ class LOBlock(Block):
             for i in range(startingFrame, endFrame):
                 x = locenframedDataMat[i * K - T: i * K + L - T]
                 if len(x) != L:
-                    x = zeros(L, complex)
+                    x = np.zeros(L, complex)
 
                 # do the pre-twiddle
                 x = x * preTwidCoeff
@@ -527,8 +527,8 @@ class LOBlock(Block):
 
         input1 = self.enframedDataMatrix[(self.maxFrameIdx - 1.5) *
              self.scale / 2: (self.maxFrameIdx + 2.5) * self.scale / 2]
-        input2 = concatenate((concatenate(
-            (zeros(self.scale / 2), Atom.waveform)), zeros(self.scale / 2)))
+        input2 = np.concatenate((np.concatenate(
+            (np.zeros(self.scale / 2), Atom.waveform)), np.zeros(self.scale / 2)))
 
         # debug cases: sometimes when lot of energy on the borders , pre-echo
         # artifacts tends
@@ -556,7 +556,7 @@ class LOBlock(Block):
 
         # retrieve additional timeShift
         if self.useC:
-            scoreVec = array([0.0])
+            scoreVec = np.array([0.0])
             Atom.timeShift = parallelProjections.project_atom(
                 input1, input2, scoreVec, self.scale)
 
@@ -575,8 +575,8 @@ class LOBlock(Block):
         else:
             sigFft = fft(self.enframedDataMatrix[(self.maxFrameIdx - 1.5) * self.scale /
                 2: (self.maxFrameIdx + 2.5) * self.scale / 2], 2 * self.scale)
-            atomFft = fft(concatenate((concatenate((zeros(self.scale / 2),
-                 Atom.waveform)), zeros(self.scale / 2))), 2 * self.scale)
+            atomFft = fft(np.concatenate((np.concatenate((np.zeros(self.scale / 2),
+                 Atom.waveform)), np.zeros(self.scale / 2))), 2 * self.scale)
 
             Atom.timeShift, score = Xcorr.GetMaxXCorr(
                 atomFft, sigFft, maxlag=self.scale / 2)
@@ -660,20 +660,20 @@ class FullBlock(Block):
         # initialize an empty matrix of size len(data) for each shift
         for i in range(self.scale / 2):
 #            self.projectionMatrix[i] = zeros((self.scale/2 , self.scale/2))
-            self.projectionMatrix[i] = zeros(len(self.enframedDataMatrix))
-            self.bestScoreTree[i] = zeros(self.frameNumber)
+            self.projectionMatrix[i] = np.zeros(len(self.enframedDataMatrix))
+            self.bestScoreTree[i] = np.zeros(self.frameNumber)
 
     def initialize(self):
 
         #Windowing
         L = self.scale
 
-        self.wLong = array([sin(float(l + 0.5) * (pi / L)) for l in range(L)])
+        self.wLong = np.array([np.sin(float(l + 0.5) * (np.pi / L)) for l in range(L)])
 
         # twidlle coefficients
-        self.pre_twidVec = array([exp(n * (-1j) * pi / L) for n in range(L)])
-        self.post_twidVec = array(
-            [exp((float(n) + 0.5) * -1j * pi * (L / 2 + 1) / L) for n in range(L / 2)])
+        self.pre_twidVec = np.array([exp(n * (-1j) * np.pi / L) for n in range(L)])
+        self.post_twidVec = np.array(
+            [exp((float(n) + 0.5) * -1j * np.pi * (L / 2 + 1) / L) for n in range(L / 2)])
 
         if self.windowType == 'half1':
             self.wLong[0:L / 2] = 0
@@ -831,14 +831,14 @@ class SpreadBlock(Block):
 
         self.enframedDataMatrix = self.residualSignal.dataVec
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
-        self.projectionMatrix = zeros(len(self.enframedDataMatrix))
+        self.projectionMatrix = np.zeros(len(self.enframedDataMatrix))
         self.useC = useC
         self.HF = forceHF
         _Logger.info('new MDCT block constructed size : ' + str(self.scale))
 
         self.penalty = penalty
         # initialize the mask: so far no penalty
-        self.mask = ones(len(self.enframedDataMatrix))
+        self.mask = np.ones(len(self.enframedDataMatrix))
         self.maskSize = maskSize
 
     def getMaximum(self, it=-1):
@@ -852,7 +852,7 @@ class SpreadBlock(Block):
 #        plt.figure()
 # plt.imshow(reshape(self.mask,(self.frameNumber,self.scale/2)),interpolation='
 # nearest',aspect='auto')
-        self.maxIdx = argmax(abs(self.projectionMatrix))
+        self.maxIdx = np.argmax(abs(self.projectionMatrix))
 
 #        print self.maxIdx
 

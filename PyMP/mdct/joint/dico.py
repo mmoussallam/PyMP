@@ -1,11 +1,11 @@
 
-import mdct.dico as mdct_dico
-import log
-import mdct.joint.block as joint_block
-import mdct.random.dico as random_dico
 import math
-#from numpy import  abs
-from numpy import random, zeros ,sqrt, abs, sum , array, median , mean
+import numpy as np
+
+from ... import log
+from ..mdct import dico as mdct_dico
+from ..random import dico as random_dico
+from . import block as joint_block
 
 
 class SetDico(mdct_dico.Dico):
@@ -156,13 +156,13 @@ class SetDico(mdct_dico.Dico):
 #        for atom in self.bestAtoms:
 ##            value += sqrt(abs(atom.getAmplitude()));
 #            timePos += atom.timePosition;
-        value = mean([abs(at.projectionScore) for at in self.bestAtoms])
-        timePos = median([at.timePosition for at in self.bestAtoms])
+        value = np.mean([abs(at.projectionScore) for at in self.bestAtoms])
+        timePos = np.median([at.timePosition for at in self.bestAtoms])
 
 #        self.meanAtom.timePosition = int(timePos)#/len(self.bestAtoms);
         self.meanAtom.mdct_value = float(value);
 
-        self.meanAtom.waveform /= sqrt(sum(self.meanAtom.waveform**2));
+        self.meanAtom.waveform /= np.sqrt(sum(self.meanAtom.waveform**2));
         self.meanAtom.waveform *= float(value)#/float(len(self.bestAtoms))
 
 #        print "Mean Value of ",float(value)#/float(len(self.bestAtoms))

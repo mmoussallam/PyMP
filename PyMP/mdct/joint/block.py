@@ -18,15 +18,13 @@ This file handle blocks that are used in Joint Matching Pursuis
 * documentation coming soon *
 
 """
-
-import  win_server , log
-import mdct.block as mdct_block
-import mdct.atom as mdct_atom
-
-from numpy import zeros, random , abs ,max , concatenate , array, pi, sin , exp , multiply , median
+import numpy as np
 from math import  floor
-import parallelProjections
 
+from ... import win_server, log
+from ... import  parallelProjections
+from ..mdct import block as mdct_block
+from ..mdct import atom as mdct_atom
 
 # declare global win_server shared by all MDCT blocks instances
 global _PyServer , _Logger
@@ -81,7 +79,7 @@ class SetBlock(mdct_block.Block):
         # initialize data matrix
         self.enframedDataMatrixList = []
         for i in range(self.sigNumber):
-            self.enframedDataMatrixList.append(zeros( (self.length, 1)))
+            self.enframedDataMatrixList.append(np.zeros( (self.length, 1)))
 
         for sigIdx in range(self.sigNumber):
             # Important point : assert that all signals have same length!
@@ -90,7 +88,7 @@ class SetBlock(mdct_block.Block):
 
                 # TODO :  just forbid the creation of atom in this zone
                 pad = self.length - self.residualSignalList[sigIdx].length
-                self.residualSignalList[sigIdx].dataVec = concatenate((self.residualSignalList[sigIdx].dataVec , zeros(pad)))
+                self.residualSignalList[sigIdx].dataVec = np.concatenate((self.residualSignalList[sigIdx].dataVec , np.zeros(pad)))
                 self.residualSignalList[sigIdx].length += pad
 
             self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
@@ -99,7 +97,7 @@ class SetBlock(mdct_block.Block):
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
-        self.projectionMatrix = zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
+        self.projectionMatrix = np.zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
 
         self.useC = useC
 
@@ -127,14 +125,14 @@ class SetBlock(mdct_block.Block):
         #Windowing
         L = self.scale
 
-        self.wLong = array([ sin(float(l + 0.5) *(pi/L)) for l in range(L)] )
+        self.wLong = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
 
         # twidlle coefficients
-        self.pre_twidVec = array([exp(n*(-1j)*pi/L) for n in range(L)])
-        self.post_twidVec = array([exp((float(n) + 0.5) * -1j*pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twidVec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
+        self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = zeros(self.frameNumber)
+        self.bestScoreTree = np.zeros(self.frameNumber)
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
@@ -161,7 +159,7 @@ class SetBlock(mdct_block.Block):
 
         # ALL SIGNALS PROJECTED AND WE KEEP ALL PROJECTIONS, NO OPTIMIZATIONS !!
         for sigIdx in range(0,self.sigNumber):
-            localProj = array(self.projectionMatrix[:,sigIdx])
+            localProj = np.array(self.projectionMatrix[:,sigIdx])
 #            print localProj.shape
             localProj = localProj.reshape((self.projectionMatrix.shape[0],))
             parallelProjections.project(self.enframedDataMatrixList[sigIdx],
@@ -174,12 +172,12 @@ class SetBlock(mdct_block.Block):
                                                  self.scale,0)
 
         # WE NEED TO RECOMPUTE THE GLOBAL SUM SCORE NOW
-            self.projectionMatrix[:,sigIdx] = array(localProj.copy())
+            self.projectionMatrix[:,sigIdx] = np.array(localProj.copy())
 #        print self.scale , startingFrameList[sigIdx] , endFrameList[sigIdx] ,self.frameNumber * self.scale/2
         if self.nature == 0:
-            sumOfProjections = sum(self.projectionMatrix**2,1)
+            sumOfProjections = np.sum(self.projectionMatrix**2,1)
         elif self.nature == 1:
-            sumOfProjections = median(self.projectionMatrix**2,1)
+            sumOfProjections = np.median(self.projectionMatrix**2,1)
 #        plt.figure()
 #        plt.plot(self.projectionMatrix[:,sigIdx])
 #        plt.show()
@@ -319,7 +317,7 @@ class SetLOBlock(mdct_block.Block):
         # initialize data matrix
         self.enframedDataMatrixList = []
         for i in range(self.sigNumber):
-            self.enframedDataMatrixList.append(zeros( (self.length, 1)))
+            self.enframedDataMatrixList.append(np.zeros( (self.length, 1)))
 
         for sigIdx in range(self.sigNumber):
             # Important point : assert that all signals have same length!
@@ -328,7 +326,7 @@ class SetLOBlock(mdct_block.Block):
 
                 # TODO :  just forbid the creation of atom in this zone
                 pad = self.length - self.residualSignalList[sigIdx].length
-                self.residualSignalList[sigIdx].dataVec = concatenate((self.residualSignalList[sigIdx].dataVec , zeros(pad)))
+                self.residualSignalList[sigIdx].dataVec = np.concatenate((self.residualSignalList[sigIdx].dataVec , np.zeros(pad)))
                 self.residualSignalList[sigIdx].length += pad
 
             self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
@@ -337,7 +335,7 @@ class SetLOBlock(mdct_block.Block):
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
-        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,float)
+        self.projectionMatrix = np.zeros(len(self.enframedDataMatrixList[0]) ,float)
 
         self.useC = useC
 
@@ -365,14 +363,14 @@ class SetLOBlock(mdct_block.Block):
         #Windowing
         L = self.scale
 
-        self.wLong = array([ sin(float(l + 0.5) *(pi/L)) for l in range(L)] )
+        self.wLong = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
 
         # twidlle coefficients
-        self.pre_twidVec = array([exp(n*(-1j)*pi/L) for n in range(L)])
-        self.post_twidVec = array([exp((float(n) + 0.5) * -1j*pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twidVec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
+        self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = zeros(self.frameNumber)
+        self.bestScoreTree = np.zeros(self.frameNumber)
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
@@ -495,7 +493,7 @@ class SetLOBlock(mdct_block.Block):
 #        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5*self.scale)
 
         # initialize atom fft
-        fftVec = zeros(self.scale * self.tolerance, complex)
+        fftVec = np.zeros(self.scale * self.tolerance, complex)
 
 #        print "Searching optimization of atom " , self.maxFrameIdx , self.maxBinIdx
         bestAtoms = []
@@ -541,7 +539,7 @@ class SetLOBlock(mdct_block.Block):
 
         if HalfWidth > 0:
         # surround the canonical atom waveform by zeroes
-            input2 = concatenate( (concatenate((zeros(HalfWidth) , Atom.waveform) ) , zeros(HalfWidth) ) )
+            input2 = np.concatenate( (np.concatenate((np.zeros(HalfWidth) , Atom.waveform) ) , np.zeros(HalfWidth) ) )
 
         else:
             # no time shift allowed !!!
@@ -578,7 +576,7 @@ class SetLOBlock(mdct_block.Block):
 
         # retrieve optimal timeShift
         if self.useC:
-            scoreVec = array([0.0])
+            scoreVec = np.array([0.0])
 #            Atom.timeShift = computeMCLT.project_atom(input1,input2 , scoreVec )
 #            print "Is it here?"
             #Atom.timeShift = parallelProjections.project_atom(input1,input2 , scoreVec , self.scale)
@@ -613,68 +611,19 @@ class SetLOBlock(mdct_block.Block):
             Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].samplingFrequency)
             Atom.frame = self.maxFrameIdx
             Atom.synthesizeIFFT(1)
-            Atom.waveform /= sum(Atom.waveform**2)
+            Atom.waveform /= np.sum(Atom.waveform**2)
 
             startSample = ((self.maxFrameIdx) * self.scale/2)  - offset
             stopSample = ((self.maxFrameIdx+2) * self.scale/2) - offset
 
             locsig = (self.enframedDataMatrixList[sigIdx][startSample : stopSample])
 
-            Atom.projectionScore = sum( multiply(Atom.waveform,locsig ))
+            Atom.projectionScore = np.sum( np.multiply(Atom.waveform,locsig ))
             Atom.mdct_value = Atom.projectionScore
             Atom.waveform *= Atom.projectionScore
 #            print Atom.projectionScore
 
             AtomList.append(Atom)
-#        print "Inside getNotAdaptedAtoms"
-#        offset = self.scale/4
-#        Atom = py_pursuit_MDCTAtom.py_pursuit_MDCTAtom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].samplingFrequency)
-#        Atom.frame = self.maxFrameIdx
-#
-#        Atom.mdct_value = 1.0
-#        # new version : compute also its waveform through inverse MDCT
-#        Atom.waveform = Atom.synthesizeIFFT()
-#        Atom.timeShift = 0
-#        Atom.projectionScore = 0.0
-#
-#
-#        startSample = ((self.maxFrameIdx) * self.scale/2)  - offset
-#        stopSample = ((self.maxFrameIdx+2) * self.scale/2) - offset
-#
-#        score = []
-#        for sigIdx in range(self.sigNumber):
-#
-#            sigPart = self.enframedDataMatrixList[sigIdx][startSample : stopSample]
-#            score.append((sum(multiply(sigPart , Atom.waveform))))
-#
-#            print "Projection of atom on sig ", sigIdx ," : " ,score[-1]
-##            score[sigIdx] = (sum(multiply(sigPart , Atom.waveform)))
-#
-##        MeanValue =  mean(abs(score))
-##        print MeanValue
-##        Atom.projectionScore = MeanValue
-##        Atom.waveform *= sqrt(MeanValue)
-##        print score
-#        AtomList = []
-#        for sigIdx in range(self.sigNumber):
-#            AtomList.append(Atom.copy())
-#
-#            value = score[sigIdx]
-#            # normalize waveform"
-#            AtomList[-1].mdct_value = value
-#            AtomList[-1].waveform /= sum(AtomList[-1].waveform**2)
-#            AtomList[-1].projectionScore = score[sigIdx]
-#            AtomList[-1].waveform *= score[sigIdx]
-#            print value
-#            if value < 0:
-#                print "Reverting"
-#                print value
-#                AtomList[-1].mdct_value = -sqrt(-value)
-##                AtomList[-1].waveform *= -1
-#                AtomList[-1].waveform *= (-sqrt(-value) )
-#            else:
-#                AtomList[-1].mdct_value = sqrt(value)
-#                AtomList[-1].waveform *= (sqrt(value) )
 
 
         return AtomList
@@ -730,7 +679,7 @@ class RandomSetBlock(SetBlock):
         # initialize data matrix
         self.enframedDataMatrixList = []
         for i in range(self.sigNumber):
-            self.enframedDataMatrixList.append(zeros( (self.length, 1)))
+            self.enframedDataMatrixList.append(np.zeros( (self.length, 1)))
 
         for sigIdx in range(self.sigNumber):
             # Important point : assert that all signals have same length!
@@ -739,7 +688,7 @@ class RandomSetBlock(SetBlock):
 
                 # TODO :  just forbid the creation of atom in this zone
                 pad = self.length - self.residualSignalList[sigIdx].length
-                self.residualSignalList[sigIdx].dataVec = concatenate((self.residualSignalList[sigIdx].dataVec , zeros(pad)))
+                self.residualSignalList[sigIdx].dataVec = np.concatenate((self.residualSignalList[sigIdx].dataVec , np.zeros(pad)))
                 self.residualSignalList[sigIdx].length += pad
 
             self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
@@ -748,7 +697,7 @@ class RandomSetBlock(SetBlock):
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
-        self.projectionMatrix = zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
+        self.projectionMatrix = np.zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
 
         self.useC = useC
 
@@ -759,7 +708,7 @@ class RandomSetBlock(SetBlock):
         else:
             raise ValueError(' Unrecognized Criterion for selection')
 
-        self.TSsequence = [floor((self.scale/2)* (i-0.5) ) for i in random.random(self.length)]
+        self.TSsequence = [floor((self.scale/2)* (i-0.5) ) for i in np.random.random(self.length)]
 
         if tolerance is not None:
             self.tolerance = tolerance
@@ -774,14 +723,14 @@ class RandomSetBlock(SetBlock):
         #Windowing
         L = self.scale
 
-        self.wLong = array([ sin(float(l + 0.5) *(pi/L)) for l in range(L)] )
+        self.wLong = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
 
         # twidlle coefficients
-        self.pre_twidVec = array([exp(n*(-1j)*pi/L) for n in range(L)])
-        self.post_twidVec = array([exp((float(n) + 0.5) * -1j*pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twidVec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
+        self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = zeros(self.frameNumber)
+        self.bestScoreTree = np.zeros(self.frameNumber)
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
@@ -836,7 +785,7 @@ class RandomSetBlock(SetBlock):
 
         # ALL SIGNALS PROJECTED AND WE KEEP ALL PROJECTIONS, NO OPTIMIZATIONS !!
         for sigIdx in range(0,self.sigNumber):
-            localProj = array(self.projectionMatrix[:,sigIdx])
+            localProj = np.array(self.projectionMatrix[:,sigIdx])
 #            print localProj.shape
             localProj = localProj.reshape((self.projectionMatrix.shape[0],))
             parallelProjections.project(self.enframedDataMatrixList[sigIdx],
@@ -851,14 +800,14 @@ class RandomSetBlock(SetBlock):
 
         # WE NEED TO RECOMPUTE THE GLOBAL SUM SCORE NOW
 
-            self.projectionMatrix[:,sigIdx] = array(localProj.copy())
+            self.projectionMatrix[:,sigIdx] = np.array(localProj.copy())
 
 
 #        print self.scale , startingFrameList[sigIdx] , endFrameList[sigIdx] ,self.frameNumber * self.scale/2
         if self.nature == 0:
-            sumOfProjections = sum(self.projectionMatrix**2,1)
+            sumOfProjections = np.sum(self.projectionMatrix**2,1)
         elif self.nature == 1:
-            sumOfProjections = median(self.projectionMatrix**2,1)
+            sumOfProjections = np.median(self.projectionMatrix**2,1)
         self.maxIdx = sumOfProjections.argmax()
 
 
@@ -917,7 +866,7 @@ class SetNLLOBlock(SetLOBlock):
 #        for i in range(self.sigNumber):
 #            self.enframedDataMatrixList.append(zeros( (self.length, 1)))
 #
-        self.enframedDataMatrix = zeros((self.sigNumber ,self.length), float)
+        self.enframedDataMatrix = np.zeros((self.sigNumber ,self.length), float)
 
         for sigIdx in range(self.sigNumber):
             # Important point : assert that all signals have same length!
@@ -943,14 +892,14 @@ class SetNLLOBlock(SetLOBlock):
 ##
 #        for sigIdx in range(self.sigNumber):
 #            self.intermediateProjectionList.append(zeros( (self.length, 1)))
-        self.intermediateProjection = (zeros( (self.sigNumber ,self.length), float))
+        self.intermediateProjection = (np.zeros( (self.sigNumber ,self.length), float))
 #
 #        self.bestScoreTreeList = zeros((self.frameNumber,self.sigNumber))
 
 #        print self.intermediateProjectionList
 
         # At the end of the computation the scores should be stored in this matrix
-        self.projectionMatrix = zeros((self.length,1),float)
+        self.projectionMatrix = np.zeros((self.length,1),float)
 
 
         self.useC = useC
@@ -1033,7 +982,7 @@ class SetNLLOBlock(SetLOBlock):
         input1 = self.enframedDataMatrix[sigIdx,startSample : stopSample]
 
         # surround the canonical atom waveform by zeroes
-        input2 = concatenate( (concatenate((zeros(HalfWidth) , Atom.waveform) ) , zeros(HalfWidth) ) )
+        input2 = np.concatenate( (np.concatenate((np.zeros(HalfWidth) , Atom.waveform) ) , np.zeros(HalfWidth) ) )
 
 
         if len(input1) != len(input2):
@@ -1045,7 +994,7 @@ class SetNLLOBlock(SetLOBlock):
 
         # retrieve optimal timeShift
         if self.useC:
-            scoreVec = array([0.0])
+            scoreVec = np.array([0.0])
 #            Atom.timeShift = computeMCLT.project_atom(input1,input2 , scoreVec )
 #            print "Is it here?"
             #Atom.timeShift = parallelProjections.project_atom(input1,input2 , scoreVec , self.scale)

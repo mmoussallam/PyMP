@@ -282,9 +282,9 @@ class Signal(object):
 
     def doWindow(self, K):
         ''' DEPRECATED '''
-        self.dataVec[0:K] *= sin((arange(K).astype(float)) * pi / (2 * K))
-        self.dataVec[-K:] *= sin((arange(K).astype(float)) * pi / (
-            2 * K) + pi / 2)
+        self.dataVec[0:K] *= np.sin((np.arange(K).astype(float)) * np.pi / (2 * K))
+        self.dataVec[-K:] *= np.sin((np.arange(K).astype(float)) * np.pi / (
+            2 * K) + np.pi / 2)
 
     def write(self, fileOutputPath, pad=0):
         ''' Write the current signal at the specified location in wav format
@@ -295,7 +295,7 @@ class Signal(object):
 
         if self.energy == 0:
             _Logger.warning("Zero-energy signal")
-            self.dataVec = zeros(self.length,)
+            self.dataVec = np.zeros(self.length,)
 #            print "Warning!!!! Zero-energy signal:"
 
         file = wave.open(fileOutputPath, 'wb')
