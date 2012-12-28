@@ -37,15 +37,17 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.
 
 """
 
-from mdct.dico import Dico
-import log
-import mdct.random.block as block
 import math
-from numpy import  abs
-#from xml.dom.minidom import Document
+from numpy import abs
+
+from ..dico import Dico
+from ... import log
+from . import block
+
 
 global _Logger
 _Logger = log.Log('RandomMDCTDico', level=0)
+
 
 class RandomDico(Dico):
     """ This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner
@@ -60,71 +62,73 @@ class RandomDico(Dico):
     """
 
     # properties
-    randomType = 'none' # type of sequence , Scale , Random or Dicho
-    iterationNumber = 0 # memorizes the position in the sequence
-    nbSim = 1;          # number of consecutive similar position
+    randomType = 'none'  # type of sequence , Scale , Random or Dicho
+    iterationNumber = 0  # memorizes the position in the sequence
+    nbSim = 1
+    # number of consecutive similar position
     nature = 'RandomMDCT'
 
     # constructor
-    def __init__(self , sizes=[] , randomType = 'random' , nbSame = 1 , windowType = None):
+    def __init__(self, sizes=[], randomType='random', nbSame=1, windowType=None):
         self.randomType = randomType
         self.sizes = sizes
         self.nbSim = nbSame
 
-        self.windowType = windowType;
+        self.windowType = windowType
 
-    def initialize(self , residualSignal ):
-        self.blocks = [];
-        self.bestCurrentBlock = None;
-        self.startingTouchedIndex = 0;
-        self.endingTouchedIndex = -1;
+    def initialize(self, residualSignal):
+        self.blocks = []
+        self.bestCurrentBlock = None
+        self.startingTouchedIndex = 0
+        self.endingTouchedIndex = -1
 
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
-            self.blocks.append(block.RandomBlock(mdctSize , residualSignal ,randomType = self.randomType , nbSim = self.nbSim , windowType = self.windowType));
+            self.blocks.append(block.RandomBlock(mdctSize, residualSignal, randomType=self.
+                randomType, nbSim=self.nbSim, windowType=self.windowType))
 
     def computeTouchZone(self, previousBestAtom):
-        # if the current time shift is about to change: need to recompute all the scores
+        # if the current time shift is about to change: need to recompute all
+        # the scores
         if (self.nbSim > 0):
-            if ( (self.iterationNumber+1) % self.nbSim == 0):
-                self.startingTouchedIndex = 0;
+            if ((self.iterationNumber + 1) % self.nbSim == 0):
+                self.startingTouchedIndex = 0
                 self.endingTouchedIndex = -1
             else:
-                self.startingTouchedIndex = previousBestAtom.timePosition - previousBestAtom.length/2;
-                self.endingTouchedIndex = self.startingTouchedIndex + 1.5*previousBestAtom.length
+                self.startingTouchedIndex = previousBestAtom.timePosition - previousBestAtom.length / 2
+                self.endingTouchedIndex = self.startingTouchedIndex + 1.5 * previousBestAtom.length
         else:
-            self.startingTouchedIndex = previousBestAtom.timePosition - previousBestAtom.length/2;
-            self.endingTouchedIndex = self.startingTouchedIndex + 1.5*previousBestAtom.length
+            self.startingTouchedIndex = previousBestAtom.timePosition - previousBestAtom.length / 2
+            self.endingTouchedIndex = self.startingTouchedIndex + 1.5 * previousBestAtom.length
 
-
-    def update(self , residualSignal , iterationNumber=0 , debug=0):
-        self.maxBlockScore = 0;
-        self.bestCurrentBlock = None;
+    def update(self, residualSignal, iterationNumber=0, debug=0):
+        self.maxBlockScore = 0
+        self.bestCurrentBlock = None
         self.iterationNumber = iterationNumber
         # BUGFIX STABILITY
 #        self.endingTouchedIndex = -1
 #        self.startingTouchedIndex = 0
 
         for block in self.blocks:
-            startingTouchedFrame = int(math.floor(self.startingTouchedIndex / (block.scale/2)))
+            startingTouchedFrame = int(
+                math.floor(self.startingTouchedIndex / (block.scale / 2)))
             if self.endingTouchedIndex > 0:
-                endingTouchedFrame = int(math.floor(self.endingTouchedIndex / (block.scale/2) )) + 1; # TODO check this
+                endingTouchedFrame = int(math.floor(self.
+                    endingTouchedIndex / (block.scale / 2))) + 1
+                # TODO check this
             else:
-                endingTouchedFrame = -1;
+                endingTouchedFrame = -1
 
-            block.update(residualSignal , startingTouchedFrame , endingTouchedFrame ,iterationNumber )
+            block.update(residualSignal,
+                 startingTouchedFrame, endingTouchedFrame, iterationNumber)
 
             if abs(block.maxValue) > self.maxBlockScore:
 #                self.maxBlockScore = block.getMaximum()
                 self.maxBlockScore = abs(block.maxValue)
-                self.bestCurrentBlock = block;
+                self.bestCurrentBlock = block
 
-    def getSequences(self , length):
-        sequences =[]
+    def getSequences(self, length):
+        sequences = []
         for block in self.blocks:
             sequences.append(block.TSsequence[0:length])
-        return sequences;
-
-
-
-
+        return sequences

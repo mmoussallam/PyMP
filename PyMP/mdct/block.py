@@ -52,24 +52,28 @@ This module describes 3 kind of blocks:
                   (e.g. 1024 samples or so) Fairly intractable at higher dimensions
 """
 
-# imports
-import  win_server , log
-from base import BaseBlock
-from mdct import atom
+import sys
+
 from numpy.fft import fft
-from numpy import array , zeros , ones ,concatenate , sin , pi ,  abs , argmax ,max, sum
-#from scipy.stats import gmean
-from math import sqrt , floor
+from numpy import array, zeros, ones, concatenate, sin, pi,  abs, argmax, max, sum
+
+from math import sqrt, floor
 from cmath import exp
 import matplotlib.pyplot as plt
-from tools import  Xcorr #, Misc
-import parallelProjections, sys
+
+from .. import win_server
+from .. import  log
+from ..base import BaseBlock
+from . import atom
+from ..tools import Xcorr  # , Misc
+from .. import parallelProjections
 
 
 # declare global PyWinServer shared by all MDCT blocks instances
-global _PyServer , _Logger
+global _PyServer, _Logger
 _PyServer = win_server.PyServer()
-_Logger = log.Log('MDCTBlock', level = 0)
+_Logger = log.Log('MDCTBlock', level=0)
+
 
 class Block(BaseBlock):
     """ This class is a basic MDCT block. It handles a set of routines that allows greedy
@@ -114,21 +118,21 @@ class Block(BaseBlock):
     HF = False
     HFlimit = 0.1
 
-    windowType =None
+    windowType = None
 
     # constructor - initialize residual signal and projection matrix
-    def __init__(self , length = 0 , resSignal = None , frameLen = 0 , useC =True , forceHF=False , debugLevel = None):
+    def __init__(self, length=0, resSignal=None, frameLen=0, useC=True, forceHF=False, debugLevel=None):
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
 
         self.scale = length
         self.residualSignal = resSignal
 
-        if frameLen==0:
-            self.frameLength = length/2
+        if frameLen == 0:
+            self.frameLength = length / 2
         else:
             self.frameLength = frameLen
-        if self.residualSignal ==None:
+        if self.residualSignal == None:
             raise ValueError("no signal given")
 
         self.enframedDataMatrix = self.residualSignal.dataVec
@@ -139,23 +143,24 @@ class Block(BaseBlock):
         _Logger.info('new MDCT block constructed size : ' + str(self.scale))
 #        self.projectionMatrix = zeros((self.frameNumber , self.frameLength))
 
-
-    # compute mdct of the residual and instantiate various windows and twiddle coefficients
-    def initialize(self ):
+    # compute mdct of the residual and instantiate various windows and twiddle
+    # coefficients
+    def initialize(self):
         """ Compute mdct of the residual and instantiate various windows and twiddle coefficients"""
         #Windowing
         L = self.scale
 
-        self.wLong = array([ sin(float(l + 0.5) *(pi/L)) for l in range(L)] )
+        self.wLong = array([sin(float(l + 0.5) * (pi / L)) for l in range(L)])
 
         # twidlle coefficients
-        self.pre_twidVec = array([exp(n*(-1j)*pi/L) for n in range(L)])
-        self.post_twidVec = array([exp((float(n) + 0.5) * -1j*pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twidVec = array([exp(n * (-1j) * pi / L) for n in range(L)])
+        self.post_twidVec = array(
+            [exp((float(n) + 0.5) * -1j * pi * (L / 2 + 1) / L) for n in range(L / 2)])
 
         if self.windowType == 'half1':
-            self.wLong[0:L/2] = 0
+            self.wLong[0:L / 2] = 0
             # twidlle coefficients
-            self.pre_twidVec[0:L/2] = 0
+            self.pre_twidVec[0:L / 2] = 0
 #        self.fftMat = zeros((self.scale , self.frameNumber) , complex)
 #        self.normaCoeffs = sqrt(1/float(L))
 
@@ -168,7 +173,6 @@ class Block(BaseBlock):
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
 
-
     # Search among the inner products the one that maximizes correlation
     # the best candidate for each frame is already stored in the bestScoreTree
     def getMaximum(self):
@@ -176,93 +180,95 @@ class Block(BaseBlock):
         the best candidate for each frame is already stored in the bestScoreTree """
         treeMaxIdx = self.bestScoreTree.argmax()
 
-        maxIdx = abs(self.projectionMatrix[treeMaxIdx*self.scale/2 : (treeMaxIdx+1)*self.scale/2]).argmax()
-        self.maxIdx = maxIdx + treeMaxIdx*self.scale/2
+        maxIdx = abs(self.projectionMatrix[treeMaxIdx * self.scale /
+            2: (treeMaxIdx + 1) * self.scale / 2]).argmax()
+        self.maxIdx = maxIdx + treeMaxIdx * self.scale / 2
         self.maxValue = self.projectionMatrix[self.maxIdx]
 
 #        print "block getMaximum called : " , self.maxIdx , self.maxValue
 
         if self.HF:
             treemaxHFidx = self.bestScoreHFTree.argmax()
-            maxHFidx = abs(self.projectionMatrix[(treemaxHFidx+self.HFlimit)*self.scale/2 : (treemaxHFidx+1)*self.scale/2]).argmax()
+            maxHFidx = abs(self.projectionMatrix[(treemaxHFidx + self.HFlimit)
+                * self.scale / 2: (treemaxHFidx + 1) * self.scale / 2]).argmax()
 
-            self.maxHFIdx = maxHFidx + (treemaxHFidx+self.HFlimit)*self.scale/2
+            self.maxHFIdx = maxHFidx + (
+                treemaxHFidx + self.HFlimit) * self.scale / 2
             self.maxHFValue = self.projectionMatrix[self.maxHFIdx]
 
-
-
-
     # construct the atom that best correlates with the signal
-    def getMaxAtom(self , HF = False):
+    def getMaxAtom(self, HF=False):
         """ construct the atom that best correlates with the signal"""
 
         if not HF:
-            self.maxFrameIdx = floor(self.maxIdx / (0.5*self.scale))
-            self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5*self.scale)
+            self.maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
+            self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (
+                0.5 * self.scale)
         else:
-            self.maxFrameIdx = floor(self.maxHFIdx / (0.5*self.scale))
-            self.maxBinIdx = self.maxHFIdx - self.maxFrameIdx * (0.5*self.scale)
-        Atom = atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignal.samplingFrequency)
+            self.maxFrameIdx = floor(self.maxHFIdx / (0.5 * self.scale))
+            self.maxBinIdx = self.maxHFIdx - self.maxFrameIdx * (
+                0.5 * self.scale)
+        Atom = atom.Atom(self.scale, 1, max((self.maxFrameIdx * self.scale / 2) - self.scale / 4, 0), self.maxBinIdx, self.residualSignal.samplingFrequency)
         Atom.frame = self.maxFrameIdx
 #        print self.maxBinIdx, Atom.reducedFrequency
         if not HF:
-            Atom.mdct_value =  self.maxValue
+            Atom.mdct_value = self.maxValue
         else:
-            Atom.mdct_value =  self.maxHFValue
+            Atom.mdct_value = self.maxHFValue
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesizeAtom()
 
         if HF:
-            Atom.waveform = Atom.waveform*(self.maxHFValue/self.maxValue)
+            Atom.waveform = Atom.waveform * (self.maxHFValue / self.maxValue)
         return Atom
 
     def getWindow(self):
         return self.wLong
 
     #
-    def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1):
+    def update(self, newResidual, startFrameIdx=0, stopFrameIdx=-1):
         """ update the part of the residual that has been changed and update inner products    """
-#        print "block update called : " , self.scale , newResidual.length , self.frameNumber
+# print "block update called : " , self.scale , newResidual.length ,
+# self.frameNumber
         self.residualSignal = newResidual
 
-        if stopFrameIdx <0:
-            endFrameIdx = self.frameNumber -1
+        if stopFrameIdx < 0:
+            endFrameIdx = self.frameNumber - 1
         else:
             endFrameIdx = stopFrameIdx
 
         L = self.scale
 
-        self.enframedDataMatrix[startFrameIdx*L/2 : endFrameIdx*L/2 + L] = self.residualSignal.dataVec[startFrameIdx*self.frameLength : endFrameIdx*self.frameLength + 2*self.frameLength]
+        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.dataVec[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
 
-        self.computeTransform(startFrameIdx , stopFrameIdx)
+        self.computeTransform(startFrameIdx, stopFrameIdx)
 
         self.getMaximum()
 
     # inner product computation through MDCT
-    def computeTransform(self, startingFrame=1 , endFrame = -1):
+    def computeTransform(self, startingFrame=1, endFrame=-1):
         """ inner product computation through MDCT """
         if self.wLong is None:
             self.initialize()
 
-        if endFrame <0:
-            endFrame = self.frameNumber -1
+        if endFrame < 0:
+            endFrame = self.frameNumber - 1
 
         # debug -> changed from 1: be sure signal is properly zero -padded
-        if startingFrame<1:
+        if startingFrame < 1:
             startingFrame = 1
-
 
         # Wrapping C code call for fast implementation
         if self.useC:
             try:
                 parallelProjections.project(self.enframedDataMatrix, self.bestScoreTree,
-                                                 self.projectionMatrix ,
-                                                 self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.projectionMatrix,
+                                                 self.locCoeff,
+                                                 self.post_twidVec,
                                                  startingFrame,
                                                  endFrame,
-                                                 self.scale ,0)
+                                                 self.scale, 0)
 
             except SystemError:
                 print sys.exc_info()[0]
@@ -278,59 +284,66 @@ class Block(BaseBlock):
                 print '''Impossible to load fftw3, you need to use the C extension library or have
                         a local installation of the python fftw3 wrapper '''
                 return
-        # create a forward fft plan, since fftw is not faster for computing DCT's no need to use it for that
+        # create a forward fft plan, since fftw is not faster for computing
+        # DCT's no need to use it for that
             L = self.scale
-            K = L/2
-            T = K/2
-            normaCoeffs = sqrt(2/float(K))
+            K = L / 2
+            T = K / 2
+            normaCoeffs = sqrt(2 / float(K))
             if self.fft is None:
-                self.inputa = self.enframedDataMatrix[K - T: K + L - T].astype(complex)
+                self.inputa = self.enframedDataMatrix[K -
+                     T: K + L - T].astype(complex)
                 self.outputa = None
-                self.fft = fftw3.Plan(self.inputa,self.outputa, direction='forward', flags=['estimate'])
+                self.fft = fftw3.Plan(self.inputa, self.
+                    outputa, direction='forward', flags=['estimate'])
 
-            self.project(startingFrame,endFrame, L , K , T , normaCoeffs)
+            self.project(startingFrame, endFrame, L, K, T, normaCoeffs)
 
         if self.HF:
-            for i in range(startingFrame , endFrame):
-                self.bestScoreHFTree[i] = abs(self.projectionMatrix[(i+self.HFlimit)*self.scale/2 : (i+1)*self.scale/2]).max()
+            for i in range(startingFrame, endFrame):
+                self.bestScoreHFTree[i] = abs(self.projectionMatrix[
+                    (i + self.HFlimit) * self.scale / 2: (i + 1) * self.scale / 2]).max()
 
-    # UPDATE: need to keep this slow version for non C99 compliant systems (windows)
-    def project(self,startingFrame, endFrame, L,  K, T, normaCoeffs):
+    # UPDATE: need to keep this slow version for non C99 compliant systems
+    # (windows)
+    def project(self, startingFrame, endFrame, L,  K, T, normaCoeffs):
 
-        for i in range(startingFrame , endFrame):
+        for i in range(startingFrame, endFrame):
             # initialize input data
-            self.inputa[:]=0
-            self.inputa += self.enframedDataMatrix[i*K - T: i*K + L - T]*self.locCoeff
+            self.inputa[:] = 0
+            self.inputa += self.enframedDataMatrix[i * K - T: i *
+                K + L - T] * self.locCoeff
 
             #compute fft
             self.fft()
 
             # post-twiddle and store for max search
-            self.projectionMatrix[i*K : (i+1)*K] = normaCoeffs*(self.inputa[0:K]* self.post_twidVec).real
-#            self.projectionMatrix[i , :] = normaCoeffs*(self.inputa[0:K]* self.post_twidVec).real
+            self.projectionMatrix[i * K: (i + 1) *
+                K] = normaCoeffs * (self.inputa[0:K] * self.post_twidVec).real
+# self.projectionMatrix[i , :] = normaCoeffs*(self.inputa[0:K]*
+# self.post_twidVec).real
 
 #            # store new max score in tree
-            self.bestScoreTree[i] = abs(self.projectionMatrix[i*K : (i+1)*K]).max()
+            self.bestScoreTree[i] = abs(self.projectionMatrix[
+                i * K: (i + 1) * K]).max()
 
-
-
-
-    # synthesizes the best atom through ifft computation (much faster than closed form)
-    def synthesizeAtom(self , value=None):
+    # synthesizes the best atom through ifft computation (much faster than
+    # closed form)
+    def synthesizeAtom(self, value=None):
         """ synthesizes the best atom through ifft computation (much faster than closed form)
             New version uses the PyWinServer to serve waveforms"""
         ###################" new version ############"
         global _PyServer
 #        print len(_PyServer.Waveforms)
-        if  value is None:
-            return self.maxValue * _PyServer.getWaveForm(self.scale , self.maxBinIdx)
+        if value is None:
+            return self.maxValue * _PyServer.getWaveForm(self.scale, self.maxBinIdx)
         else:
-            return value * _PyServer.getWaveForm(self.scale , self.maxBinIdx)
+            return value * _PyServer.getWaveForm(self.scale, self.maxBinIdx)
         ###################  old version ############
 #        temp = zeros(2*self.scale)
 #        temp[self.scale/2 + self.maxBinIdx] = self.maxValue
 #        waveform = zeros(2*self.scale)
-#        #Number of frames : only 4 we need zeroes on the border before overlap-adding
+# Number of frames : only 4 we need zeroes on the border before overlap-adding
 ##        P = 4
 #        L = self.scale
 #        K = L/2
@@ -363,8 +376,9 @@ class Block(BaseBlock):
 #        plt.plot(self.bestScoreTree)
 #        plt.subplot(212)
         plt.plot(self.projectionMatrix)
-        plt.title("Block-" + str(self.scale)+" best Score of" + str(self.maxValue)
-                  + " p :"+ str(self.maxFrameIdx) +" , k: "+ str(self.maxBinIdx) )
+        plt.title("Block-" + str(self.scale) + " best Score of" + str(self.maxValue)
+                  + " p :" + str(self.maxFrameIdx) + " , k: " + str(self.maxBinIdx))
+
 
 class LOBlock(Block):
     """ Class that inherit classic MDCT block class and deals with local optimization
@@ -375,31 +389,30 @@ class LOBlock(Block):
     adjustTimePos = True
     fftplan = None
     # constructor - initialize residual signal and projection matrix
-    def __init__(self , length = 0 , resSignal = None , frameLen = 0 , tinvOptim = True, useC=True , forceHF=False):
+
+    def __init__(self, length=0, resSignal=None, frameLen=0, tinvOptim=True, useC=True, forceHF=False):
         self.scale = length
         self.residualSignal = resSignal
         self.adjustTimePos = tinvOptim
         self.useC = useC
         self.HF = forceHF
 
-        if frameLen==0:
-            self.frameLength = length/2
+        if frameLen == 0:
+            self.frameLength = length / 2
         else:
             self.frameLength = frameLen
-        if self.residualSignal ==None:
+        if self.residualSignal == None:
             raise ValueError("no signal given")
 
         self.enframedDataMatrix = self.residualSignal.dataVec
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
 
-        # only difference , here, we keep the complex values for the cross correlation
+        # only difference , here, we keep the complex values for the cross
+        # correlation
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrix) , complex)
-        self.projectionMatrix = zeros(len(self.enframedDataMatrix) ,float)
+        self.projectionMatrix = zeros(len(self.enframedDataMatrix), float)
 
-
-
-
-#    # only the update method is interesting for us : we're hacking it to experiment
+# only the update method is interesting for us : we're hacking it to experiment
 #    def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1):
 #        self.residualSignal = newResidual
 #
@@ -410,7 +423,9 @@ class LOBlock(Block):
 #        L = self.scale
 #
 #        # update residual signal
-#        self.enframedDataMatrix[startFrameIdx*L/2 : endFrameIdx*L/2 + L] = self.residualSignal.dataVec[startFrameIdx*self.frameLength : endFrameIdx*self.frameLength + 2*self.frameLength]
+# self.enframedDataMatrix[startFrameIdx*L/2 : endFrameIdx*L/2 + L] =
+# self.residualSignal.dataVec[startFrameIdx*self.frameLength :
+# endFrameIdx*self.frameLength + 2*self.frameLength]
 #
 #        # TODO changes here
 ##        self.computeMDCT(startFrameIdx , stopFrameIdx)
@@ -418,33 +433,33 @@ class LOBlock(Block):
 #
 #        # TODO changes here
 #        self.getMaximum()
-
     # inner product computation through MDCT
-    def computeTransform(self, startingFrame=1 , endFrame = -1):
+    def computeTransform(self, startingFrame=1, endFrame=-1):
         if self.wLong is None:
             self.initialize()
 
-        # due to later time-shift optimizations , need to ensure nothing is selected too close to the borders!!
+        # due to later time-shift optimizations , need to ensure nothing is
+        # selected too close to the borders!!
 
-        if endFrame <0 or endFrame>self.frameNumber -3:
-            endFrame = self.frameNumber -3
+        if endFrame < 0 or endFrame > self.frameNumber - 3:
+            endFrame = self.frameNumber - 3
 
-        if startingFrame<2:
+        if startingFrame < 2:
             startingFrame = 2
         # new version: C binding
         if self.useC:
             parallelProjections.project_mclt(self.enframedDataMatrix, self.bestScoreTree,
-                                                 self.projectionMatrix ,
-                                                 self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.projectionMatrix,
+                                                 self.locCoeff,
+                                                 self.post_twidVec,
                                                  startingFrame,
                                                  endFrame,
-                                                 self.scale )
+                                                 self.scale)
         else:
             L = self.scale
-            K = L/2
-            T = K/2
-            normaCoeffs = sqrt(2/float(K))
+            K = L / 2
+            T = K / 2
+            normaCoeffs = sqrt(2 / float(K))
 
             locenframedDataMat = self.enframedDataMatrix
 #            locfftMat = self.fftMat
@@ -453,11 +468,12 @@ class LOBlock(Block):
             preTwidCoeff = self.locCoeff
             postTwidCoeff = self.post_twidVec
 
-            # Bottleneck here !! need to fasten this loop : do it by Matrix technique? or bind to a C++ file?
-            for i in range(startingFrame , endFrame):
-                x = locenframedDataMat[i*K - T: i*K + L - T]
-                if len(x) !=L:
-                    x =zeros(L , complex)
+            # Bottleneck here !! need to fasten this loop : do it by Matrix
+            # technique? or bind to a C++ file?
+            for i in range(startingFrame, endFrame):
+                x = locenframedDataMat[i * K - T: i * K + L - T]
+                if len(x) != L:
+                    x = zeros(L, complex)
 
                 # do the pre-twiddle
                 x = x * preTwidCoeff
@@ -467,29 +483,34 @@ class LOBlock(Block):
 
                 # post-twiddle
 #                y = locfftMat[0:K , i] * postTwidCoeff
-                y = (fft(x , L)[0:K]) * postTwidCoeff
+                y = (fft(x, L)[0:K]) * postTwidCoeff
     #            y = self.doPretwid(locfftMat[0:K , i], postTwidCoeff)
 
                 # we work with MCLT now
-                self.projectionMatrix[i*K : (i+1)*K] = normaCoeffs*y
+                self.projectionMatrix[i * K: (i + 1) * K] = normaCoeffs * y
 
                 # store new max score in tree
-                self.bestScoreTree[i] = abs(self.projectionMatrix[i*K : (i+1)*K]).max()
+                self.bestScoreTree[i] = abs(self.
+                    projectionMatrix[i * K: (i + 1) * K]).max()
 
 #        if self.HF:
 #            for i in range(startingFrame , endFrame):
-#                self.bestScoreHFTree[i] = abs(self.projectionMatrix[(i+self.HFlimit)*self.scale/2 : (i+1)*self.scale/2]).max()
+# self.bestScoreHFTree[i] =
+# abs(self.projectionMatrix[(i+self.HFlimit)*self.scale/2 :
+# (i+1)*self.scale/2]).max()
 #
 
     # construct the atom that best correlates with the signal
-    def getMaxAtom(self , debug = 0):
+    def getMaxAtom(self, debug=0):
 
-        self.maxFrameIdx = floor(self.maxIdx / (0.5*self.scale))
-        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5*self.scale)
+        self.maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
+        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5 * self.scale)
 
-        # hack here : let us project the atom waveform on the neighbouring signal in the FFt domain,
-        # so that we can find the maximum correlation and best adapt the time-shift
-        Atom = atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignal.samplingFrequency)
+        # hack here : let us project the atom waveform on the neighbouring
+        # signal in the FFt domain,
+        # so that we can find the maximum correlation and best adapt the time-
+        # shift
+        Atom = atom.Atom(self.scale, 1, max((self.maxFrameIdx * self.scale / 2) - self.scale / 4, 0), self.maxBinIdx, self.residualSignal.samplingFrequency)
         Atom.frame = self.maxFrameIdx
 
         # re-compute the atom amplitude for IMDCT
@@ -504,26 +525,31 @@ class LOBlock(Block):
         Atom.timeShift = 0
         Atom.projectionScore = 0.0
 
-        input1 = self.enframedDataMatrix[(self.maxFrameIdx-1.5)  * self.scale/2 : (self.maxFrameIdx+2.5)  * self.scale/2]
-        input2 = concatenate( (concatenate((zeros(self.scale/2) , Atom.waveform) ) , zeros(self.scale/2) ) )
+        input1 = self.enframedDataMatrix[(self.maxFrameIdx - 1.5) *
+             self.scale / 2: (self.maxFrameIdx + 2.5) * self.scale / 2]
+        input2 = concatenate((concatenate(
+            (zeros(self.scale / 2), Atom.waveform)), zeros(self.scale / 2)))
 
-        # debug cases: sometimes when lot of energy on the borders , pre-echo artifacts tends
+        # debug cases: sometimes when lot of energy on the borders , pre-echo
+        # artifacts tends
         # to appears on the border and can lead to seg fault if not monitored
-        # therefore we need to prevent any time shift leading to positions outside of original signals
+        # therefore we need to prevent any time shift leading to positions
+        # outside of original signals
         # ie in the first and last frames.
 #        if debug>0:
 #            print self.maxFrameIdx , self.maxIdx , self.frameNumber
 #            if self.maxFrameIdx ==1:
 #                plt.figure()
 #                plt.plot(Atom.waveform)
-#                plt.plot(self.enframedDataMatrix[0 : Atom.timePosition + Atom.length],'r')
+# plt.plot(self.enframedDataMatrix[0 : Atom.timePosition + Atom.length],'r')
 #                plt.show()
 #
-#            print (self.maxFrameIdx-1.5)  * self.scale/2 , (self.maxFrameIdx+2.5)  * self.scale/2
+# print (self.maxFrameIdx-1.5)  * self.scale/2 , (self.maxFrameIdx+2.5)  *
+# self.scale/2
 #            print len(input1) , len(input2)
         if len(input1) != len(input2):
-            print self.maxFrameIdx , self.maxIdx , self.frameNumber
-            print len(input1) , len(input2)
+            print self.maxFrameIdx, self.maxIdx, self.frameNumber
+            print len(input1), len(input2)
             #if debug>0:
             print "atom in the borders , no timeShift calculated"
             return Atom
@@ -531,10 +557,11 @@ class LOBlock(Block):
         # retrieve additional timeShift
         if self.useC:
             scoreVec = array([0.0])
-            Atom.timeShift = parallelProjections.project_atom(input1,input2 , scoreVec , self.scale)
+            Atom.timeShift = parallelProjections.project_atom(
+                input1, input2, scoreVec, self.scale)
 
-            if abs(Atom.timeShift) > Atom.length/2:
-                print "out of limits: found time shift of" , Atom.timeShift
+            if abs(Atom.timeShift) > Atom.length / 2:
+                print "out of limits: found time shift of", Atom.timeShift
                 Atom.timeShift = 0
                 return Atom
 
@@ -546,33 +573,41 @@ class LOBlock(Block):
             Atom.waveform *= Atom.projectionScore
 #            Atom.waveform = input2[self.scale/2:-self.scale/2]
         else:
-            sigFft = fft(self.enframedDataMatrix[(self.maxFrameIdx-1.5)  * self.scale/2 : (self.maxFrameIdx+2.5)  * self.scale/2] , 2*self.scale)
-            atomFft = fft(concatenate( (concatenate((zeros(self.scale/2) , Atom.waveform) ) , zeros(self.scale/2) ) ) , 2*self.scale)
+            sigFft = fft(self.enframedDataMatrix[(self.maxFrameIdx - 1.5) * self.scale /
+                2: (self.maxFrameIdx + 2.5) * self.scale / 2], 2 * self.scale)
+            atomFft = fft(concatenate((concatenate((zeros(self.scale / 2),
+                 Atom.waveform)), zeros(self.scale / 2))), 2 * self.scale)
 
-
-            Atom.timeShift , score = Xcorr.GetMaxXCorr(atomFft , sigFft , maxlag =self.scale/2)
+            Atom.timeShift, score = Xcorr.GetMaxXCorr(
+                atomFft, sigFft, maxlag=self.scale / 2)
             self.maxTimeShift = Atom.timeShift
             Atom.projectionScore = score
-    #        print "found correlation max of " , float(score)/sqrt(2/float(self.scale))
+    # print "found correlation max of " ,
+    # float(score)/sqrt(2/float(self.scale))
 
-            # CAses That might happen: time shift result in choosing another atom instead
-            if abs(Atom.timeShift) > Atom.length/2:
-                print "out of limits: found time shift of" , Atom.timeShift
+            # CAses That might happen: time shift result in choosing another
+            # atom instead
+            if abs(Atom.timeShift) > Atom.length / 2:
+                print "out of limits: found time shift of", Atom.timeShift
                 Atom.timeShift = 0
                 return Atom
 
             Atom.timePosition += Atom.timeShift
 
-            # now let us re-project the atom on the signal to adjust it's energy: Only if no pathological case
+            # now let us re-project the atom on the signal to adjust it's
+            # energy: Only if no pathological case
 
             # TODO optimization : pre-compute energy (better: find closed form)
-            if score <0:
+            if score < 0:
                 Atom.amplitude = -sqrt(-score)
-                Atom.waveform = (-sqrt(-score/sum(Atom.waveform**2)) )*Atom.waveform
+                Atom.waveform = (
+                    -sqrt(-score / sum(Atom.waveform ** 2))) * Atom.waveform
             else:
                 Atom.amplitude = sqrt(score)
-                Atom.waveform = (sqrt(score/sum(Atom.waveform**2)) )*Atom.waveform
-#        projOrtho = sum(Atom.waveform * self.residualSignal.dataVec[Atom.timePosition : Atom.timePosition + Atom.length])
+                Atom.waveform = (
+                    sqrt(score / sum(Atom.waveform ** 2))) * Atom.waveform
+# projOrtho = sum(Atom.waveform * self.residualSignal.dataVec[Atom.timePosition
+# : Atom.timePosition + Atom.length])
 
 #        if score <0:
 #            Atom.amplitude = -1
@@ -581,17 +616,17 @@ class LOBlock(Block):
         return Atom
 
     def plotScores(self):
-        maxFrameIdx = floor(self.maxIdx / (0.5*self.scale))
-        maxBinIdx = self.maxIdx - maxFrameIdx * (0.5*self.scale)
+        maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
+        maxBinIdx = self.maxIdx - maxFrameIdx * (0.5 * self.scale)
         plt.figure()
 #        plt.subplot(211)
 #        plt.plot(self.bestScoreTree)
 #        plt.subplot(212)
-        plt.plot(abs(self.projectionMatrix) )
-        plt.title("Block-" + str(self.scale)+" best Score of" + str(abs(self.maxValue)) + " at " + str(self.maxIdx)
-                  + " p :"+ str(maxFrameIdx)
-                  +" , k: "+ str(maxBinIdx)
-                  +" , l: "+ str(self.maxTimeShift) )
+        plt.plot(abs(self.projectionMatrix))
+        plt.title("Block-" + str(self.scale) + " best Score of" + str(abs(self.maxValue)) + " at " + str(self.maxIdx)
+                  + " p :" + str(maxFrameIdx)
+                  + " , k: " + str(maxBinIdx)
+                  + " , l: " + str(self.maxTimeShift))
 
 
 class FullBlock(Block):
@@ -600,18 +635,16 @@ class FullBlock(Block):
     maxKidx = 0
     maxLidx = 0
 
-
     # constructor - initialize residual signal and projection matrix
-    def __init__(self , length = 0 , resSignal = None , frameLen = 0  ):
+    def __init__(self, length=0, resSignal=None, frameLen=0):
         self.scale = length
         self.residualSignal = resSignal
 
-
-        if frameLen==0:
-            self.frameLength = length/2
+        if frameLen == 0:
+            self.frameLength = length / 2
         else:
             self.frameLength = frameLen
-        if self.residualSignal ==None:
+        if self.residualSignal == None:
             raise ValueError("no signal given")
 
         self.enframedDataMatrix = self.residualSignal.dataVec
@@ -625,36 +658,37 @@ class FullBlock(Block):
         self.bestScoreTree = dict()
 
         # initialize an empty matrix of size len(data) for each shift
-        for i in range(self.scale/2):
+        for i in range(self.scale / 2):
 #            self.projectionMatrix[i] = zeros((self.scale/2 , self.scale/2))
             self.projectionMatrix[i] = zeros(len(self.enframedDataMatrix))
             self.bestScoreTree[i] = zeros(self.frameNumber)
 
-    def initialize(self ):
+    def initialize(self):
 
         #Windowing
         L = self.scale
 
-        self.wLong = array([ sin(float(l + 0.5) *(pi/L)) for l in range(L)] )
+        self.wLong = array([sin(float(l + 0.5) * (pi / L)) for l in range(L)])
 
         # twidlle coefficients
-        self.pre_twidVec = array([exp(n*(-1j)*pi/L) for n in range(L)])
-        self.post_twidVec = array([exp((float(n) + 0.5) * -1j*pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twidVec = array([exp(n * (-1j) * pi / L) for n in range(L)])
+        self.post_twidVec = array(
+            [exp((float(n) + 0.5) * -1j * pi * (L / 2 + 1) / L) for n in range(L / 2)])
 
         if self.windowType == 'half1':
-            self.wLong[0:L/2] = 0
+            self.wLong[0:L / 2] = 0
             # twidlle coefficients
-            self.pre_twidVec[0:L/2] = 0
+            self.pre_twidVec[0:L / 2] = 0
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
 
     # The update method is nearly the same as CCBlock
-    def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1):
+    def update(self, newResidual, startFrameIdx=0, stopFrameIdx=-1):
         self.residualSignal = newResidual
 
-        if stopFrameIdx <0:
-            endFrameIdx = self.frameNumber -1
+        if stopFrameIdx < 0:
+            endFrameIdx = self.frameNumber - 1
         else:
             endFrameIdx = stopFrameIdx
 
@@ -662,75 +696,73 @@ class FullBlock(Block):
 
         L = self.scale
 
-#        print "Updating Block " , L , " from frame " , startFrameIdx , " to " , endFrameIdx
+# print "Updating Block " , L , " from frame " , startFrameIdx , " to " ,
+# endFrameIdx
 
         # update residual signal
-        self.enframedDataMatrix[startFrameIdx*L/2 : endFrameIdx*L/2 + L] = self.residualSignal.dataVec[startFrameIdx*self.frameLength : endFrameIdx*self.frameLength + 2*self.frameLength]
+        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.dataVec[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
 
         # TODO changes here
-        self.computeTransform(startFrameIdx , stopFrameIdx)
+        self.computeTransform(startFrameIdx, stopFrameIdx)
 
         # TODO changes here
         self.getMaximum()
 
     # inner product computation through MCLT with all possible time shifts
-    def computeTransform(self, startingFrame=1 , endFrame = -1):
+    def computeTransform(self, startingFrame=1, endFrame=-1):
         if self.wLong is None:
             self.initialize()
 
-        if endFrame <0:
-            endFrame = self.frameNumber -1
+        if endFrame < 0:
+            endFrame = self.frameNumber - 1
 
-        if startingFrame<1:
+        if startingFrame < 1:
             startingFrame = 1
 
-        startingFrame=1
-        endFrame = self.frameNumber -1
+        startingFrame = 1
+        endFrame = self.frameNumber - 1
 
         L = self.scale
-        K = L/2
+        K = L / 2
 #        T = K/2
 #        normaCoeffs = sqrt(2/float(K))
 #        print startingFrame , endFrame
-        for l in range(-K/2,K/2,1):
+        for l in range(-K / 2, K / 2, 1):
             parallelProjections.project(self.enframedDataMatrix,
-                                                 self.bestScoreTree[l+K/2],
-                                                 self.projectionMatrix[l+K/2] ,
-                                                 self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.bestScoreTree[l + K / 2],
+                                                 self.projectionMatrix[
+                                                     l + K / 2],
+                                                 self.locCoeff,
+                                                 self.post_twidVec,
                                                  startingFrame,
                                                  endFrame,
-                                                 self.scale ,l)
-
+                                                 self.scale, l)
 
     def getMaximum(self):
-        K = self.scale/2
+        K = self.scale / 2
         bestL = 0
         treeMaxIdx = 0
         bestSCore = 0
-        for l in range(-K/2,K/2,1):
-            if self.bestScoreTree[l+K/2].max() > bestSCore:
-                bestSCore = self.bestScoreTree[l+K/2].max()
-                treeMaxIdx = self.bestScoreTree[l+K/2].argmax()
+        for l in range(-K / 2, K / 2, 1):
+            if self.bestScoreTree[l + K / 2].max() > bestSCore:
+                bestSCore = self.bestScoreTree[l + K / 2].max()
+                treeMaxIdx = self.bestScoreTree[l + K / 2].argmax()
                 bestL = l
 
-
-        maxIdx = abs(self.projectionMatrix[bestL + K/2]).argmax()
+        maxIdx = abs(self.projectionMatrix[bestL + K / 2]).argmax()
 
         self.maxLidx = bestL
 
         self.maxIdx = maxIdx
         self.maxFrameIdx = treeMaxIdx
-        self.maxValue = self.projectionMatrix[bestL + K/2][maxIdx]
-
+        self.maxValue = self.projectionMatrix[bestL + K / 2][maxIdx]
 
 #        print "Max Atom : " , self.maxIdx , self.maxLidx , self.maxValue
-
     # construct the atom that best correlates with the signal
     def getMaxAtom(self):
-        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5*self.scale)
+        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5 * self.scale)
 
-        Atom = atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignal.samplingFrequency)
+        Atom = atom.Atom(self.scale, 1, max((self.maxFrameIdx * self.scale / 2) - self.scale / 4, 0), self.maxBinIdx, self.residualSignal.samplingFrequency)
         Atom.frame = self.maxFrameIdx
 
         # re-compute the atom amplitude for IMDCT
@@ -739,35 +771,34 @@ class FullBlock(Block):
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesizeAtom()
 
-
-
-        Atom.timeShift = -self.maxLidx #+ self.scale/4
+        Atom.timeShift = -self.maxLidx  # + self.scale/4
         self.maxTimeShift = Atom.timeShift
 
         Atom.timePosition += Atom.timeShift
 
         return Atom
 
-
     def plotScores(self):
         ''' For debug purposes only... '''
 
         plt.figure()
 #        plt.subplot(211)
-        plt.plot(abs(self.projectionMatrix[self.maxLidx + self.scale/4]))
+        plt.plot(abs(self.projectionMatrix[self.maxLidx + self.scale / 4]))
 #        plt.title("reference l=0 , best k of "
 #                  + str(bestK)
-#                  + " max score of : " + str(abs(self.projectionMatrix[self.maxIdx][bestK,:]).max())
-#                  + " at l: " + str(abs(self.projectionMatrix[self.maxIdx][bestK,:]).argmax() - self.scale/4) )
+# + " max score of : " +
+# str(abs(self.projectionMatrix[self.maxIdx][bestK,:]).max())
+# + " at l: " + str(abs(self.projectionMatrix[self.maxIdx][bestK,:]).argmax() -
+# self.scale/4) )
 #        plt.subplot(212)
 #        plt.imshow(abs(self.projectionMatrix[self.maxIdx]) ,
 #                   aspect='auto', cmap = cm.get_cmap('greys') ,
 #                   extent=(-self.scale/4 , self.scale/4, self.scale/2, 0) ,
 #                   interpolation = 'nearest')
-        plt.title("Block-" + str(self.scale)+" best Score of" + str(self.maxValue)
-                  + " p :"+ str(self.maxFrameIdx)
+        plt.title("Block-" + str(self.scale) + " best Score of" + str(self.maxValue)
+                  + " p :" + str(self.maxFrameIdx)
 #                  +" , k: "+ str(self.maxKidx)
-                  +" , l: "+ str(self.maxLidx) )
+                  + " , l: " + str(self.maxLidx))
 
 
 class SpreadBlock(Block):
@@ -782,9 +813,8 @@ class SpreadBlock(Block):
     maskSize = None
     penalty = None
 
-
-    def __init__(self , length = 0 , resSignal = None , frameLen = 0 , useC =True , forceHF=False ,
-                 debugLevel = None , penalty=0.5 ,maskSize = 1):
+    def __init__(self, length=0, resSignal=None, frameLen=0, useC=True, forceHF=False,
+                 debugLevel=None, penalty=0.5, maskSize=1):
 
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
@@ -792,11 +822,11 @@ class SpreadBlock(Block):
         self.scale = length
         self.residualSignal = resSignal
 
-        if frameLen==0:
-            self.frameLength = length/2
+        if frameLen == 0:
+            self.frameLength = length / 2
         else:
             self.frameLength = frameLen
-        if self.residualSignal ==None:
+        if self.residualSignal == None:
             raise ValueError("no signal given")
 
         self.enframedDataMatrix = self.residualSignal.dataVec
@@ -811,7 +841,7 @@ class SpreadBlock(Block):
         self.mask = ones(len(self.enframedDataMatrix))
         self.maskSize = maskSize
 
-    def getMaximum(self, it = -1):
+    def getMaximum(self, it=-1):
         ''' Apply the mask to the projection before choosing the maximum '''
 
         # cannot use the tree indexing ant more... too bad
@@ -820,31 +850,33 @@ class SpreadBlock(Block):
 #        print self.enframedDataMatrix.shape, self.mask.shape
 
 #        plt.figure()
-#        plt.imshow(reshape(self.mask,(self.frameNumber,self.scale/2)),interpolation='nearest',aspect='auto')
+# plt.imshow(reshape(self.mask,(self.frameNumber,self.scale/2)),interpolation='
+# nearest',aspect='auto')
         self.maxIdx = argmax(abs(self.projectionMatrix))
 
 #        print self.maxIdx
 
-#        maxIdx = abs(self.projectionMatrix[treeMaxIdx*self.scale/2 : (treeMaxIdx+1)*self.scale/2]).argmax()
+# maxIdx = abs(self.projectionMatrix[treeMaxIdx*self.scale/2 :
+# (treeMaxIdx+1)*self.scale/2]).argmax()
 #        self.maxIdx = maxIdx + treeMaxIdx*self.scale/2
         self.maxValue = self.projectionMatrix[self.maxIdx]
 
-    def getMaxAtom(self , HF = False):
-        self.maxFrameIdx = floor(self.maxIdx / (0.5*self.scale))
-        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5*self.scale)
+    def getMaxAtom(self, HF=False):
+        self.maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
+        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5 * self.scale)
 
-        # update the mask : penalize the choice of an atom overlapping in time and or frequency
-        for i in range(-self.maskSize,self.maskSize+1,1):
-            self.mask[((self.maxFrameIdx+i)*self.scale/2) + (self.maxBinIdx- self.maskSize) : ((self.maxFrameIdx+i)*self.scale/2) + (self.maxBinIdx + self.maskSize)] = self.penalty
+        # update the mask : penalize the choice of an atom overlapping in time
+        # and or frequency
+        for i in range(-self.maskSize, self.maskSize + 1, 1):
+            self.mask[((self.maxFrameIdx + i) * self.scale / 2) + (self.maxBinIdx - self.maskSize): ((self.maxFrameIdx + i) * self.scale / 2) + (self.maxBinIdx + self.maskSize)] = self.penalty
 
         # proceed as usual
-        Atom = atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignal.samplingFrequency)
+        Atom = atom.Atom(self.scale, 1, max((self.maxFrameIdx * self.scale / 2) - self.scale / 4, 0), self.maxBinIdx, self.residualSignal.samplingFrequency)
         Atom.frame = self.maxFrameIdx
 
-        Atom.mdct_value =  self.maxValue
+        Atom.mdct_value = self.maxValue
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesizeAtom()
 
         return Atom
-

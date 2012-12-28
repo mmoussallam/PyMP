@@ -33,20 +33,21 @@ This class inherits from :class:`.pymp_Atom` and is used to represent and manipu
 
 """
 
+from numpy import math, zeros
 
-from base import BaseAtom
-import  win_server
-from numpy import math , zeros
-from tools.mdct import imdct
+from ..base import BaseAtom
+from .. import win_server
+from ..tools.mdct import imdct
 
 try:
-    from xml.dom.minidom import Document , Element
+    from xml.dom.minidom import Document, Element
 except ImportError:
     print "Atoms can be saved and recovered in xml format, but you XML library seems not available"
 
-global _PyServer , _Logger
+global _PyServer, _Logger
 # Initializing the waveform server as a global variable
 _PyServer = win_server.PyServer()
+
 
 class Atom(BaseAtom):
     """ MDCT atom class : implement real domain MDCT atoms of scale defined by the atom length
@@ -77,18 +78,16 @@ class Atom(BaseAtom):
 
     # MDCT attibutes
     nature = 'MDCT'
-    frequencyBin = 0;
-    frame = 0;
-    reducedFrequency = 0;
-
-
+    frequencyBin = 0
+    frame = 0
+    reducedFrequency = 0
 
     # for time-shift invariant atoms
     timeShift = None
     projectionScore = None
 
     # constructor
-    def __init__(self , scale=0 , amp = 0 , timePos=0 , freqBin = 0 , Fs = 0 , mdctCoeff = 0):
+    def __init__(self, scale=0, amp=0, timePos=0, freqBin=0, Fs=0, mdctCoeff=0):
         ''' Basic constructor setting atom parameters '''
         self.length = scale
         self.amplitude = amp
@@ -96,56 +95,59 @@ class Atom(BaseAtom):
         self.frequencyBin = freqBin
         self.samplingFrequency = Fs
         if self.length != 0:
-            self.reducedFrequency = (float(self.frequencyBin + 0.5) / float(self.length))
+            self.reducedFrequency = (
+                float(self.frequencyBin + 0.5) / float(self.length))
         self.mdct_value = mdctCoeff
 
-    # Synthesis routine - always prefer the PyWinServer unless you want a specific window to ba applied
-    def synthesize(self ,  value = None):
+    # Synthesis routine - always prefer the PyWinServer unless you want a
+    # specific window to ba applied
+    def synthesize(self,  value=None):
         """ synthesizes the waveform
             Specifies the amplitude, otherwise it will be initialiazed as unit-normed """
 
         global _PyServer
-        binIndex = math.floor(self.reducedFrequency * self.length);
-        if  value is None:
-            self.waveform =  self.mdct_value * _PyServer.getWaveForm(self.length , binIndex)
+        binIndex = math.floor(self.reducedFrequency * self.length)
+        if value is None:
+            self.waveform = self.mdct_value * _PyServer.getWaveForm(
+                self.length, binIndex)
         else:
-            self.waveform = value * _PyServer.getWaveForm(self.length , binIndex)
+            self.waveform = value * _PyServer.getWaveForm(
+                self.length, binIndex)
 
-
-    def synthesizeIFFT(self , newValue=None):
+    def synthesizeIFFT(self, newValue=None):
         ''' DEPRECATED synthesis using Python fftw3 wrapper but no waveform server... a lot slower '''
-        mdctVec = zeros(3*self.length);
+        mdctVec = zeros(3 * self.length)
         if newValue is None:
-            mdctVec[self.length +  self.frequencyBin] = self.mdct_value;
+            mdctVec[self.length + self.frequencyBin] = self.mdct_value
         else:
-            mdctVec[self.length +  self.frequencyBin] = newValue;
-        self.waveform =  imdct(mdctVec , self.length)[0.75*self.length : 1.75*self.length]
+            mdctVec[self.length + self.frequencyBin] = newValue
+        self.waveform = imdct(
+            mdctVec, self.length)[0.75 * self.length: 1.75 * self.length]
         return self.waveform
-
 
     def __eq__(self, other):
         ''' overloaded equality operator, allows testing equality between atom objects '''
-        if not isinstance(other , BaseAtom):
+        if not isinstance(other, BaseAtom):
             return False
-        return ( (self.length == other.length) & (self.timePosition == other.timePosition) & (self.frequencyBin == other.frequencyBin))
+        return ((self.length == other.length) & (self.timePosition == other.timePosition) & (self.frequencyBin == other.frequencyBin))
 
-    def toXml(self , xmlDoc):
+    def toXml(self, xmlDoc):
         ''' Useful routine to output the object as an XML node '''
         if not isinstance(xmlDoc, Document):
             raise TypeError('Xml document not provided')
 
         atomNode = xmlDoc.createElement('Atom')
-        atomNode.setAttribute('nature',str(self.nature))
-        atomNode.setAttribute('length',str(self.length))
-        atomNode.setAttribute('tP',str(int(self.timePosition)))
-        atomNode.setAttribute('fB',str(int(self.frequencyBin)))
-        atomNode.setAttribute('frame',str(int(self.frame)))
-        atomNode.setAttribute('value',str(self.mdct_value))
-        atomNode.setAttribute('Fs',str(self.samplingFrequency))
+        atomNode.setAttribute('nature', str(self.nature))
+        atomNode.setAttribute('length', str(self.length))
+        atomNode.setAttribute('tP', str(int(self.timePosition)))
+        atomNode.setAttribute('fB', str(int(self.frequencyBin)))
+        atomNode.setAttribute('frame', str(int(self.frame)))
+        atomNode.setAttribute('value', str(self.mdct_value))
+        atomNode.setAttribute('Fs', str(self.samplingFrequency))
 
         if self.projectionScore is not None:
-            atomNode.setAttribute('timeShift',str(self.timeShift))
-            atomNode.setAttribute('score',str(self.projectionScore))
+            atomNode.setAttribute('timeShift', str(self.timeShift))
+            atomNode.setAttribute('score', str(self.projectionScore))
 
         return atomNode
 
@@ -154,19 +156,22 @@ class Atom(BaseAtom):
             This method should be as fast as possible"""
         waveform1 = self.getWaveform()
         waveform2 = otherAtom.getWaveform()
-        startIdx = max(self.frame * self.length , otherAtom.frame * otherAtom.length)
-        stopIdx =  min((self.frame+1) * self.length , (otherAtom.frame+1) * otherAtom.length)
+        startIdx = max(
+            self.frame * self.length, otherAtom.frame * otherAtom.length)
+        stopIdx = min((self.frame + 1) * self.length, (otherAtom.
+            frame + 1) * otherAtom.length)
 
         if startIdx >= stopIdx:
-            return 0; # disjoint support
+            return 0
+            # disjoint support
 
-        start1 = startIdx- self.frame * self.length
-        start2 = startIdx- otherAtom.frame * otherAtom.length
+        start1 = startIdx - self.frame * self.length
+        start2 = startIdx - otherAtom.frame * otherAtom.length
         duration = stopIdx - startIdx
-        norm1 = math.sqrt(sum(waveform1**2))
-        norm2 = math.sqrt(sum(waveform2**2))
+        norm1 = math.sqrt(sum(waveform1 ** 2))
+        norm2 = math.sqrt(sum(waveform2 ** 2))
 
-        return (self.mdct_value * otherAtom.mdct_value)* sum( waveform1[start1: start1+duration] *  waveform2[start2: start2+duration]) / (norm1*norm2)
+        return (self.mdct_value * otherAtom.mdct_value) * sum(waveform1[start1: start1 + duration] * waveform2[start2: start2 + duration]) / (norm1 * norm2)
 #        return sum(self.getWaveform() * otherAtom.getWaveform())
 
     def getWaveform(self):
@@ -185,16 +190,17 @@ class Atom(BaseAtom):
                                    self.samplingFrequency,
                                    self.mdct_value)
         copyAtom.frame = self.frame
-        copyAtom.projectionScore =  self.projectionScore
-        copyAtom.timeShift =  self.timeShift
+        copyAtom.projectionScore = self.projectionScore
+        copyAtom.timeShift = self.timeShift
         if self.waveform is not None:
-            copyAtom.waveform =  self.waveform
+            copyAtom.waveform = self.waveform
         else:
-            copyAtom.synthesize();
+            copyAtom.synthesize()
         return copyAtom
 
     def getAmplitude(self):
-        return self.mdct_value;
+        return self.mdct_value
+
 
 def fromXml(xmlNode):
     ''' Construct an Object from the corresponding XML Node '''
@@ -209,8 +215,8 @@ def fromXml(xmlNode):
                               float(xmlNode.getAttribute('value')))
 
     atom.frame = int(xmlNode.getAttribute('frame'))
-    if not xmlNode.getAttribute('timeShift') in ('None' ,'') :
+    if not xmlNode.getAttribute('timeShift') in ('None', ''):
         atom.timeShift = int(xmlNode.getAttribute('timeShift'))
-    if not xmlNode.getAttribute('score') in ('None' ,''):
+    if not xmlNode.getAttribute('score') in ('None', ''):
         atom.projectionScore = float(xmlNode.getAttribute('score'))
     return atom
