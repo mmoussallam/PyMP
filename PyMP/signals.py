@@ -54,7 +54,7 @@ _Logger = log.Log('Signal', imode=False)
 class Signal(object):
     """This file defines the main class handling audio signal in the Pymp Framework.
 
-    A Signal is fairly a numpy array (called dataVec) and a collection of attributes.
+    A Signal is fairly a numpy array (called data) and a collection of attributes.
     Longer signals should not be loaded in memory. the `LongSignal` class allows
     to define this kind of signal, and slice it in frames overlapping or not.
 
@@ -99,8 +99,7 @@ class Signal(object):
     """
 
     # att
-    dataVec = []
-    #
+    data = []    
     channelNumber = 0
     length = 0
     samplingFrequency = 0
@@ -110,40 +109,53 @@ class Signal(object):
     energy = 0
 
     # Constructor
-    def __init__(self, data=[], Fs=0, doNormalize=False, debugLevel=None):
-        ''' Simple constructor from a numpy array (data) '''
+    def __init__(self, data=[], Fs=0, doNormalize=False, forceMono=False, debugLevel=None):
+        ''' Simple constructor from a numpy array (data) or a string '''
+        
+        if isinstance(data, str):
+            self.location = data        
+            Sf = SoundFile.SoundFile(data)            
+            self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
+            self.sampleWidth = Sf.sampleWidth
+            if forceMono:
+                self.data = self.data[:, 0]
+    
+            Fs = Sf.sampleRate;
+        else:
+            self.data = np.array(data)
+        
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
-        self.dataVec = np.array(data)
+        
         self.length = len(data)
         self.samplingFrequency = Fs
 
-        if len(self.dataVec.shape) > 1:
-            self.channelNumber = min(self.dataVec.shape)
+        if len(self.data.shape) > 1:
+            self.channelNumber = min(self.data.shape)
         else:
             self.channelNumber = 1
 
         if doNormalize & (self.length > 0):
             _Logger.info('Normalizing Signal')
-            normaFact = self.dataVec.max()
-            self.dataVec = self.dataVec.astype(float) / float(normaFact)
+            normaFact = self.data.max()
+            self.data = self.data.astype(float) / float(normaFact)
             self.isNormalized = True
 
         if len(data) > 0:
-            self.energy = sum(data ** 2)
+            self.energy = sum(self.data ** 2)
             _Logger.info('Signal created with energy: ' + str(self.energy))
 
     def normalize(self):
         ''' makes sure all values of the array are between -1 and 1 '''
         _Logger.info('Normalizing Signal')
-        normaFact = abs(self.dataVec).max()
-        self.dataVec = self.dataVec.astype(float) / float(normaFact)
-        self.energy = sum(self.dataVec ** 2)
+        normaFact = abs(self.data).max()
+        self.data = self.data.astype(float) / float(normaFact)
+        self.energy = sum(self.data ** 2)
         self.isNormalized = True
 
     def plot(self, legend=None):
         ''' DEPRECATED plot the array using matplotlib '''
-        plt.plot(self.dataVec)
+        plt.plot(self.data)
         if legend != None:
             plt.legend((legend))
         plt.show()
@@ -159,17 +171,17 @@ class Signal(object):
             _Logger.error('Stopping Index ' + str(
                 stopIndex) + ' is beyond signal length of ' + str(self.length))
 #            raise ValueError("Stopping Index beyond signal dimensions")
-        if (len(self.dataVec.shape) > 1):
-            if (self.dataVec.shape[0] > self.dataVec.shape[1]):
-                self.dataVec = self.dataVec[startIndex:stopIndex, :]
+        if (len(self.data.shape) > 1):
+            if (self.data.shape[0] > self.data.shape[1]):
+                self.data = self.data[startIndex:stopIndex, :]
             else:
-                self.dataVec = self.dataVec[:, startIndex:stopIndex]
+                self.data = self.data[:, startIndex:stopIndex]
         else:
-            self.dataVec = self.dataVec[startIndex:stopIndex]
+            self.data = self.data[startIndex:stopIndex]
         self.length = stopIndex - startIndex
 
     def copy(self):
-        copiedSignal = Signal(self.dataVec.copy(), self.samplingFrequency)
+        copiedSignal = Signal(self.data.copy(), self.samplingFrequency)
         copiedSignal.location = self.location
         copiedSignal.channelNumber = self.channelNumber
         copiedSignal.sampleWidth = self.sampleWidth
@@ -185,31 +197,31 @@ class Signal(object):
 #            print "Resynth"
             atom.synthesize()
         # Keep track of the energy to make
-        oldEnergy = (self.dataVec[atom.timePosition: atom.
+        oldEnergy = (self.data[atom.timePosition: atom.
             timePosition + atom.length] ** 2).sum()
 
         # In high debugging levels, show the process using matplotlib
         if debug > 2:
             plt.figure()
-            plt.plot(self.dataVec[atom.timePosition: atom.
+            plt.plot(self.data[atom.timePosition: atom.
                 timePosition + atom.length])
             plt.plot(atom.waveform)
-            plt.plot(self.dataVec[atom.timePosition: atom.
+            plt.plot(self.data[atom.timePosition: atom.
                 timePosition + atom.length] - atom.waveform, ':')
             plt.legend(('Signal', 'Atom substracted', 'residual'))
             plt.show()
 
         # actual subtraction
-        self.dataVec[atom.timePosition: atom.timePosition + atom.
+        self.data[atom.timePosition: atom.timePosition + atom.
             length] -= atom.waveform
 
-        newEnergy = (self.dataVec[atom.timePosition: atom.
+        newEnergy = (self.data[atom.timePosition: atom.
             timePosition + atom.length] ** 2).sum()
 
         # Test
         if (newEnergy > oldEnergy) and preventEnergyIncrease:
             # do not substract the atom
-            self.dataVec[atom.timePosition: atom.
+            self.data[atom.timePosition: atom.
                 timePosition + atom.length] += atom.waveform
             # get out of here
             _Logger.error('Warning : Substracted Atom created energy : at pos: '
@@ -231,11 +243,11 @@ class Signal(object):
         subRatio = float(self.samplingFrequency) / float(newFs)
         indexes = np.floor(np.arange(0, self.length, subRatio))
 #        print indexes
-        self.dataVec = self.dataVec[indexes.tolist()]
-        self.length = len(self.dataVec)
+        self.data = self.data[indexes.tolist()]
+        self.length = len(self.data)
         self.samplingFrequency = newFs
 
-    def add(self, atom, window=None):
+    def add(self, atom):
         ''' adds the contribution of the atom at the position specified by the atom.timeLocalization property '''
         if not isinstance(atom, base.BaseAtom):
             raise TypeError("argument provided is not an atom")
@@ -244,47 +256,47 @@ class Signal(object):
             print "Resynthesizing"
             atom.synthesize()
 
-        localEnergy = np.sum(self.dataVec[atom.timePosition: atom.
+        localEnergy = np.sum(self.data[atom.timePosition: atom.
             timePosition + atom.length] ** 2)
 
         # do sum calculation
         try:
-            self.dataVec[atom.timePosition: atom.
+            self.data[atom.timePosition: atom.
                 timePosition + atom.length] += atom.waveform
         except:
             _Logger.error('Mispositionned atom: ' + str(atom.
                 timePosition) + ' and length ' + str(atom.length))
 #        # update energy value
-        self.energy += np.sum(self.dataVec[atom.timePosition: atom.
+        self.energy += np.sum(self.data[atom.timePosition: atom.
             timePosition + atom.length] ** 2) - localEnergy
 
     # Pad edges with zeroes
     def pad(self, zero_pad):
         ''' Pad edges with zeroes '''
         try:
-            self.dataVec = np.concatenate((np.concatenate(
-                (np.zeros(zero_pad), self.dataVec)), np.zeros(zero_pad)))
-            self.length = len(self.dataVec)
+            self.data = np.concatenate((np.concatenate(
+                (np.zeros(zero_pad), self.data)), np.zeros(zero_pad)))
+            self.length = len(self.data)
         except ValueError:
-            print(self.dataVec.shape)
+            print(self.data.shape)
             _Logger.error(
-                "Wrong dimension number %s" % str(self.dataVec.shape))
+                "Wrong dimension number %s" % str(self.data.shape))
 
     def depad(self, zero_pad):
         ''' Remove zeroes from the edges WARNING: no test on the deleted data: make sure these are zeroes! '''
         try:
-            self.dataVec = self.dataVec[zero_pad:-zero_pad]
-            self.length = len(self.dataVec)
+            self.data = self.data[zero_pad:-zero_pad]
+            self.length = len(self.data)
         except ValueError:
-            print(self.dataVec.shape)
+            print(self.data.shape)
             _Logger.error(
-                "Wrong dimension number %s" % str(self.dataVec.shape))
+                "Wrong dimension number %s" % str(self.data.shape))
 
-    def doWindow(self, K):
-        ''' DEPRECATED '''
-        self.dataVec[0:K] *= np.sin((np.arange(K).astype(float)) * np.pi / (2 * K))
-        self.dataVec[-K:] *= np.sin((np.arange(K).astype(float)) * np.pi / (
-            2 * K) + np.pi / 2)
+#    def doWindow(self, K):
+#        ''' DEPRECATED '''
+#        self.data[0:K] *= np.sin((np.arange(K).astype(float)) * np.pi / (2 * K))
+#        self.data[-K:] *= np.sin((np.arange(K).astype(float)) * np.pi / (
+#            2 * K) + np.pi / 2)
 
     def write(self, fileOutputPath, pad=0):
         ''' Write the current signal at the specified location in wav format
@@ -295,11 +307,11 @@ class Signal(object):
 
         if self.energy == 0:
             _Logger.warning("Zero-energy signal")
-            self.dataVec = np.zeros(self.length,)
+            self.data = np.zeros(self.length,)
 #            print "Warning!!!! Zero-energy signal:"
 
-        file = wave.open(fileOutputPath, 'wb')
-        file.setparams((self.channelNumber,
+        wav_file = wave.open(fileOutputPath, 'wb')
+        wav_file.setparams((self.channelNumber,
                             self.sampleWidth,
                             self.samplingFrequency,
                             self.length,
@@ -310,35 +322,35 @@ class Signal(object):
         if not self.isNormalized:
             self.normalize()
 
-        for i in range(len(self.dataVec)):
-            if np.isnan(self.dataVec[i]):
+        for i in range(len(self.data)):
+            if np.isnan(self.data[i]):
                 _Logger.warning("NaN data found: replaced by 0")
-                self.dataVec[i] = 0
-            if self.dataVec[i] < -1:
+                self.data[i] = 0
+            if self.data[i] < -1:
                 _Logger.warning(str(i) + 'th sample was below -1: cropping')
-                self.dataVec[i] = -1
-            if self.dataVec[i] > 1:
+                self.data[i] = -1
+            if self.data[i] > 1:
                 _Logger.warning(str(i) + 'th sample was over 1: cropping')
-                self.dataVec[i] = 1
-            value = int(16384 * self.dataVec[i])
+                self.data[i] = 1
+            value = int(16384 * self.data[i])
             packed_value = struct.pack('h', value)
             values.append(packed_value)
 
         value_str = ''.join(values)
-        file.writeframes(value_str)
+        wav_file.writeframes(value_str)
 
 #        else:
 # _Logger.warning("Warning BUGFIX not done yet, chances are writing failed");
-#            file.writeframes((self.dataVec).astype(int).tostring())
-        file.close()
+#            wav_file.writeframes((self.data).astype(int).tostring())
+        wav_file.close()
 
-    def WignerVPlot(self, window=True):
+    def wigner_plot(self, window=True):
         """ Calculate the wigner ville distribution and plots it
         WARNING: not sufficiently tested!"""
         from numpy.fft import ifft, fft, ifftshift, fftshift
 
         N = self.length
-        Ex = self.dataVec
+        Ex = self.data
 
         # ensure the signal is mono (take left canal if stereo)
         if len(Ex.shape) > 1 and not (Ex.shape[1] == 1):
@@ -378,27 +390,27 @@ class Signal(object):
         return W
 
 
-def InitFromFile(filepath, forceMono=False, doNormalize=False, debugLevel=None):
-    ''' Static method to create a Signal from a wav file on the disk
-        This is based on the wave Python library through the use of the Tools.SoundFile class
-        '''
-    if debugLevel is not None:
-        _Logger.setLevel(debugLevel)
-    Sf = SoundFile.SoundFile(filepath)
-    #print Sf.GetAsMatrix().shape
-    reshapedData = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
-    if forceMono:
-        reshapedData = reshapedData[:, 0]
-
-    sig = Signal(reshapedData, Sf.sampleRate, doNormalize)
-    sig.sampleWidth = Sf.sampleWidth
-    sig.location = filepath
-
-    _Logger.info("Created Signal of length " + str(
-        sig.length) + " samples of " + str(sig.channelNumber) + "channels")
-    # print "Created Signal of length " + str(Signal.length) +" samples " #of "
-    # + str(Signal.channelNumber) + "channels"
-    return sig
+#def InitFromFile(filepath, forceMono=False, doNormalize=False, debugLevel=None):
+#    ''' Static method to create a Signal from a wav file on the disk
+#        This is based on the wave Python library through the use of the Tools.SoundFile class
+#        '''
+#    if debugLevel is not None:
+#        _Logger.setLevel(debugLevel)
+#    Sf = SoundFile.SoundFile(filepath)
+#    #print Sf.GetAsMatrix().shape
+#    reshapedData = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
+#    if forceMono:
+#        reshapedData = reshapedData[:, 0]
+#
+#    sig = Signal(reshapedData, Sf.sampleRate, doNormalize)
+#    sig.sampleWidth = Sf.sampleWidth
+#    sig.location = filepath
+#
+#    _Logger.info("Created Signal of length " + str(
+#        sig.length) + " samples of " + str(sig.channelNumber) + "channels")
+#    # print "Created Signal of length " + str(Signal.length) +" samples " #of "
+#    # + str(Signal.channelNumber) + "channels"
+#    return sig
 
 
 class LongSignal(Signal):

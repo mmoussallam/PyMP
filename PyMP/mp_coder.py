@@ -150,8 +150,8 @@ def simple_mdct_encoding(approx ,
     # Evaluate True Bitrate            
     bitrate = float(nbBitsSoFar)/(float(approx.length)/float(approx.samplingFrequency))
         
-    approxEnergy = sum(quantizedApprox.recomposedSignal.dataVec**2)
-    resEnergy = sum((approx.originalSignal.dataVec - quantizedApprox.recomposedSignal.dataVec)**2)
+    approxEnergy = sum(quantizedApprox.recomposedSignal.data**2)
+    resEnergy = sum((approx.originalSignal.data - quantizedApprox.recomposedSignal.data)**2)
     
     # Evaluate distorsion 
     SNR = 10.0*log( approxEnergy / resEnergy , 10)

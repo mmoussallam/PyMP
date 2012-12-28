@@ -1,27 +1,21 @@
 Classes Package Documentation:
 ------------------------------
 
-The :mod:`.Classes` Package contains all basic pymp_objects such as :class:`.pymp_Signal` , :class:`.pymp_Dico`, 
-:class:`.pymp_Atom` , :class:`.pymp_Approx` and :class:`.pymp_Block`
-
-    .. automodule:: Classes
+The root PyMP package contains all basic pymp objects such as :class:`.Signal` ,  :class:`.Approx` and abstract classes :class:`.Dico`, 
+:class:`.Atom` and :class:`.Block`
+    
 		
 Signal and Approximation Handles
 ********************************
 		
-	.. automodule:: Classes.pymp_Signal
-		:members: pymp_Signal , InitFromFile , pymp_LongSignal
+	.. automodule:: signals
+		:members: Signal, LongSignal
 
-	.. automodule:: Classes.pymp_Approx
+	.. automodule:: approx
 		:members:
 
 Abstract MP classes
 *******************
-	.. automodule:: Classes.pymp_Atom
-		:members: 
-		
-	.. automodule:: Classes.pymp_Block
-		:members: 	
-		
-	.. automodule:: Classes.pymp_Dico
-		:members:
+	.. automodule:: base
+		:members: BaseAtom, BaseDico, BaseBlock
+

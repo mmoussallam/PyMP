@@ -66,7 +66,7 @@ class RandomBlock(mdct_block.Block):
         if self.residualSignal == None:
             raise ValueError("no signal given")
 
-        self.enframedDataMatrix = self.residualSignal.dataVec
+        self.enframedDataMatrix = self.residualSignal.data
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
         self.projectionMatrix = zeros(len(self.enframedDataMatrix))
 
@@ -120,7 +120,7 @@ class RandomBlock(mdct_block.Block):
         L = self.scale
 
         # update residual signal
-        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.dataVec[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
+        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
 
         # TODO changes here
         self.computeTransform(startFrameIdx, stopFrameIdx)

@@ -63,10 +63,11 @@ import matplotlib.pyplot as plt
 
 from .. import win_server
 from .. import  log
-from ..base import BaseBlock
-from . import atom
 from ..tools import Xcorr  # , Misc
 from .. import parallelProjections
+from ..base import BaseBlock
+from . import atom
+
 
 
 # declare global PyWinServer shared by all MDCT blocks instances
@@ -135,7 +136,7 @@ class Block(BaseBlock):
         if self.residualSignal == None:
             raise ValueError("no signal given")
 
-        self.enframedDataMatrix = self.residualSignal.dataVec
+        self.enframedDataMatrix = self.residualSignal.data
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
         self.projectionMatrix = np.zeros(len(self.enframedDataMatrix))
         self.useC = useC
@@ -240,7 +241,7 @@ class Block(BaseBlock):
 
         L = self.scale
 
-        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.dataVec[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
+        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
 
         self.computeTransform(startFrameIdx, stopFrameIdx)
 
@@ -404,7 +405,7 @@ class LOBlock(Block):
         if self.residualSignal == None:
             raise ValueError("no signal given")
 
-        self.enframedDataMatrix = self.residualSignal.dataVec
+        self.enframedDataMatrix = self.residualSignal.data
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
 
         # only difference , here, we keep the complex values for the cross
@@ -647,7 +648,7 @@ class FullBlock(Block):
         if self.residualSignal == None:
             raise ValueError("no signal given")
 
-        self.enframedDataMatrix = self.residualSignal.dataVec
+        self.enframedDataMatrix = self.residualSignal.data
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
 
         # ok here the mdct will be computed for every possible time shift
@@ -700,7 +701,7 @@ class FullBlock(Block):
 # endFrameIdx
 
         # update residual signal
-        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.dataVec[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
+        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
 
         # TODO changes here
         self.computeTransform(startFrameIdx, stopFrameIdx)
@@ -829,7 +830,7 @@ class SpreadBlock(Block):
         if self.residualSignal == None:
             raise ValueError("no signal given")
 
-        self.enframedDataMatrix = self.residualSignal.dataVec
+        self.enframedDataMatrix = self.residualSignal.data
         self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
         self.projectionMatrix = np.zeros(len(self.enframedDataMatrix))
         self.useC = useC

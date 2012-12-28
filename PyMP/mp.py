@@ -187,10 +187,10 @@ def mp(originalSignal,
                 print "Atom scale : ", bestAtom.length, " , frequency Bin: ", bestAtom.frequencyBin, " , location : ", bestAtom.timePosition, " , Time Shift : ", bestAtom.timeShift, " , value : ", bestAtom.getAmplitude()
             if debug > 1:
                 plt.figure()
-                plt.plot(residualSignal.dataVec[bestAtom.
+                plt.plot(residualSignal.data[bestAtom.
                     timePosition: bestAtom.timePosition + bestAtom.length])
                 plt.plot(bestAtom.waveform)
-                plt.plot(residualSignal.dataVec[bestAtom.timePosition: bestAtom.timePosition +
+                plt.plot(residualSignal.data[bestAtom.timePosition: bestAtom.timePosition +
                      bestAtom.length] - bestAtom.waveform, ':')
                 plt.legend(('Signal', 'Atom substracted', 'residual'))
                 plt.title('Iteration ' + str(iterationNumber))
@@ -201,7 +201,7 @@ def mp(originalSignal,
 
         if debug > 1:
             _Logger.debug("new residual energy of " + str(sum(
-                residualSignal.dataVec ** 2)))
+                residualSignal.data ** 2)))
 
         if not cutBorders:
             resEnergy.append(residualSignal.energy)
@@ -210,7 +210,7 @@ def mp(originalSignal,
             # eventually energy has been created
             padd = 256
             # assume padding is max dictionaty size
-            resEnergy.append(np.sum(residualSignal.dataVec[padd:-padd] ** 2))
+            resEnergy.append(np.sum(residualSignal.data[padd:-padd] ** 2))
 
         # add atom to dictionary
         currentApprox.addAtom(
@@ -224,7 +224,7 @@ def mp(originalSignal,
 #            plt.subplot(121)
             plt.title('Iteration : ' + str(iterationNumber) +
                  ' , SRR : ' + str(approxSRR))
-            ax1.plot(currentApprox.recomposedSignal.dataVec)
+            ax1.plot(currentApprox.recomposedSignal.data)
             ax2.clear()
 
             plt.draw()
@@ -263,8 +263,8 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
 
     # retrieve approximation from residual
     if currentApprox.recomposedSignal is not None:
-        residualSignal.dataVec -= currentApprox.recomposedSignal.dataVec
-        residualSignal.energy = sum(residualSignal.dataVec ** 2)
+        residualSignal.data -= currentApprox.recomposedSignal.data
+        residualSignal.energy = sum(residualSignal.data ** 2)
     else:
         for atom in currentApprox.atoms:
             residualSignal.subtract(atom, debug)
@@ -317,10 +317,10 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
             print "Something wrong happened at iteration ", iterationNumber, " atom substraction abandonned"
             if debug > 1:
                 plt.figure()
-                plt.plot(residualSignal.dataVec[bestAtom.
+                plt.plot(residualSignal.data[bestAtom.
                     timePosition: bestAtom.timePosition + bestAtom.length])
                 plt.plot(bestAtom.waveform)
-                plt.plot(residualSignal.dataVec[bestAtom.timePosition: bestAtom.timePosition +
+                plt.plot(residualSignal.data[bestAtom.timePosition: bestAtom.timePosition +
                      bestAtom.length] - bestAtom.waveform, ':')
                 plt.legend(('Signal', 'Atom substracted', 'residual'))
                 plt.show()
@@ -336,14 +336,14 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
 
         if debug > 1:
             plt.figure()
-            plt.plot(originalSignal.dataVec)
-            plt.plot(residualSignal.dataVec, '--')
+            plt.plot(originalSignal.data)
+            plt.plot(residualSignal.data, '--')
             plt.legend(
                 ("original", "residual at iteration " + str(iterationNumber)))
             plt.show()
 
         if debug > 0:
-            print "new residual energy of ", sum(residualSignal.dataVec ** 2)
+            print "new residual energy of ", sum(residualSignal.data ** 2)
 
         # BUGFIX?
         resEnergy.append(residualSignal.energy)
@@ -530,20 +530,20 @@ def GP(originalSignal,
 #        c = dictionary.synthesize( spVec , currentApprox.length)
 
         # calcul step size
-        alpha = np.dot(residualSignal.dataVec, c) / np.dot(c.T, c)
+        alpha = np.dot(residualSignal.data, c) / np.dot(c.T, c)
 
         # update residual
         gains += alpha * gradient
 
         if doWatchSRR:
             # recreate the approximation
-            currentApprox.recomposedSignal.dataVec = np.dot(
+            currentApprox.recomposedSignal.data = np.dot(
                 projMatrix, gains)
 # currentApprox.recomposedSignal.dataVec = gains * projMatrix[: ,
 # columnIndexes].tocsc().T;
         # update residual
 #        substract(residualSignal , alpha , c)
-        residualSignal.dataVec -= alpha * c
+        residualSignal.data -= alpha * c
 # residualSignal.dataVec = originalSignal.dataVec -
 # currentApprox.recomposedSignal.dataVec
 
@@ -554,9 +554,9 @@ def GP(originalSignal,
 #            print gains
 
             plt.figure()
-            plt.plot(originalSignal.dataVec, 'b--')
-            plt.plot(currentApprox.recomposedSignal.dataVec, 'k-')
-            plt.plot(residualSignal.dataVec, 'r:')
+            plt.plot(originalSignal.data, 'b--')
+            plt.plot(currentApprox.recomposedSignal.data, 'k-')
+            plt.plot(residualSignal.data, 'r:')
             plt.plot(alpha * c, 'g')
             plt.legend(
                 ('original', 'recomposed so far', 'residual', 'subtracted'))
@@ -565,11 +565,11 @@ def GP(originalSignal,
 # resEnergy.append(sum((originalSignal.dataVec -
 # currentApprox.recomposedSignal.dataVec)**2))
         resEnergy.append(
-            np.dot(residualSignal.dataVec.T, residualSignal.dataVec))
+            np.dot(residualSignal.data.T, residualSignal.data))
 
         if doWatchSRR:
             recomposedEnergy = np.dot(currentApprox.recomposedSignal.
-                dataVec.T, currentApprox.recomposedSignal.dataVec)
+                data.T, currentApprox.recomposedSignal.data)
 
             # compute new SRR and increment iteration Number
             approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
@@ -680,13 +680,13 @@ def OMP(originalSignal,
 
         # Orthogonal projection via pseudo inverse calculation
         ProjectedScores = np.dot(np.linalg.pinv(projMatrix),
-            originalSignal.dataVec.reshape(originalSignal.length, 1))
+            originalSignal.data.reshape(originalSignal.length, 1))
 
         # update residual
-        currentApprox.recomposedSignal.dataVec = np.dot(
+        currentApprox.recomposedSignal.data = np.dot(
             projMatrix, ProjectedScores)[:, 0]
 
-        residualSignal.dataVec = originalSignal.dataVec - currentApprox.recomposedSignal.dataVec
+        residualSignal.data = originalSignal.data - currentApprox.recomposedSignal.data
 
 #        # add atom to dictionary
 #        currentApprox.addAtom(bestAtom , dictionary.bestCurrentBlock.wLong)
@@ -699,9 +699,9 @@ def OMP(originalSignal,
 #        residualSignal.subtract(bestAtom , debug)
 #        dictionary.computeTouchZone(bestAtom)
         resEnergy.append(
-            np.dot(residualSignal.dataVec.T, residualSignal.dataVec))
+            np.dot(residualSignal.data.T, residualSignal.data))
         recomposedEnergy = np.dot(currentApprox.recomposedSignal.
-            dataVec.T, currentApprox.recomposedSignal.dataVec)
+            data.T, currentApprox.recomposedSignal.data)
 
         # compute new SRR and increment iteration Number
         approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])

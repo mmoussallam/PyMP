@@ -133,6 +133,8 @@ class Approx:
             np.zeros(self.length), self.samplingFrequency)
         self.recomposedSignal.isNormalized = isNormalized
 
+    
+
     def synthesize(self, method=0, forceReSynthesis=True):
         """ function that will synthesise the approximant using the list of atoms
             this is mostly DEPRECATED"""
@@ -186,8 +188,7 @@ class Approx:
                     synthesizedSignal[atom.timePosition:
                          atom.timePosition + atom.length] += atom.waveform
 
-            self.recomposedSignal = signals.Signal(
-                synthesizedSignal, self.samplingFrequency)
+            self.recomposedSignal = signals.Signal(synthesizedSignal, self.samplingFrequency)
             #return self.recomposedSignal
         # other case: we just give the existing synthesized Signal.
         return self.recomposedSignal
@@ -238,7 +239,7 @@ class Approx:
         # add atom waveform to the internal signal if exists
         if not noWf:
             if self.recomposedSignal != None:
-                self.recomposedSignal.add(newAtom, window)
+                self.recomposedSignal.add(newAtom)
             else:
                 self.synthesize(0, True)
     #            print "approx resynthesized"
@@ -274,9 +275,9 @@ class Approx:
         if recomposedEnergy <= 0:
             return np.NINF
 
-        if residual is None:
-            resEnergy = sum((self.originalSignal.dataVec -
-                 self.recomposedSignal.dataVec) ** 2)
+        if residual is None:            
+            resEnergy = sum((self.originalSignal.data - 
+                 self.recomposedSignal.data) ** 2)
         else:
             resEnergy = residual.energy
 # resEnergy = sum((self.originalSignal.dataVec -

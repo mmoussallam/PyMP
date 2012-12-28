@@ -249,9 +249,9 @@ class Test(unittest.TestCase):
         pySig3.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
         pySig4.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
 
-        pySig2.dataVec += pySig.dataVec
-        pySig3.dataVec += pySig.dataVec
-        pySig4.dataVec += pySig.dataVec
+        pySig2.data += pySig.data
+        pySig3.data += pySig.data
+        pySig4.data += pySig.data
 
         pySig2.pad(8192)
         pySig3.pad(8192)
@@ -313,9 +313,9 @@ class Test(unittest.TestCase):
         pySig3.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
         pySig4.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
 
-        pySig2.dataVec += pySig.dataVec
-        pySig3.dataVec += pySig.dataVec
-        pySig4.dataVec += pySig.dataVec
+        pySig2.data += pySig.data
+        pySig3.data += pySig.data
+        pySig4.data += pySig.data
 
         pySig2.pad(8192)
         pySig3.pad(8192)
@@ -487,7 +487,7 @@ class Test(unittest.TestCase):
                                                                                        jointDicoTol, 10, nbatoms ,debug=0)
 
         for i in range(len(residualSignalList)):
-            print np.sum(residualSignalList[i].dataVec **2),  np.sum(residualSignalListTol[i].dataVec **2)
+            print np.sum(residualSignalList[i].data **2),  np.sum(residualSignalListTol[i].data **2)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

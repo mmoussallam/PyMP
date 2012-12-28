@@ -88,10 +88,10 @@ class SetBlock(mdct_block.Block):
 
                 # TODO :  just forbid the creation of atom in this zone
                 pad = self.length - self.residualSignalList[sigIdx].length
-                self.residualSignalList[sigIdx].dataVec = np.concatenate((self.residualSignalList[sigIdx].dataVec , np.zeros(pad)))
+                self.residualSignalList[sigIdx].data = np.concatenate((self.residualSignalList[sigIdx].data , np.zeros(pad)))
                 self.residualSignalList[sigIdx].length += pad
 
-            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
+            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].data
 
         self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
 
@@ -211,7 +211,7 @@ class SetBlock(mdct_block.Block):
             else:
                 stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].dataVec[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -326,10 +326,10 @@ class SetLOBlock(mdct_block.Block):
 
                 # TODO :  just forbid the creation of atom in this zone
                 pad = self.length - self.residualSignalList[sigIdx].length
-                self.residualSignalList[sigIdx].dataVec = np.concatenate((self.residualSignalList[sigIdx].dataVec , np.zeros(pad)))
+                self.residualSignalList[sigIdx].data = np.concatenate((self.residualSignalList[sigIdx].data , np.zeros(pad)))
                 self.residualSignalList[sigIdx].length += pad
 
-            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
+            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].data
 
         self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
 
@@ -453,7 +453,7 @@ class SetLOBlock(mdct_block.Block):
             else:
                 stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].dataVec[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -688,10 +688,10 @@ class RandomSetBlock(SetBlock):
 
                 # TODO :  just forbid the creation of atom in this zone
                 pad = self.length - self.residualSignalList[sigIdx].length
-                self.residualSignalList[sigIdx].dataVec = np.concatenate((self.residualSignalList[sigIdx].dataVec , np.zeros(pad)))
+                self.residualSignalList[sigIdx].data = np.concatenate((self.residualSignalList[sigIdx].data , np.zeros(pad)))
                 self.residualSignalList[sigIdx].length += pad
 
-            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
+            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].data
 
         self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
 
@@ -756,7 +756,7 @@ class RandomSetBlock(SetBlock):
             else:
                 stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].dataVec[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -874,16 +874,16 @@ class SetNLLOBlock(SetLOBlock):
                 print ValueError('Signal ' + str(sigIdx) + ' is too long: ' + str(self.residualSignalList[sigIdx].length)+ " instead of " + str(self.length))
 
 
-                self.residualSignalList[sigIdx].dataVec = self.residualSignalList[sigIdx].dataVec[0:self.length]
+                self.residualSignalList[sigIdx].data = self.residualSignalList[sigIdx].data[0:self.length]
                 # now repad!!
-                self.residualSignalList[sigIdx].dataVec[-8192:] = 0
+                self.residualSignalList[sigIdx].data[-8192:] = 0
 #                # TODO :  just forbid the creation of atom in this zone
 #                pad = self.length - self.residualSignalList[sigIdx].length
 #                self.residualSignalList[sigIdx].dataVec = concatenate((self.residualSignalList[sigIdx].dataVec , zeros(pad)))
 #                self.residualSignalList[sigIdx].length += pad
 
 #            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
-            self.enframedDataMatrix[sigIdx,:] = self.residualSignalList[sigIdx].dataVec
+            self.enframedDataMatrix[sigIdx,:] = self.residualSignalList[sigIdx].data
 
 #        self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
         self.frameNumber = self.enframedDataMatrix.shape[1] / self.frameLength
@@ -946,7 +946,7 @@ class SetNLLOBlock(SetLOBlock):
             else:
                 stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrix[sigIdx,startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].dataVec[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrix[sigIdx,startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
 
         self.computeTransform(startFrameList , stopFrameList)
 
