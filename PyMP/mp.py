@@ -129,7 +129,7 @@ def mp(originalSignal,
     resEnergy = []
 
     iterationNumber = 0
-    approxSRR = currentApprox.computeSRR()
+    approxSRR = currentApprox.compute_srr()
 
     # check if signal has null energy
     if residualSignal.energy == 0:
@@ -213,11 +213,11 @@ def mp(originalSignal,
             resEnergy.append(np.sum(residualSignal.data[padd:-padd] ** 2))
 
         # add atom to dictionary
-        currentApprox.addAtom(
+        currentApprox.add(
             bestAtom, dictionary.bestCurrentBlock.getWindow())
 
         # compute new SRR and increment iteration Number
-        approxSRR = currentApprox.computeSRR(residualSignal)
+        approxSRR = currentApprox.compute_srr(residualSignal)
 
         if plot:
             ax1.clear()
@@ -284,7 +284,7 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
     resEnergy = [residualSignal.energy]
 
     iterationNumber = 0
-    approxSRR = currentApprox.computeSRR()
+    approxSRR = currentApprox.compute_srr()
 
     while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
         maxBlockScore = 0
@@ -328,7 +328,7 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
                 iterationNumber) + ".xml"
             signalPath = "currentApproxRecomposedSignal_failed_iteration_" + str(
                 iterationNumber) + ".wav"
-            currentApprox.writeToXml(approxPath)
+            currentApprox.write_to_xml(approxPath)
             currentApprox.recomposedSignal.write(signalPath)
             print " approx saved to ", approxPath
             print " recomposed signal saved to ", signalPath
@@ -350,11 +350,11 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
 #        resEnergy.append(sum(residualSignal.dataVec **2))
 
         # add atom to dictionary
-        currentApprox.addAtom(bestAtom, dictionary.bestCurrentBlock.wLong)
+        currentApprox.add(bestAtom, dictionary.bestCurrentBlock.wLong)
 
         # compute new SRR and increment iteration Number
-#        approxSRR = currentApprox.computeSRR(residualSignal);
-        approxSRR = currentApprox.computeSRR()
+#        approxSRR = currentApprox.compute_srr(residualSignal);
+        approxSRR = currentApprox.compute_srr()
         iterationNumber += 1
 
         if debug > 0:
@@ -409,7 +409,7 @@ def mp_long(originalLongSignal, dictionary, targetSRR=10, maxIteratioNumber=100,
 
         # save the output in xml formatting
         if doWrite:
-            approximants[segIdx].writeToXml('Srr' + str(targetSRR) +
+            approximants[segIdx].write_to_xml('Srr' + str(targetSRR) +
                  '_Seg' + str(segIdx) + '_Over_' + str(Nsegments) + '.xml', outputDir)
 
     return approximants, decays
@@ -449,7 +449,7 @@ def GP(originalSignal,
     resEnergy = []
 
     iterationNumber = 0
-    approxSRR = currentApprox.computeSRR()
+    approxSRR = currentApprox.compute_srr()
 
 #    projMatrix = lil_matrix((currentApprox.length , maxIteratioNumber))
 #    projMatrix = np.zeros((currentApprox.length , maxIteratioNumber))
@@ -521,7 +521,7 @@ def GP(originalSignal,
                 gains = 0
 
             # add it to the collection
-            currentApprox.addAtom(bestAtom)
+            currentApprox.add(bestAtom)
 
         # calcul c : direction
 #        c =projMatrix[: , columnIndexes].tocsc() * gradient;
@@ -627,7 +627,7 @@ def OMP(originalSignal,
     resEnergy = []
 
     iterationNumber = 0
-    approxSRR = currentApprox.computeSRR()
+    approxSRR = currentApprox.compute_srr()
 
 #    projMatrix = np.zeros((originalSignal.length,1))
     projMatrix = []
@@ -689,7 +689,7 @@ def OMP(originalSignal,
         residualSignal.data = originalSignal.data - currentApprox.recomposedSignal.data
 
 #        # add atom to dictionary
-#        currentApprox.addAtom(bestAtom , dictionary.bestCurrentBlock.wLong)
+#        currentApprox.add(bestAtom , dictionary.bestCurrentBlock.wLong)
 #
 # for atom,i in zip(currentApprox.atoms , range(currentApprox.atomNumber)):
 #            atom.projectionScore = ProjectedScores[i];
@@ -705,7 +705,7 @@ def OMP(originalSignal,
 
         # compute new SRR and increment iteration Number
         approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
-#        approxSRR = currentApprox.computeSRR();
+#        approxSRR = currentApprox.compute_srr();
         if debug > 0:
             print "SRR reached of ", approxSRR, " at iteration ", iterationNumber
 
@@ -792,7 +792,7 @@ def mp_joint(originalSignalList,
             escItList.append([])
         # residualEnergy
         resEnergyList.append([])
-        approxSRRList.append(currentApproxList[-1].computeSRR())
+        approxSRRList.append(currentApproxList[-1].compute_srr())
         k += 1
 
     # initialize blocks using the first signal: they shoudl all have the same
@@ -861,7 +861,7 @@ def mp_joint(originalSignalList,
 
             if not escapeThisAtom:
                 # add atom to current regular approx
-                currentApproxList[sigIdx].addAtom(
+                currentApproxList[sigIdx].add(
                     bestAtomList[sigIdx], clean=False)
 
                 dictionary.computeTouchZone(sigIdx, bestAtomList[sigIdx])
@@ -881,8 +881,8 @@ def mp_joint(originalSignalList,
                 if abs(bestAtomList[sigIdx].getAmplitude()) == maxValue:
 #                if True:
 #                    print "Added Atom to signal " + str(sigIdx)
-                    escapeApproxList[sigIdx].addAtom(bestAtomList[sigIdx])
-                    currentApproxList[sigIdx].addAtom(bestAtomList[sigIdx])
+                    escapeApproxList[sigIdx].add(bestAtomList[sigIdx])
+                    currentApproxList[sigIdx].add(bestAtomList[sigIdx])
                     escItList[sigIdx].append(iterationNumber)
 
                     # subtract atom from residual
@@ -900,7 +900,7 @@ def mp_joint(originalSignalList,
 
             if debug > 0 or (iterationNumber % interval == 0):
                 approxSRRList[sigIdx] = currentApproxList[
-                    sigIdx].computeSRR(residualSignalList[sigIdx])
+                    sigIdx].compute_srr(residualSignalList[sigIdx])
 
                 _Logger.debug("Local adaptation of atom " + str(sigIdx) +
                               " - Position : " + str(bestAtomList[sigIdx].timePosition) +
@@ -912,8 +912,8 @@ def mp_joint(originalSignalList,
         # also add the mean atom to the background model UNLESS this is an
         # escaped atom
         if not escapeThisAtom:
-#            meanApprox.addAtom(bestAtomList[0] )
-            meanApprox.addAtom(
+#            meanApprox.add(bestAtomList[0] )
+            meanApprox.add(
                 dictionary.getMeanAtom(getFirstAtom=False), clean=doClean)
             _Logger.debug("Atom added to common rep ")
 
@@ -923,7 +923,7 @@ def mp_joint(originalSignalList,
 
 #        dictionary.computeTouchZone()
 
-#        approxSRR = currentApprox.computeSRR();
+#        approxSRR = currentApprox.compute_srr();
 
         _Logger.debug("SRRs reached of " + str(approxSRRList) +
              " at iteration " + str(iterationNumber))

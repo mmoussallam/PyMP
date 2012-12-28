@@ -60,14 +60,15 @@ PyPursuit command line arguments looks as follow:
                  >>> python MPcmd.py -f sndFile.wav -m 100 -s 10 -d 128,1024,8192 --debug=1 -a -p
 
 '''
-
-from Classes import pymp_Signal, pymp_Approx
-from Classes.mdct import Dico
-from Classes.mdct.random import pymp_RandomDicos
-import mp
 import matplotlib.pyplot as plt
 import sys
 import getopt
+
+import signals, approx
+from mdct import dico
+from mdct.random import dico as random_dico
+import mp
+
 
 
 def usage():
@@ -257,7 +258,7 @@ def main(argv):
 # synthesis
 
     # Fusion the sub approximants
-    approx = pymp_Approx.FusionApproxs(approxs, unPad=padSignal)
+    approx = pymp_Approx.fusion_approxs(approxs, unPad=padSignal)
 
     if writeOutput:
         if _debug > 0:
@@ -268,7 +269,7 @@ def main(argv):
 
     if plotOutput:
         plt.figure()
-        approx.plotTF()
+        approx.plot_tf()
         plt.show()
 
     # end of program

@@ -70,7 +70,7 @@ if parallelProjections.clean_plans() != 1:
     print "Initiliazing Stage Failed"
 
 
-pySigOriginal = signals.InitFromFile("../../data/ClocheB.wav" , True , True);
+pySigOriginal = signals.Signal("../../data/ClocheB.wav" , doNormalize=True , forceMono=True);
 pyDico2 = dico.Dico(mdctDico)
 
 pyDico_Lomp = dico.LODico(mdctDico)

@@ -1,24 +1,24 @@
 Union of MDCT basis Classes documentation :
 -------------------------------------------
 
-    .. automodule:: Classes.mdct
+    .. automodule:: PyMP.mdct
 
 Classes for Standard Algorithm
 ******************************
-	.. automodule:: Classes.mdct.pymp_MDCTAtom
-		:members: 
+	.. automodule:: PyMP.mdct.atom
+		:members: Atom
 		
-	.. automodule:: Classes.mdct.pymp_MDCTBlock
-		:members: 	
+	.. automodule:: PyMP.mdct.block
+		:members: Block	
 		
-	.. automodule:: Classes.mdct.pymp_MDCTDico
-		:members:
+	.. automodule:: PyMP.mdct.dico
+		:members: Dico, LODico
 
 Classes for Random Matching Pursuit
 ***********************************
 
-	.. automodule:: Classes.mdct.random.pymp_RandomBlocks
-		:members: 	
+	.. automodule:: PyMP.mdct.random.block
+		:members: RandomBlock	
 		
-	.. automodule:: Classes.mdct.random.pymp_RandomDicos
-		:members:
+	.. automodule:: PyMP.mdct.random.dico
+		:members: RandomDico

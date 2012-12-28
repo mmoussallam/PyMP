@@ -177,5 +177,5 @@ Additionnal documentation
 -------------------------
 here's the documentation of the method used in this tutorial
 
-	.. automodule:: MPCoder
-		:members: SimpleMDCTEncoding
+	.. automodule:: PyMP.mp_coder
+		:members: simple_mdct_encoding

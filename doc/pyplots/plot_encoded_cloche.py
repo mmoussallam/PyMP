@@ -8,7 +8,7 @@ from PyMP.mdct import dico
 
 
 abPath = os.path.abspath('../../data/');
-myPympSignal =  signals.InitFromFile(abPath+'/ClocheB.wav',forceMono=True) # Load Signal
+myPympSignal =  signals.Signal(abPath+'/ClocheB.wav',forceMono=True) # Load Signal
 myPympSignal.crop(0, 4.0*myPympSignal.samplingFrequency)     # Keep only 4 seconds
 
 # atom of scales 8, 64 and 512 ms

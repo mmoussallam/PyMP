@@ -28,18 +28,18 @@
 """
 
 Module mp_coder
-==============
+===============
 A collection of method handling the (theoretical) encoding of sparse approximations.
 
 
 
 """ 
 
-import approx
-from mdct import atom
+from . import  approx
+from mdct import  atom as mdct_atom
 from math import  ceil , log , sqrt
 
-def simple_mdct_encoding(approx ,  
+def simple_mdct_encoding(app ,  
                    targetBitrate , 
                    Q=7 , 
                    encodeCoeffs=True,                     
@@ -52,7 +52,7 @@ def simple_mdct_encoding(approx ,
     
     Arguments:
     
-        - `approx`: a :class:`.Approx` object containing atoms from the decomposition
+        - `app`: a :class:`.Approx` object containing atoms from the decomposition
         
         - `targetBitrate`: a float indicating the target bitrate. Atoms are considered in decreasing amplitude order. 
         The encoding will stop either when the target Bitrate it reached or when all atoms of `approx` have been considered
@@ -71,17 +71,17 @@ def simple_mdct_encoding(approx ,
     
     """ 
     # determine the fixed cost (in bits) of an atom's index 
-    indexcost = log(approx.length*len(approx.dico.sizes)/subsampling,2)    
+    indexcost = log(app.length*len(app.dico.sizes)/subsampling,2)    
     
     # determine the fixed cost (in bits) of an atom's weight 
     Coeffcost = Q;
         
     # instantiate the quantized approximation
-    quantizedApprox = approx.Approx(approx.dico, 
+    quantizedApprox = approx.Approx(app.dico, 
                                                [], 
-                                               approx.originalSignal, 
-                                               approx.length, 
-                                               approx.samplingFrequency)
+                                               app.originalSignal, 
+                                               app.length, 
+                                               app.samplingFrequency)
 
     
     total = 0
@@ -89,7 +89,7 @@ def simple_mdct_encoding(approx ,
 
     # First loop to evaluate the max of atom's weight and 
     maxValue = 0
-    for atom in approx.atoms:
+    for atom in app.atoms:
         if abs(atom.mdct_value) > abs(maxValue):
                 maxValue = atom.mdct_value
 
@@ -99,11 +99,11 @@ def simple_mdct_encoding(approx ,
     if quantizerWidth == 0:
         raise ValueError('zero found for quantizer step width...')
     
-    if approx.atomNumber <= 0:
+    if app.atomNumber <= 0:
         raise ValueError('approx object has an empty list of atoms')
     
     # second loop: atom after atom    
-    for atom in approx.atoms:
+    for atom in app.atoms:
                 
         value = atom.mdct_value;
             
@@ -120,7 +120,7 @@ def simple_mdct_encoding(approx ,
             total += 1
 
         # instantiate the quantized atom        
-        quantizedAtom = atom.Atom(atom.length , 
+        quantizedAtom = mdct_atom.Atom(atom.length , 
                                                     atom.amplitude , 
                                                     atom.timePosition , 
                                                     atom.frequencyBin , 
@@ -132,7 +132,7 @@ def simple_mdct_encoding(approx ,
         quantizedAtom.waveform = atom.waveform*(sqrt((quantizedAtom.mdct_value**2)/(atom.mdct_value**2)))
 
         # add atom to quantized Approx                
-        quantizedApprox.addAtom(quantizedAtom)
+        quantizedApprox.add(quantizedAtom)
         
          
         # All time-shift optimal parameters live in an interval of length L/2 where
@@ -142,16 +142,16 @@ def simple_mdct_encoding(approx ,
                 
         # estimate current bitrate: Each atom coding cost is fixed!!
         nbBitsSoFar = (total *( indexcost + Coeffcost)) + TsCosts;
-        br = float(nbBitsSoFar)/(float(approx.length)/float(approx.samplingFrequency))
+        br = float(nbBitsSoFar)/(float(app.length)/float(app.samplingFrequency))
                 
         if br >= targetBitrate:
             break;
 
     # Evaluate True Bitrate            
-    bitrate = float(nbBitsSoFar)/(float(approx.length)/float(approx.samplingFrequency))
+    bitrate = float(nbBitsSoFar)/(float(app.length)/float(app.samplingFrequency))
         
     approxEnergy = sum(quantizedApprox.recomposedSignal.data**2)
-    resEnergy = sum((approx.originalSignal.data - quantizedApprox.recomposedSignal.data)**2)
+    resEnergy = sum((app.originalSignal.data - quantizedApprox.recomposedSignal.data)**2)
     
     # Evaluate distorsion 
     SNR = 10.0*log( approxEnergy / resEnergy , 10)

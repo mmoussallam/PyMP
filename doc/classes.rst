@@ -8,14 +8,14 @@ The root PyMP package contains all basic pymp objects such as :class:`.Signal` ,
 Signal and Approximation Handles
 ********************************
 		
-	.. automodule:: signals
+	.. automodule:: PyMP.signals
 		:members: Signal, LongSignal
 
-	.. automodule:: approx
+	.. automodule:: PyMP.approx
 		:members:
 
 Abstract MP classes
 *******************
-	.. automodule:: base
+	.. automodule:: PyMP.base
 		:members: BaseAtom, BaseDico, BaseBlock
 

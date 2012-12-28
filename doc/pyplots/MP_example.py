@@ -27,14 +27,14 @@ Natom = 1000;
 
 
 abPath = os.path.abspath('../../data/');
-pySig = signals.InitFromFile(abPath+'/glocs.wav',forceMono=True,doNormalize=True);
+pySig = signals.Signal(abPath+'/glocs.wav',forceMono=True,doNormalize=True);
 
 # taking only the first musical phrase (3.5 seconds approximately)
 pySig.crop(0, 3.5*pySig.samplingFrequency);
 pySig.pad(8192);
 
 # add some minor noise to avoid null areas 
-pySig.dataVec += 0.0001*np.random.randn(pySig.length);
+pySig.data += 0.0001*np.random.randn(pySig.length);
 
 # create MDCT multiscale dictionary 
 dico= dico.Dico(sizes);
@@ -47,13 +47,13 @@ timeVec = np.arange(0,float(pySig.length))/pySig.samplingFrequency;
 
 plt.figure(figsize=(10,6))
 axOrig = plt.axes([0.05, 0.55, .4, .4])
-axOrig.plot(timeVec, pySig.dataVec)
+axOrig.plot(timeVec, pySig.data)
 axOrig.set_title('(a)')
 axOrig.set_xticks([1,2,3,4])
 axOrig.set_ylim([-1.0, 1.0])
 
 axApprox = plt.axes([0.05, 0.07, .4, .4])
-axApprox.plot(timeVec, approx.recomposedSignal.dataVec)
+axApprox.plot(timeVec, approx.recomposedSignal.data)
 axApprox.set_title('(c)')
 axApprox.set_xlabel('Temps (s)')
 axApprox.set_xticks([1,2,3,4])
@@ -65,19 +65,19 @@ axtf = plt.gca()
 axtf.set_title('(d)')
 
 axFFt1 = plt.axes([.55, .816, .4, .133])
-axFFt1.specgram(pySig.dataVec ,  NFFT=128,noverlap=64,cmap=cm.copper_r,Fs=pySig.samplingFrequency)
+axFFt1.specgram(pySig.data ,  NFFT=128,noverlap=64,cmap=cm.copper_r,Fs=pySig.samplingFrequency)
 axFFt1.set_yticks([0,pySig.samplingFrequency/4])
 axFFt1.set_xticks([])
 axFFt1.set_title('(b)')
 
 axFFt2 = plt.axes([.55, .683, .4, .133])
-axFFt2.specgram(pySig.dataVec ,  NFFT=1024,noverlap=512,cmap=cm.copper_r,Fs=pySig.samplingFrequency)
+axFFt2.specgram(pySig.data ,  NFFT=1024,noverlap=512,cmap=cm.copper_r,Fs=pySig.samplingFrequency)
 axFFt2.set_yticks([0,pySig.samplingFrequency/4])
 axFFt2.set_ylabel('Frequence (Hz)')
 axFFt2.set_xticks([])
 
 axFFt3 = plt.axes([.55, .55, .4, .133])
-axFFt3.specgram(pySig.dataVec ,  NFFT=4096,noverlap=0.75*4096.0,cmap=cm.copper_r,Fs=pySig.samplingFrequency)
+axFFt3.specgram(pySig.data ,  NFFT=4096,noverlap=0.75*4096.0,cmap=cm.copper_r,Fs=pySig.samplingFrequency)
 axFFt3.set_yticks([0,pySig.samplingFrequency/4])
 axFFt3.set_xticks([1,2,3,4])
 

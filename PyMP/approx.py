@@ -41,10 +41,10 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 import matplotlib.colors as cc
 
-from . import signals
-from . import log
-from .base import BaseAtom
-from .tools.mdct import imdct
+from PyMP import signals
+from PyMP import log
+from PyMP.base import BaseAtom
+from PyMP.tools.mdct import imdct
 
 
 global _Logger
@@ -77,22 +77,22 @@ class Approx:
 
 
     An approximant can be manipulated in various ways. Obviously atoms can be edited by several methods among which
-    :func:`addAtom` ,  :func:`removeAtom`  and :func:`filterAtom`
+    :func:`add` ,  :func:`remove`  and :func:`filterAtom`
 
-    Measure of distorsion can be estimated by the method :func:`computeSRR`
+    Measure of distorsion can be estimated by the method :func:`compute_srr`
 
     Approx objets can be exported in various formats using
-    :func:`toDico` ,
-    :func:`toSparseArray` ,
-    :func:`toArray` ,
-    :func:`writeToXml` ,
+    :func:`to_dico` ,
+    :func:`to_sparse_array` ,
+    :func:`to_array` ,
+    :func:`write_to_xml` ,
     :func:`dumpToDisk` ,
 
     and reversely can be recovered from these formats
 
-    A useful plotting routine, :func:`plotTF` is provided to visualize atom distribution in the time frequency plane
+    A useful plotting routine, :func:`plot_tf` is provided to visualize atom distribution in the time frequency plane
     Also an experimental 3D plot taking the atom iteration number as a depth parameter
-    :func:`plot3D`
+    :func:`plot_3d`
 
 
     """
@@ -194,7 +194,7 @@ class Approx:
         return self.recomposedSignal
 
     # Filter the atom list by the given criterion
-    def filterAtoms(self, mdctSize=0, posInterv=None, freqInterv=None):
+    def filter(self, mdctSize=0, posInterv=None, freqInterv=None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
         filteredApprox = Approx(self.dico, [], self.originalSignal,
              self.length, self.samplingFrequency)
@@ -202,7 +202,7 @@ class Approx:
         for atom in self.atoms:
 #            if atom.length == mdctSize:
 ##                print  atom.length , " appended "
-#                filteredApprox.addAtom(atom)
+#                filteredApprox.add(atom)
 
             if atom.length == mdctSize:
                 doAppend &= True
@@ -222,17 +222,17 @@ class Approx:
                     doAppend &= False
             if doAppend:
 #                print  atom.length , " appended "
-                filteredApprox.addAtom(atom)
+                filteredApprox.add(atom)
 #
 
         return filteredApprox
 
     # this function adds an atom to the collection and updates the internal
     # signal approximant
-    def addAtom(self, newAtom, window=None, clean=False, noWf=False):
+    def add(self, newAtom, window=None, clean=False, noWf=False):
         '''this function adds an atom to the collection and updates the internal signal approximant'''
         if not isinstance(newAtom, BaseAtom):
-            raise TypeError("addAtom need a py_pursuit_Atom as parameter ")
+            raise TypeError("add need a py_pursuit_Atom as parameter ")
 
         self.atoms.append(newAtom)
         self.atomNumber += 1
@@ -248,10 +248,10 @@ class Approx:
                 del newAtom.waveform
 
     #
-    def removeAtom(self, atom):
+    def remove(self, atom):
         ''' We need a routine to remove an atom , by default the last atom is removed '''
         if not isinstance(atom, BaseAtom):
-            raise TypeError("addAtom need a py_pursuit_Atom as parameter ")
+            raise TypeError("add need a py_pursuit_Atom as parameter ")
         self.atoms.remove(atom)
         self.atomNumber -= 1
 
@@ -259,7 +259,7 @@ class Approx:
             self.recomposedSignal.subtract(atom, preventEnergyIncrease=False)
 
     # routine to compute approximation Signal To Residual ratio so far
-    def computeSRR(self, residual=None):
+    def compute_srr(self, residual=None):
         ''' routine to compute approximation Signal To Residual ratio so far using:
 
             .. math::SRR = 10 \log_10 \frac{\| \tilde{x} \|^2}{\| \tilde{x} - x \|^2}
@@ -288,7 +288,7 @@ class Approx:
         return 10 * math.log10(recomposedEnergy / resEnergy)
 
     # ploting routine 2d in a time-frequency plane
-    def plotTF(self, labelX=True, labelY=True, fontsize=12, ylim=None, patchColor=None, labelColor=None,
+    def plot_tf(self, labelX=True, labelY=True, fontsize=12, ylim=None, patchColor=None, labelColor=None,
                multicolor=False, axes=None, maxAtoms=None, recenter=None, keepValues=False,
                french=False, Alpha=False, logF=False):
         """ A time Frequency plot routine using Matplotlib
@@ -464,7 +464,7 @@ class Approx:
         if keepValues:
             plt.colorbar(p)
 
-    def plot3D(self, itStep, fig=None):
+    def plot_3d(self, itStep, fig=None):
         """ Creates a 3D Time-Frequency plot with various steps NOT WORKING below 0.99
         EXPERIMENTAL"""
         from mpl_toolkits.mplot3d import Axes3D
@@ -522,18 +522,18 @@ class Approx:
 #
 #        for plotIdx in range(nbplots):
 #            subAx = Axes3D(fig)
-#            self.plotTF(axes=subAx, maxAtoms=plotIdx*itStep)
+#            self.plot_tf(axes=subAx, maxAtoms=plotIdx*itStep)
 
-    def dumpToDisk(self, dumpFileName, dumpFilePath='./'):
-        import cPickle
-
-        output = open(dumpFilePath + dumpFileName, 'wb')
-        _Logger.info("Dumping approx to  " + dumpFilePath + dumpFileName)
-        cPickle.dump(self, output, protocol=0)
-        _Logger.info("Done ")
+#    def dumpToDisk(self, dumpFileName, dumpFilePath='./'):
+#        import cPickle
+#
+#        output = open(dumpFilePath + dumpFileName, 'wb')
+#        _Logger.info("Dumping approx to  " + dumpFilePath + dumpFileName)
+#        cPickle.dump(self, output, protocol=0)
+#        _Logger.info("Done ")
 
 #        plt.show()
-    def writeToXml(self, xmlFileName, outputXmlPath="./"):
+    def write_to_xml(self, fname, output_path="./"):
         """ Write the atoms using an XML formalism to the designated output file """
 
         #from xml.dom.minidom import Document
@@ -566,16 +566,16 @@ class Approx:
         doc.appendChild(ApproxNode)
 
         # check output file existence
-#        if not os.path.exists(outputXmlPath + xmlFileName):
+#        if not os.path.exists(output_path + fname):
 #            os.create
 
         # flush to external file
 
-#        xml.dom.ext.PrettyPrint(doc, open(outputXmlPath + xmlFileName, "w"))
-        _Logger.info("Written Xml to : " + outputXmlPath + xmlFileName)
+#        xml.dom.ext.PrettyPrint(doc, open(output_path + fname, "w"))
+        _Logger.info("Written Xml to : " + output_path + fname)
         return doc
 
-    def toDico(self):
+    def to_dico(self):
         """ Returns the approximant as a sparse dictionary object ,
         key is the index of the atom and values are atom objects"""
         dico = {}
@@ -599,7 +599,7 @@ class Approx:
 
         return dico
 
-    def toSparseArray(self):
+    def to_sparse_array(self):
         """ Returns the approximant as a sparse dictionary object , key is the index of the atom and value is its amplitude"""
         sparseArray = {}
         # quickly creates a dictionary for block numbering
@@ -638,7 +638,7 @@ class Approx:
 # atom.frequencyBin)] = (atom.mdct_value , atom.timePosition)
 #        return sparseArray
 
-    def toArray(self):
+    def to_array(self):
         """ Returns the approximant as an array object , key is the index of the atom and value is its amplitude"""
         sparseArray = np.zeros(len(self.dico.sizes) * self.length)
         timeShifts = np.zeros(len(self.dico.sizes) * self.length)
@@ -664,12 +664,12 @@ class Approx:
 #        del self.recomposedSignal.dataVec
 
 
-def loadFromDisk(inputFilePath):
+def load_from_disk(inputFilePath):
     import cPickle
     return cPickle.load(inputFilePath)
 
 
-def readFromXml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
+def read_from_xml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
     """ reads an xml document and create the corresponding Approx object
     WARNING this method is only designed for MDCT pursuits for now"""
 
@@ -697,7 +697,7 @@ def readFromXml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
     for node in AtomsNode.childNodes:
         if node.localName == 'Atom':
             if buildSignal:
-                approx.addAtom(atom.fromXml(node))
+                approx.add(atom.fromXml(node))
             else:
                 approx.atoms.append(atom.fromXml(node))
 #            atoms.append(py_pursuit_Atom.fromXml(node))
@@ -712,7 +712,7 @@ def readFromXml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
     return approx
 
 
-def ReadFromMatStruct(matl_struct):
+def read_from_mat_struct(matl_struct):
     """ retrieve the python object from a saved version in matlab format
     This is useful if you saved a py_pursuit_approx object using the scipy.io.savemat
     routine and you loaded it back using scipy.io.loadmat"""
@@ -729,7 +729,7 @@ def ReadFromMatStruct(matl_struct):
     return approx
 
 
-def FusionApproxs(approxCollection, unPad=True):
+def fusion_approxs(approxCollection, unPad=True):
     """ fusion a collection of frame by frame approximation.
     The collection is assumed to be temporally ordered """
 

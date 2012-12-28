@@ -206,10 +206,10 @@ class Test(unittest.TestCase):
 
 #        plt.figure(figsize=(16,8))
 #        plt.subplot(121)
-#        approxClassic.plotTF(ylim=[0,4000])
+#        approxClassic.plot_tf(ylim=[0,4000])
 #        plt.title('Classic decomposition : 100 atoms 3xMDCT')
 #        plt.subplot(122)
-#        approxCommon.plotTF(ylim=[0,4000])
+#        approxCommon.plot_tf(ylim=[0,4000])
 #        plt.title('Common decomposition')
 #        plt.savefig('TestTFMasking.png')
 
@@ -221,10 +221,10 @@ class Test(unittest.TestCase):
 
         plt.figure(figsize=(16,8))
         plt.subplot(121)
-        approxSpecList[0].plotTF(ylim=[0,4000])
+        approxSpecList[0].plot_tf(ylim=[0,4000])
         plt.title('Pattern 1')
         plt.subplot(122)
-        approxSpecList[1].plotTF(ylim=[0,4000])
+        approxSpecList[1].plot_tf(ylim=[0,4000])
         plt.title('Pattern 2 ')
 #        plt.savefig('TestTFMasking.png')
 
@@ -381,9 +381,9 @@ class Test(unittest.TestCase):
 #        plt.show()
         plt.figure()
         plt.subplot(211)
-        approxCommon.plotTF()
+        approxCommon.plot_tf()
         plt.subplot(212)
-        approxCommonNL.plotTF()
+        approxCommonNL.plot_tf()
         plt.show()
 
 

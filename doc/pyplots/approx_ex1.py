@@ -39,7 +39,7 @@ timeVec = np.arange(approx.length)/float(approx.samplingFrequency);
 # Plot the recomposed Signal, both in time domain and Time-Frequency
 plt.figure()
 plt.subplot(211)
-plt.plot(timeVec,approx.recomposedSignal.dataVec)
+plt.plot(timeVec,approx.recomposedSignal.data)
 plt.xlim([0,float(approx.length)/float(approx.samplingFrequency)])
 plt.grid()
 plt.subplot(212)

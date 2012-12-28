@@ -34,6 +34,6 @@ myPympSignal =  signals.InitFromFile('../data/glocs.wav',forceMono=True)
 pyApprox = approx.Approx(pyDico, [], myPympSignal);
 
 
-pyApprox.addAtom(atom.Atom(256, 1, 256, 10, 8000, 1))
+pyApprox.add(atom.Atom(256, 1, 256, 10, 8000, 1))
 
 pyApprox.computeSRR()

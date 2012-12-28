@@ -3,10 +3,10 @@ MP routines Documentation
 
 Main Module providing MP methods
 ********************************
-	.. automodule:: MP
-		:members: MP
+	.. automodule:: PyMP.mp
+		:members: mp
 		:undoc-members:
 
 Alternative: Command Line utility
 *********************************	
-	.. automodule:: MPcmd
+	.. automodule:: PyMP.mp_cmd

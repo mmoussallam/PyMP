@@ -42,9 +42,9 @@ import wave
 import struct
 import numpy as np
 import matplotlib.pyplot as plt
-from .tools import SoundFile
-from . import  base
-from . import  log
+from tools import SoundFile
+import base
+import log
 
 global _Logger
 _Logger = log.Log('Signal', imode=False)
