@@ -32,20 +32,20 @@ Module approx
 The main class is :class:`approx`
 
 '''
-
-import signals
-import log
-from base import BaseAtom
 from numpy import math, array, zeros, sum, NINF, PINF, log2
-from tools.mdct import imdct
+
 import matplotlib.patches as mpatches
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
-
 import matplotlib.colors as cc
-#from xml.dom.minidom import Document
-#import xml.dom.ext
+
+from . import signals
+from . import log
+from .base import BaseAtom
+from .tools.mdct import imdct
+
+
 global _Logger
 _Logger = log.Log('Approx')
 

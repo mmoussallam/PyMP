@@ -5,15 +5,13 @@ Created on 9 sept. 2012
 '''
 
 import os
-import MP
-from Classes import pymp_Signal, pymp_Approx;
-from Classes.mdct import *
-from Classes.mdct.random import pymp_RandomDicos
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+from PyMP import signals, mp, mp_coder, approx
+from PyMP.mdct import dico
+from PyMP.mdct.random import dico as random_dico
 
 import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 1.0
@@ -25,7 +23,7 @@ mpl.rcParams['text.usetex'] = True;
 
 # Load glockenspiel signal
 abPath = os.path.abspath('../../data/');
-pySig = pymp_Signal.InitFromFile(abPath+'/glocs.wav',forceMono=True,doNormalize=True);
+pySig = signals.InitFromFile(abPath+'/glocs.wav',forceMono=True,doNormalize=True);
 
 pySig.crop(0,3*pySig.samplingFrequency)
 
@@ -33,13 +31,13 @@ scales = [128,1024,8192];
 nbAtom = 500;
 srr = 30;
 
-mpDico = pymp_MDCTDico.pymp_MDCTDico(scales)
-lompDico = pymp_MDCTDico.pymp_LODico(scales)
-rssMPDico = pymp_RandomDicos.pymp_RandomDico(scales)
+mpDico = dico.Dico(scales)
+lompDico = dico.LODico(scales)
+rssMPDico = random_dico.RandomDico(scales)
 
-approxMP , decayMP = MP.MP(pySig,mpDico,srr,nbAtom,padSignal=True);
-approxLoMP, decayLoMP = MP.MP(pySig,lompDico,srr,nbAtom,padSignal=True);
-approxRSSMP, decayRSSMP = MP.MP(pySig,rssMPDico,srr,nbAtom,padSignal=False);
+approxMP , decayMP = mp.mp(pySig,mpDico,srr,nbAtom,padSignal=True);
+approxLoMP, decayLoMP = mp.mp(pySig,lompDico,srr,nbAtom,padSignal=True);
+approxRSSMP, decayRSSMP = mp.mp(pySig,rssMPDico,srr,nbAtom,padSignal=False);
 
 
 plt.figure()

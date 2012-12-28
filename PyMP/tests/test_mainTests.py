@@ -13,7 +13,7 @@ sys.path.append(mainClassesPath)
 
 
 import unittest
-from pymp.tools import mdct
+from PyMP.tools import mdct
 import matplotlib.pyplot as plt
 from numpy import random, zeros
 import time
@@ -23,15 +23,15 @@ import math
 global _Logger
 
 #from Classes.gabor import *
-from pymp.mdct import atom as mdct_atom
-from pymp.mdct import dico as mdct_dico
-from pymp.mdct import block as mdct_block
-from pymp.base import BaseAtom, BaseDico
-from pymp.mdct.random import dico as random_dico
-from pymp import approx
-from pymp import signals
-from pymp import log
-from pymp import mp
+from PyMP.mdct import atom as mdct_atom
+from PyMP.mdct import dico as mdct_dico
+from PyMP.mdct import block as mdct_block
+from PyMP.base import BaseAtom, BaseDico
+from PyMP.mdct.random import dico as random_dico
+from PyMP import approx
+from PyMP import signals
+from PyMP import log
+from PyMP import mp
 
 audioFilePath = '../../data/'
 

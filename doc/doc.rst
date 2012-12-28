@@ -41,13 +41,13 @@ Implementation
 
 PyMP provide an Object-Oriented implementation of the MP algorithm in the following manner:
 
-	- Signals (such as :math:`x`) are handled through :class:`.pymp_Signal` objects
+	- Signals (such as :math:`x`) are handled through :class:`.Signal` objects
 	
-	- Dictionaries (such as :math:`\Phi`) are handled through :class:`.pymp_Dico` objects
+	- Dictionaries (such as :math:`\Phi`) are handled through :class:`.BaseDico` objects
 	
-	- Approximants (such as :math:`\tilde{x}_{m}`) are handled through :class:`.pymp_Approx` objects
+	- Approximants (such as :math:`\tilde{x}_{m}`) are handled through :class:`.Approx` objects
 
-The algorithm itself is performed using funnction from the :mod:`.MP` module.  A comprehensive view of how it works is provided in the 
+The algorithm itself is performed using funnction from the :mod:`.mp` module.  A comprehensive view of how it works is provided in the 
 next topic.
 
 How to have it work?
@@ -78,19 +78,21 @@ PyMP is mainly a collection of pure python modules, which installation is quite 
 However, in order to accelerate the inner product computations, it uses a low-level pure C library that is
 used through a python C extension module.
 
-Which means there are three installation steps:
-
-	- Compile the pure C library: located in *root/lib/fastPursuit/*
-	
+Which means there are two installation steps:
+		
 	- Build and install the Python C extension module called *parallelProjections*
 	
-	- Build and install the pure Python packages among which:
+	- Build and install the pure Python modules among which:
 	
-			- :mod:`.Classes`: a package where all the Objects are stored
+			- :mod:`.base`: a module describing abstract atom, dictionary and block objects
 			
-			- :mod:`.Tools`: a collection of tools
+			- :mod:`.signals`: a module containing the `.Signal` class and routines to manipulate them
 			
-			- :mod:`.Tests`: a package of tests
+			- :mod:`.approx`: a module containing the `.Approx` class and routines to manipulate them
+			
+			- :mod:`.tools`: a collection of tools
+			
+			- :mod:`.tests`: a package of tests
 
 .. note::
 

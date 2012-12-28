@@ -26,25 +26,25 @@ pyDico = dico.Dico(scales);
 mpApprox , mpDecay = mp.mp(myPympSignal, pyDico, 20, 2000,padSignal=False);  
 
 #mpApprox.atomNumber
-SNR, bitrate, quantizedApprox = mp_coder.SimpleMDCTEncoding(mpApprox, 8000, Q=14);
+SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(mpApprox, 8000, Q=14);
 print (SNR, bitrate)
 
 print "With Q=5"
-SNR, bitrate, quantizedApprox = mp_coder.SimpleMDCTEncoding(mpApprox, 8000, Q=5);
+SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(mpApprox, 8000, Q=5);
 print (SNR, bitrate)
 
 
-SNR, bitrate, quantizedApprox = mp_coder.SimpleMDCTEncoding(mpApprox, 2000, Q=14);
+SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(mpApprox, 2000, Q=14);
 print (SNR, bitrate)
 
 pyLODico = dico.LODico(scales);
 lompApprox , lompDecay = mp.mp(myPympSignal, pyLODico, 20, 2000,padSignal=False);  
-SNRlo, bitratelo, quantizedApproxLO = mp_coder.SimpleMDCTEncoding(lompApprox, 2000, Q=14, TsPenalty=True);
+SNRlo, bitratelo, quantizedApproxLO = mp_coder.simple_mdct_encoding(lompApprox, 2000, Q=14, TsPenalty=True);
 print (SNRlo, bitratelo)
 
 pyRSSDico = random_dico.RandomDico(scales);
 rssApprox , rssDecay = mp.mp(myPympSignal, pyRSSDico, 20, 2000,padSignal=False);  
-SNRrss, bitraterss, quantizedApproxRSS = mp_coder.SimpleMDCTEncoding(rssApprox, 2000, Q=14);
+SNRrss, bitraterss, quantizedApproxRSS = mp_coder.simple_mdct_encoding(rssApprox, 2000, Q=14);
 print (SNRrss, bitraterss)
 
 print (quantizedApprox.atomNumber,  quantizedApproxLO.atomNumber , quantizedApproxRSS.atomNumber)
@@ -54,14 +54,14 @@ print (quantizedApprox.atomNumber,  quantizedApproxLO.atomNumber , quantizedAppr
 
 
 print " now at a much larger level : a SNR of nearly 50 dB and around 64 Kbps"
-mpApprox , mpDecay = MP.MP(myPympSignal, pyDico, 50, 20000,padSignal=False); 
+mpApprox , mpDecay = mp.mp(myPympSignal, pyDico, 50, 20000,padSignal=False); 
 SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 64000, Q=16);
 print (SNR, bitrate)
 
-lompApprox , lompDecay = MP.MP(myPympSignal, pyLODico, 50, 20000,padSignal=False);  
+lompApprox , lompDecay = mp.mp(myPympSignal, pyLODico, 50, 20000,padSignal=False);  
 SNRlo, bitratelo, quantizedApproxLO = MPCoder.SimpleMDCTEncoding(lompApprox, 64000, Q=16, TsPenalty=True);
 print (SNRlo, bitratelo)
 
-rssApprox , rssDecay = MP.MP(myPympSignal, pyRSSDico, 50, 20000,padSignal=False);  
+rssApprox , rssDecay = mp.mp(myPympSignal, pyRSSDico, 50, 20000,padSignal=False);  
 SNRrss, bitraterss, quantizedApproxRSS = MPCoder.SimpleMDCTEncoding(rssApprox, 64000, Q=16);
 print (SNRrss, bitraterss)

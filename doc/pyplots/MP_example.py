@@ -3,7 +3,13 @@ Created on Sep 3, 2012
 
 @author: moussall
 '''
+import sys
+import os
 
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from math import pi
 import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 1.0
 mpl.rcParams['font.size'] = 16.0
@@ -12,23 +18,16 @@ mpl.rcParams['legend.shadow'] = True;
 mpl.rcParams['image.interpolation'] = 'Nearest';
 mpl.rcParams['text.usetex'] = True;
 
-import sys
-import os
-import MP
-from Classes import pymp_Signal, pymp_Approx;
-from Classes.mdct import *
-import numpy as np
-import matplotlib.pyplot as plt
+from PyMP import signals, mp
+from PyMP.mdct import dico
 
-from matplotlib import cm
-from math import pi
 
 sizes = [128,1024,8192];
 Natom = 1000;
 
 
 abPath = os.path.abspath('../../data/');
-pySig = pymp_Signal.InitFromFile(abPath+'/glocs.wav',forceMono=True,doNormalize=True);
+pySig = signals.InitFromFile(abPath+'/glocs.wav',forceMono=True,doNormalize=True);
 
 # taking only the first musical phrase (3.5 seconds approximately)
 pySig.crop(0, 3.5*pySig.samplingFrequency);
@@ -38,10 +37,10 @@ pySig.pad(8192);
 pySig.dataVec += 0.0001*np.random.randn(pySig.length);
 
 # create MDCT multiscale dictionary 
-dico= pymp_MDCTDico.pymp_MDCTDico(sizes);
+dico= dico.Dico(sizes);
 
 # run the MP routine
-approx, decay = MP.MP(pySig, dico, 50, Natom);
+approx, decay = mp.mp(pySig, dico, 50, Natom);
 
 # plotting the results
 timeVec = np.arange(0,float(pySig.length))/pySig.samplingFrequency;

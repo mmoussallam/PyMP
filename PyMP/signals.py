@@ -37,14 +37,15 @@ Longer Signals are handled with :class:`LongSignal` objects.
 '''
 
 
-from tools import SoundFile
-from numpy import array, min, concatenate, zeros, ones, fromstring, sum, sin, pi, arange, dot, conj, floor, abs, exp, real, isnan
-import matplotlib.pyplot as plt
-import base
-import log
 import math
 import wave
 import struct
+import numpy as np
+import matplotlib.pyplot as plt
+from .tools import SoundFile
+from . import  base
+from . import  log
+
 global _Logger
 _Logger = log.Log('Signal', imode=False)
 #from operator import add, mul
@@ -113,7 +114,7 @@ class Signal(object):
         ''' Simple constructor from a numpy array (data) '''
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
-        self.dataVec = array(data)
+        self.dataVec = np.array(data)
         self.length = len(data)
         self.samplingFrequency = Fs
 
@@ -228,7 +229,7 @@ class Signal(object):
 
         # ratio of selected points
         subRatio = float(self.samplingFrequency) / float(newFs)
-        indexes = floor(arange(0, self.length, subRatio))
+        indexes = np.floor(np.arange(0, self.length, subRatio))
 #        print indexes
         self.dataVec = self.dataVec[indexes.tolist()]
         self.length = len(self.dataVec)
@@ -243,7 +244,7 @@ class Signal(object):
             print "Resynthesizing"
             atom.synthesize()
 
-        localEnergy = sum(self.dataVec[atom.timePosition: atom.
+        localEnergy = np.sum(self.dataVec[atom.timePosition: atom.
             timePosition + atom.length] ** 2)
 
         # do sum calculation
@@ -254,15 +255,15 @@ class Signal(object):
             _Logger.error('Mispositionned atom: ' + str(atom.
                 timePosition) + ' and length ' + str(atom.length))
 #        # update energy value
-        self.energy += sum(self.dataVec[atom.timePosition: atom.
+        self.energy += np.sum(self.dataVec[atom.timePosition: atom.
             timePosition + atom.length] ** 2) - localEnergy
 
     # Pad edges with zeroes
     def pad(self, zero_pad):
         ''' Pad edges with zeroes '''
         try:
-            self.dataVec = concatenate((concatenate(
-                (zeros(zero_pad), self.dataVec)), zeros(zero_pad)))
+            self.dataVec = np.concatenate((np.concatenate(
+                (np.zeros(zero_pad), self.dataVec)), np.zeros(zero_pad)))
             self.length = len(self.dataVec)
         except ValueError:
             print(self.dataVec.shape)
@@ -310,7 +311,7 @@ class Signal(object):
             self.normalize()
 
         for i in range(len(self.dataVec)):
-            if isnan(self.dataVec[i]):
+            if np.isnan(self.dataVec[i]):
                 _Logger.warning("NaN data found: replaced by 0")
                 self.dataVec[i] = 0
             if self.dataVec[i] < -1:
@@ -350,20 +351,20 @@ class Signal(object):
             from scipy.signal import hann
             Ex *= hann(N).reshape((N, 1))
 
-        x = ifftshift((arange(0, N) - N / 2) * 2 * pi / (N - 1))
+        x = ifftshift((np.arange(0, N) - N / 2) * 2 * np.pi / (N - 1))
         #%   Generate linear vector
-        X = arange(0, N) - N / 2
+        X = np.arange(0, N) - N / 2
 
         x = x.reshape((N, 1))
         X = X.reshape((1, N))
 
-        A = dot(1j * x, X / 2)
-        EX1 = ifft(dot(fft(Ex), ones((1, N))) * exp(A))
+        A = np.dot(1j * x, X / 2)
+        EX1 = ifft(np.dot(fft(Ex), np.ones((1, N))) * np.exp(A))
         #%   +ve shift
-        EX2 = ifft(dot(fft(Ex), ones((1, N))) * exp(dot(-1j * x, X / 2)))
+        EX2 = ifft(np.dot(fft(Ex), np.ones((1, N))) * np.exp(np.dot(-1j * x, X / 2)))
         #%   -ve shift
 
-        tmp0 = EX1 * conj(EX2)
+        tmp0 = EX1 * np.conj(EX2)
 
         print
 
@@ -371,7 +372,7 @@ class Signal(object):
         tmp1 = fftshift(tmp0, (1, ))
         tmp2 = fft(tmp1, axis=1)
 
-        W = real(fftshift(tmp2, (1,)))
+        W = np.real(fftshift(tmp2, (1,)))
         #%   Wigner function
 
         return W
@@ -502,7 +503,7 @@ class LongSignal(Signal):
         file = wave.open(self.location, 'r')
         file.setpos(bFrame)
         str_bytestream = file.readframes(nFrames)
-        data = fromstring(str_bytestream, 'h')
+        data = np.fromstring(str_bytestream, 'h')
         file.close()
 
         if self.channelNumber > 1:

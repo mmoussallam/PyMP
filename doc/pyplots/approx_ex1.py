@@ -14,20 +14,20 @@ mpl.rcParams['legend.shadow'] = True;
 mpl.rcParams['image.interpolation'] = 'Nearest';
 mpl.rcParams['text.usetex'] = True;
 
-from Classes import pymp_Signal, pymp_Approx;
-from Classes.mdct import *
+from PyMP import signals, approx
+from PyMP.mdct import atom
 
 
-atomShort = pymp_MDCTAtom.pymp_MDCTAtom(32, 1, 1024, 4, 8000, 1);
-atomMid = pymp_MDCTAtom.pymp_MDCTAtom(256, 1, 256, 10, 8000, 1);
-atomLong = pymp_MDCTAtom.pymp_MDCTAtom(2048, 1, 0, 40, 8000, 1);
+atomShort = atom.Atom(32, 1, 1024, 4, 8000, 1);
+atomMid = atom.Atom(256, 1, 256, 10, 8000, 1);
+atomLong = atom.Atom(2048, 1, 0, 40, 8000, 1);
 
 atomShort.synthesize();
 atomMid.synthesize();
 atomLong.synthesize();
 
 # Initialize empty approximant
-approx  = pymp_Approx.pymp_Approx(None, [], None, atomLong.length, atomLong.samplingFrequency)
+approx  = approx.Approx(None, [], None, atomLong.length, atomLong.samplingFrequency)
 
 # add atoms
 approx.addAtom(atomShort)
