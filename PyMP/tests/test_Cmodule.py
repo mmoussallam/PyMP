@@ -37,8 +37,12 @@ import commands
 import string
 
 print "---- Test import du module!"
+
 import parallelProjections
+
 print "---- OK"
+
+
 
 
 from PyMP import mp , signals
@@ -52,7 +56,6 @@ import numpy as np
 from scipy.stats import gmean
 from cmath import exp , pi
 import matplotlib.pyplot as plt
-# ugly workaround
 
 
 
@@ -74,6 +77,8 @@ pyDico2 = dico.Dico(mdctDico)
 
 pyDico_Lomp = dico.LODico(mdctDico) 
 residualSignal = pySigOriginal.copy();
+
+app, decay = mp.mp(pySigOriginal, pyDico2, 20, 200 ,0)
 
 print " profiling test with C integration"
 cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 200 ,0)' , globals() , locals())     

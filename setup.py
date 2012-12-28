@@ -32,8 +32,8 @@ setup(name='PyMP',
       author_email='manuel.moussallam@gmail.com',
       url='https://github.com/mmoussallam/PyMP',
       #package_dir = {'': 'src'},
-      packages=[ 'PyMP.tools','PyMP.tests','PyMP.mdct','PyMP.mdct.random'],
-      py_modules = ['PyMP.mp','PyMP.base','PyMP.approx','PyMP.signals','PyMP.mp_cmd','PyMP.mp_coder'],
+      packages=[ 'PyMP.tools','PyMP.mdct','PyMP.mdct.random'],
+      py_modules = ['PyMP.mp','PyMP.base','PyMP.approx','PyMP.signals','PyMP.mp_cmd','PyMP.log','PyMP.win_server','PyMP.mp_coder'],
       ext_modules = [ext_module] 
      )
 

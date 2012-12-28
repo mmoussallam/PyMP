@@ -10,7 +10,7 @@
 #                                                                            
                                                                       
 
-class BaseAtom:
+class BaseAtom(object):
     """ Abstract Atom class interface: 
     
     To implement a new type of atom, you must derive from this class. 
@@ -51,7 +51,7 @@ class BaseAtom:
         return self.waveform;
 
 
-class BaseBlock:
+class BaseBlock(object):
     ''' A block is an instance handling projections for Matching Pursuit. 
     
         Mandatory fields:    
@@ -72,7 +72,7 @@ class BaseBlock:
     def __init__(self):
         """ empty constructor """
     
-class BaseDico():
+class BaseDico(object):
     """ This class creates an interface that any type of dictionary should reproduce 
         in order to be used correclty by Pursuit algorithm in this framework:
         
