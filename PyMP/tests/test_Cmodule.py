@@ -43,12 +43,10 @@ import parallelProjections
 print "---- OK"
 
 
-
-
 from PyMP import mp , signals
 from PyMP.mdct import dico
 from PyMP.mdct import atom
-#from Classes.gabor import *
+
 import cProfile
 
 

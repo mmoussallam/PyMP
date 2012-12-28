@@ -41,7 +41,7 @@ Longer Signals are handled with :class:`LongSignal` objects.
 from tools import SoundFile
 from numpy import array , min , concatenate , zeros, ones , fromstring, sum , sin , pi , arange, dot , conj, floor,abs, exp, real , isnan
 import matplotlib.pyplot as plt
-from base import BaseAtom
+import base
 import log
 import math , wave , struct
 global _Logger
@@ -172,7 +172,7 @@ class Signal(object):
     def subtract(self , atom , debug=0 , preventEnergyIncrease = True):
         ''' Subtracts the atom waveform from the signal, at the position specified by the atom.timeLocalization property
             if preventEnergyIncrease is True, an error will be raised if subtracting the atom increases the signal's energy '''
-        if not isinstance(atom , BaseAtom):
+        if not isinstance(atom , base.BaseAtom):
             raise TypeError("argument provided is not an atom")                    
         if atom.waveform is None:
 #            print "Resynth"
@@ -225,7 +225,7 @@ class Signal(object):
        
     def add(self , atom , window = None):
         ''' adds the contribution of the atom at the position specified by the atom.timeLocalization property '''
-        if not isinstance(atom , BaseAtom):
+        if not isinstance(atom , base.BaseAtom):
             raise TypeError("argument provided is not an atom")
         
         if atom.waveform is None:
