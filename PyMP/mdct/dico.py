@@ -1,37 +1,37 @@
 #
-#                                                                            
-#                       Classes.mdct.Dico                                    
-#                                                                            
-#                                                
-#                                                                            
-# M. Moussallam                             Created on Nov 12, 2012  
+#
+#                       Classes.mdct.Dico
+#
+#
+#
+# M. Moussallam                             Created on Nov 12, 2012
 # -----------------------------------------------------------------------
-#                                                                            
-#                                                                            
-#  This program is free software; you can redistribute it and/or             
-#  modify it under the terms of the GNU General Public License               
-#  as published by the Free Software Foundation; either version 2            
-#  of the License, or (at your option) any later version.                    
-#                                                                            
-#  This program is distributed in the hope that it will be useful,          
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             
-#  GNU General Public License for more details.                              
-#                                                                            
-#  You should have received a copy of the GNU General Public License         
-#  along with this program; if not, write to the Free Software               
-#  Foundation, Inc., 59 Temple Place - Suite 330,                            
-#  Boston, MA  02111-1307, USA.                                              
-#                                                                            
+#
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330,
+#  Boston, MA  02111-1307, USA.
+#
 
 """
 Module mdct.dico
 ====================
-                                                                          
+
 This class inherits from :class:`.BaseDico` and is used to represent and manipulate multiscale MDCT dictionaries.
 Dictionaries are mostly implemented as a collection of :class:`pymp_MDCTBlock` of various kind, according to the
-type of pursuit that is seeked.                                                                      
-                                                                                                                                              
+type of pursuit that is seeked.
+
 This module describes 3 kind of blocks:
     - :class:`Dico`  is a Dico based on the standard MDCT transform. Which means atoms localizations
                  are constrained by the scale of the transform
@@ -43,7 +43,7 @@ This module describes 3 kind of blocks:
 
     - :class:`FullDico`  this object simulates a dictionary where atoms at all time localizations are available
                   This kind of dictionary can be thought of as a Toeplitz matrix
-                  BEWARE: memory consumption and CPU load will be very high! only use with very small signals 
+                  BEWARE: memory consumption and CPU load will be very high! only use with very small signals
                   (e.g. 1024 samples or so) Fairly intractable at higher dimensions
 """
 
@@ -60,7 +60,7 @@ _Logger = log.Log('MDCTDico', level=0)
 
 class Dico(BaseDico):
     """ class to handle multiscale MDCT dictionaries using MDCT blocks"""
-    
+
     sizes = []
     tolerances = []
     nature = 'MDCT'
@@ -68,22 +68,22 @@ class Dico(BaseDico):
     maxBlockScore = 0
     bestCurrentBlock = None
     startingTouchedIndex = 0
-    endingTouchedIndex = -1    
+    endingTouchedIndex = -1
     forceHF = False
     useC = True
-    
+
     def __init__(self , sizes=[] , useC = True , forceHF=False , parallel=False, debugLevel=None):
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
-        
+
         self.sizes = sizes
-        self.tolerances = [2 for i in self.sizes]        
+        self.tolerances = [2 for i in self.sizes]
         self.useC = useC
         self.forceHF = forceHF
         self._pp = parallel
         _Logger.info('New dictionary created with sizes : ' +str(self.sizes))
-        
-        
+
+
 
     def getBlock(self , size):
         ''' Returns the index of the block corresponding to the given size or None if not found'''
@@ -91,7 +91,7 @@ class Dico(BaseDico):
             if size==self.sizes[i]:
                 return i
         return None
-    
+
     def initialize(self , residualSignal):
         ''' Create the collection of blocks specified by the MDCT sizes '''
         self.blocks = []
@@ -100,18 +100,18 @@ class Dico(BaseDico):
         self.endingTouchedIndex = -1
         for mdctSize in self.sizes:
             self.blocks.append(block.Block(mdctSize , residualSignal, useC = self.useC , forceHF=self.forceHF))
-        
+
     def initProjMatrix(self, itNumbers):
-        """ method used for monitoring the projection along iterations 
+        """ method used for monitoring the projection along iterations
             ONLY for DEV purposes"""
         projShape = self.blocks[0].projectionMatrix.shape
         # Here all blocks have same number of projections
         return zeros((projShape[0] * len(self.sizes), itNumbers))
-    
+
     def updateProjMatrix(self,projMatrix , iterationNumber , normedProj = False):
-        """ method used for monitoring the projection along iterations 
+        """ method used for monitoring the projection along iterations
             ONLY for DEV purposes"""
-        
+
         Lproj = self.blocks[0].projectionMatrix.shape[0]
         for blockIdx in range(len(self.blocks)):
 #            if normedProj:
@@ -119,17 +119,17 @@ class Dico(BaseDico):
 #            else:
 #            normCoeff = 1
             projMatrix[blockIdx*Lproj:(blockIdx+1)*Lproj, iterationNumber] = self.blocks[blockIdx].projectionMatrix#/normCoeff
-    
+
 
     def update(self , residualSignal , iteratioNumber=0 , debug=0):
         ''' Update the projections in each block, only where it needs to be done as specified '''
         self.maxBlockScore = 0
         self.bestCurrentBlock = None
-        
+
         if self.forceHF:
             self.maxHFBlockScore = 0
             self.bestCurrentHFBlock = None
-                
+
         for block in self.blocks:
             startingTouchedFrame = int(math.floor(self.startingTouchedIndex / (block.scale/2)))
             if self.endingTouchedIndex > 0:
@@ -137,28 +137,28 @@ class Dico(BaseDico):
             else:
                 endingTouchedFrame = -1
             _Logger.info("block: " + str(block.scale) + " : " + str(startingTouchedFrame) +" "+ str(endingTouchedFrame))
-            
+
             block.update(residualSignal , startingTouchedFrame , endingTouchedFrame )
-    
-            if abs(block.maxValue) > self.maxBlockScore:    
+
+            if abs(block.maxValue) > self.maxBlockScore:
                 self.maxBlockScore = abs(block.maxValue)
                 self.bestCurrentBlock = block
 
-  
-    def getBestAtom(self , debug):        
+
+    def getBestAtom(self , debug):
         if self.bestCurrentBlock == None:
             raise ValueError("no best block constructed, make sure inner product have been updated")
-         
+
         if debug > 2:
             self.bestCurrentBlock.plotScores()
-                
+
         return self.bestCurrentBlock.getMaxAtom()
 
-    
-            
-    
+
+
+
     def computeTouchZone(self, previousBestAtom):
-        ''' update zone computed from the previously selected atom ''' 
+        ''' update zone computed from the previously selected atom '''
         self.startingTouchedIndex = previousBestAtom.timePosition# - previousBestAtom.length/2
         self.endingTouchedIndex = self.startingTouchedIndex + 1.5*previousBestAtom.length
 
@@ -166,7 +166,7 @@ class Dico(BaseDico):
         ''' A routine to convert the dictionary to an XML node '''
         if not isinstance(doc, Document):
             raise TypeError('Xml document not provided')
-        
+
         DicoNode = doc.createElement('Dictionary')
         DicoNode.setAttribute('nature', str(self.nature))
         DicoNode.setAttribute('class', self.__class__.__name__)
@@ -176,7 +176,7 @@ class Dico(BaseDico):
             sizeNode = doc.createElement('Size')
             sizeNode.setAttribute('scale', str(size))
             SizesNode.appendChild(sizeNode)
-        
+
         DicoNode.appendChild(SizesNode)
         return DicoNode
 
@@ -184,50 +184,50 @@ class Dico(BaseDico):
         ''' Get the atom index in the dictionary '''
         if not isinstance(atom , BaseAtom):
             return None
-        
+
         block = [i for i in range(len(self.sizes)) if self.sizes[i] == atom.length][0]
-        n = atom.timePosition +1                        
-        frame = math.floor( float(n) / float(atom.length /2) ) +1  
+        n = atom.timePosition +1
+        frame = math.floor( float(n) / float(atom.length /2) ) +1
         return int(block*sigLength +  frame*float(atom.length /2) + atom.frequencyBin)
 
-    # 
+    #
     def getProjections(self , indexes , sigLength):
-        """ additional method provided for Gradient Pursuits 
+        """ additional method provided for Gradient Pursuits
             indexes formalism: key as in the py_pursuit_Approx Object :
             int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)"""
-        
+
         projections = []
         for index in indexes:
             block = int(math.floor(index / sigLength))
 #            frame = math.floor( (index - block*sigLength)   /  (self.sizes[block]  /2))
             projections.append(self.blocks[block].projectionMatrix[int(index - block*sigLength)])
-        
-        return projections    
 
-         
+        return projections
+
+
 class LODico(Dico):
     """ Shift invariant MDCT dictionary
         Only difference is in the constructor and initialization: need to use LOBlocks """
-    
+
     # properties
     HRsizes = []  # the sizes for which High resolution is seeked
     nature =  'LOMDCT'
-    
+
     # constructor
     def __init__(self , sizes=[] , hrsizes = None , useC = True , debugLevel=None):
         ''' Basic contructor. By default all the block will have the locally optimized behvior but you
-        can specify only a subset with the hrsizes variable ''' 
+        can specify only a subset with the hrsizes variable '''
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
-        
-        self.sizes = sizes        
-        self.useC = useC        
+
+        self.sizes = sizes
+        self.useC = useC
         if hrsizes is not None:
-            self.HRsizes = hrsizes    
+            self.HRsizes = hrsizes
         else:
             self.HRsizes = sizes  # default behavior: compute high resolution for all scales
-            
-    
+
+
     def initialize(self , residualSignal ):
         self.blocks = []
         self.bestCurrentBlock = None
@@ -238,13 +238,13 @@ class LODico(Dico):
             if mdctSize in self.HRsizes:
                 self.blocks.append(block.LOBlock(mdctSize , residualSignal , useC= self.useC ))
             else:
-                self.blocks.append(block.Block(mdctSize , residualSignal, useC= self.useC))    
-    
+                self.blocks.append(block.Block(mdctSize , residualSignal, useC= self.useC))
+
     def getProjections(self , indexes , sigLength):
-        """ additional method provided for Gradient Pursuits 
+        """ additional method provided for Gradient Pursuits
             indexes formalism: key as in the py_pursuit_Approx Object :
             int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)"""
-        
+
         projections = []
         for index in indexes:
             block = int(math.floor(index / sigLength))
@@ -254,23 +254,23 @@ class LODico(Dico):
                 projections.append(-abs(value))
             else:
                 projections.append(abs(value))
-           
-        
-        return projections        
+
+
+        return projections
 
 
 
 class FullDico(Dico):
-    """ This class handles blocks were MDCT products are computed for 
-        each and every possible time localization. Therefore Iterations 
+    """ This class handles blocks were MDCT products are computed for
+        each and every possible time localization. Therefore Iterations
         are very slow but convergence should be optimum """
         # constructor
-    nature =  'FullMDCT' 
-    
+    nature =  'FullMDCT'
+
     def __init__(self , sizes=[] ):
         self.sizes = sizes
-        
-    
+
+
     def initialize(self , residualSignal ):
         self.blocks = []
         self.bestCurrentBlock = None
@@ -278,21 +278,21 @@ class FullDico(Dico):
         self.endingTouchedIndex = -1
         for mdctSize in self.sizes:
             self.blocks.append(block.FullBlock(mdctSize , residualSignal))
-            
+
     def initProjMatrix(self, itNumbers):
         """ method used for monitoring the projection along iterations"""
         projShape = zeros(len(self.sizes))
         nbprojs  = zeros(len(self.sizes))
         for bI in range(len(self.sizes)):
-            projShape[bI] = (self.blocks[bI].projectionMatrix[0].shape[0])            
+            projShape[bI] = (self.blocks[bI].projectionMatrix[0].shape[0])
             nbprojs[bI] = (len(self.blocks[bI].projectionMatrix))
             print bI, projShape[bI] , nbprojs[bI]
-            
+
         return zeros((sum(projShape * nbprojs), itNumbers))
-    
+
     def updateProjMatrix(self,projMatrix , iterationNumber , normedProj = False):
         """ method used for monitoring the projection along iterations"""
-        ide = 0 
+        ide = 0
         for blockIdx in range(len(self.blocks)):
             projMat = array(self.blocks[blockIdx].projectionMatrix.values()).flatten()
 #            if normedProj:
@@ -304,22 +304,22 @@ class FullDico(Dico):
             ide  += projMat.shape[0]
 
 '''class pymp_SpreadDico(py_pursuit_MDCTDico):
-     UNDER DEVELOPPMENT DO NOT USE 
+     UNDER DEVELOPPMENT DO NOT USE
     def __init__(self , sizes=[] ,type = 'SpreadMDCT' ,debugLevel=None , useC = True,
                  allBases = True , Spreadbases = [],penalty=0.5, maskSize = 2):
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
-        
+
         self.useC = useC
         self.sizes = sizes
         self.type = type
         self.penalty = penalty
         self.maskSize =maskSize
-        if allBases: 
+        if allBases:
             self.spreadScales = self.sizes
         else:
             self.spreadScales = Spreadbases
-        
+
         _Logger.info('New dictionary created with sizes : ' +str(self.sizes))
 
     def initialize(self , residualSignal):
@@ -335,30 +335,30 @@ class FullDico(Dico):
             else:
                 self.blocks.append(Block.py_pursuit_MDCTBlock(mdctSize , residualSignal, useC=self.useC))
     '''
-    
-    
+
+
 def fromXml(xmlNode):
     ''' Export routine NOT FULLY TESTED '''
     if not isinstance(xmlNode, Element):
         raise TypeError('Xml element not provided')
-    
+
     # retrieve sizes
     for e in xmlNode.childNodes:
         if e.localName == 'Sizes':
             sizesNode = e
             break
-        
+
 #    sizesNode = xmlNode.childNodes[0]
     sizes = []
     for node in sizesNode.childNodes:
         if node.localName == 'Size':
             sizes.append(int(node.getAttribute('scale')))
-    
+
     if xmlNode.getAttribute('class') == 'Dico':
         return Dico(sizes)
-    
+
     elif xmlNode.getAttribute('class') == 'LODico':
         return LODico(sizes)
-    
+
     elif xmlNode.getAttribute('class') == 'FullDico':
-        return FullDico(sizes)        
+        return FullDico(sizes)

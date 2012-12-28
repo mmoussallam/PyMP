@@ -1,9 +1,9 @@
 PyMP
 ====
 
-A Python Implementation of Greedy Algorithms developped during my PhD
+A Python Implementation of Greedy Algorithms developed during my PhD
 
-This software is provided under GNU GPL license. 
+This software is provided under GNU GPL license.
 
 Documentation: http://mmoussallam.github.com/PyMP/
 

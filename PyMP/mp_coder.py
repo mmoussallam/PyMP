@@ -33,61 +33,61 @@ A collection of method handling the (theoretical) encoding of sparse approximati
 
 
 
-""" 
+"""
 
 from Classes import pymp_Approx
 from Classes.mdct import pymp_MDCTAtom
 from math import  ceil , log , sqrt
 
-def SimpleMDCTEncoding(approx ,  
-                   targetBitrate , 
-                   Q=7 , 
-                   encodeCoeffs=True,                     
-                   encodeIndexes=True , 
-                   subsampling = 1, 
-                   TsPenalty=False, 
+def SimpleMDCTEncoding(approx ,
+                   targetBitrate ,
+                   Q=7 ,
+                   encodeCoeffs=True,
+                   encodeIndexes=True ,
+                   subsampling = 1,
+                   TsPenalty=False,
                    saveOutputFilePath=None,
                    outputAllIndexes=False):
-    """ Simple encoder of a sparse approximation 
-    
+    """ Simple encoder of a sparse approximation
+
     Arguments:
-    
+
         - `approx`: a :class:`.pymp_Approx` object containing atoms from the decomposition
-        
-        - `targetBitrate`: a float indicating the target bitrate. Atoms are considered in decreasing amplitude order. 
+
+        - `targetBitrate`: a float indicating the target bitrate. Atoms are considered in decreasing amplitude order.
         The encoding will stop either when the target Bitrate it reached or when all atoms of `approx` have been considered
-        
+
         - `Q`: The number of midtread quantizer steps. Default is 7, increase this number for higher bitrates
-        
+
         - `TsPenalty`: a boolean indicating whether LOMP algorithm has been used, and addition time-shift parameters must be encoded
-        
+
     Returns:
-    
-        - `SNR`: The achieved Signal to Noise Ratio 
-        
-        - `Bitrate`: The achieved bitrate, not necessarily equal to the given target 
-        
+
+        - `SNR`: The achieved Signal to Noise Ratio
+
+        - `Bitrate`: The achieved bitrate, not necessarily equal to the given target
+
         - `quantizedApprox`: a :class:`.pymp_Approx` object containing the quantized atoms
-    
-    """ 
-    # determine the fixed cost (in bits) of an atom's index 
-    indexcost = log(approx.length*len(approx.dico.sizes)/subsampling,2)    
-    
-    # determine the fixed cost (in bits) of an atom's weight 
+
+    """
+    # determine the fixed cost (in bits) of an atom's index
+    indexcost = log(approx.length*len(approx.dico.sizes)/subsampling,2)
+
+    # determine the fixed cost (in bits) of an atom's weight
     Coeffcost = Q;
-        
+
     # instantiate the quantized approximation
-    quantizedApprox = pymp_Approx.pymp_Approx(approx.dico, 
-                                               [], 
-                                               approx.originalSignal, 
-                                               approx.length, 
+    quantizedApprox = pymp_Approx.pymp_Approx(approx.dico,
+                                               [],
+                                               approx.originalSignal,
+                                               approx.length,
                                                approx.samplingFrequency)
 
-    
-    total = 0
-    TsCosts = 0    
 
-    # First loop to evaluate the max of atom's weight and 
+    total = 0
+    TsCosts = 0
+
+    # First loop to evaluate the max of atom's weight and
     maxValue = 0
     for atom in approx.atoms:
         if abs(atom.mdct_value) > abs(maxValue):
@@ -95,19 +95,19 @@ def SimpleMDCTEncoding(approx ,
 
     # deduce the Quantizer step width
     quantizerWidth = maxValue/float(2**(Q-1))
-    
+
     if quantizerWidth == 0:
         raise ValueError('zero found for quantizer step width...')
-    
+
     if approx.atomNumber <= 0:
         raise ValueError('approx object has an empty list of atoms')
-    
-    # second loop: atom after atom    
+
+    # second loop: atom after atom
     for atom in approx.atoms:
-                
+
         value = atom.mdct_value;
-            
-        # Quantize the atom's weight        
+
+        # Quantize the atom's weight
         quantizedValue =  ceil((value - quantizerWidth/2) / quantizerWidth)*quantizerWidth
 
         # If quantized value is 0, no need to include it
@@ -115,46 +115,46 @@ def SimpleMDCTEncoding(approx ,
             # If one is 100% sure atom's weights are in decreasing order, we could stop right here
             # But in the general case, we're not...
             continue
-        
+
         else:
             total += 1
 
-        # instantiate the quantized atom        
-        quantizedAtom = pymp_MDCTAtom.pymp_MDCTAtom(atom.length , 
-                                                    atom.amplitude , 
-                                                    atom.timePosition , 
-                                                    atom.frequencyBin , 
-                                                    atom.samplingFrequency,                                                         
-                                                    mdctCoeff = quantizedValue)    
-            
-        # recompute true waveform        
-        quantizedAtom.frame = atom.frame  
+        # instantiate the quantized atom
+        quantizedAtom = pymp_MDCTAtom.pymp_MDCTAtom(atom.length ,
+                                                    atom.amplitude ,
+                                                    atom.timePosition ,
+                                                    atom.frequencyBin ,
+                                                    atom.samplingFrequency,
+                                                    mdctCoeff = quantizedValue)
+
+        # recompute true waveform
+        quantizedAtom.frame = atom.frame
         quantizedAtom.waveform = atom.waveform*(sqrt((quantizedAtom.mdct_value**2)/(atom.mdct_value**2)))
 
-        # add atom to quantized Approx                
+        # add atom to quantized Approx
         quantizedApprox.addAtom(quantizedAtom)
-        
-         
+
+
         # All time-shift optimal parameters live in an interval of length L/2 where
-        # L is the atom scale 
+        # L is the atom scale
         if TsPenalty:
                 TsCosts += log(atom.length/2, 2);
-                
+
         # estimate current bitrate: Each atom coding cost is fixed!!
         nbBitsSoFar = (total *( indexcost + Coeffcost)) + TsCosts;
         br = float(nbBitsSoFar)/(float(approx.length)/float(approx.samplingFrequency))
-                
+
         if br >= targetBitrate:
             break;
 
-    # Evaluate True Bitrate            
+    # Evaluate True Bitrate
     bitrate = float(nbBitsSoFar)/(float(approx.length)/float(approx.samplingFrequency))
-        
+
     approxEnergy = sum(quantizedApprox.recomposedSignal.dataVec**2)
     resEnergy = sum((approx.originalSignal.dataVec - quantizedApprox.recomposedSignal.dataVec)**2)
-    
-    # Evaluate distorsion 
+
+    # Evaluate distorsion
     SNR = 10.0*log( approxEnergy / resEnergy , 10)
-                                
+
     return SNR , bitrate, quantizedApprox
-   
+
