@@ -415,309 +415,309 @@ def mp_long(originalLongSignal, dictionary, targetSRR=10, maxIteratioNumber=100,
 # Experimental
 
 
-def GP(originalSignal,
-        dictionary,
-        targetSRR,
-        maxIteratioNumber,
-        debug=0,
-        padSignal=True,
-        itClean=False, doWatchSRR=False):
-    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
-    #Gradient Pursuit Loop """
-    #==========================================================================
-    # from scipy.sparse import lil_matrix
-    #==========================================================================
-    # back compatibility - use debug levels now
-    if not debug:
-        doWatchSRR = True
-        debug = 0
-
-    # optional add zeroes to the edge
-    if padSignal:
-        originalSignal.pad(dictionary.getN())
-    residualSignal = originalSignal.copy()
-
-    # initialize blocks
-    dictionary.initialize(residualSignal)
-
-    # initialize approximant
-    currentApprox = Approx.Approx(dictionary, [], originalSignal)
-
-    # residualEnergy
-    resEnergy = []
-
-    iterationNumber = 0
-    approxSRR = currentApprox.compute_srr()
-
-#    projMatrix = lil_matrix((currentApprox.length , maxIteratioNumber))
-#    projMatrix = np.zeros((currentApprox.length , maxIteratioNumber))
-    columnIndexes = []
-    projMatrix = []
-    gradient = []
-    G = []
-    indexes = []
-
-    gains = []
-    # loop is same as mp except for orthogonal projection of the atom on the
-    # residual
-    while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
-        maxBlockScore = 0
-        bestBlock = None
-
-        if iterationNumber % 100 == 0:
-            print "reached iteration ", iterationNumber
-
-        # Compute inner products and selects the best atom
-        dictionary.update(residualSignal, iterationNumber)
-
-        # retrieve best correlated atom
-        bestAtom = dictionary.getBestAtom(debug)
-
-        if bestAtom is None:
-            print 'No atom selected anymore'
-            return currentApprox, resEnergy
-
-        if debug > 0:
-            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.frequencyBin)
-                                            + " at " + str(
-                                                bestAtom.timePosition)
-                                            + " value : " + str(
-                                                bestAtom.mdct_value)
-                                            + " time shift : " + str(bestAtom.timeShift))
-            print strO
-
-        newIndex = dictionary.getAtomKey(bestAtom, currentApprox.length)
-
-        # add the new index to the subset of indexes
-        isNew = False
-        if not newIndex in indexes:
-            indexes.append(newIndex)
-            isNew = True
-
-        # retrive the gradient from the previously computed inner products
-        gradient = np.array(
-            dictionary.getProjections(indexes, currentApprox.length))
-
-        if isNew:
-#            columnIndexes.append(iterationNumber);
-# projMatrix[ bestAtom.timePosition : bestAtom.timePosition+ bestAtom.length,
-# columnIndexes[-1]] = bestAtom.waveform/bestAtom.mdct_value
-                # add atom to projection matrix
-            vec1 = np.concatenate((np.zeros((bestAtom.timePosition, 1)), bestAtom.
-                waveform.reshape(bestAtom.length, 1) / bestAtom.mdct_value))
-            vec2 = np.zeros((originalSignal.length - bestAtom.
-                timePosition - bestAtom.length, 1))
-            atomVec = np.concatenate((vec1, vec2))
-#            atomVec = atomVec/math.sqrt(sum(atomVec**2))
-            if iterationNumber > 0:
-
-                projMatrix = np.concatenate((projMatrix, atomVec), axis=1)
-                gains = np.concatenate((gains, np.zeros((1,))))
-
-            else:
-                projMatrix = atomVec
-                gains = 0
-
-            # add it to the collection
-            currentApprox.add(bestAtom)
-
-        # calcul c : direction
-#        c =projMatrix[: , columnIndexes].tocsc() * gradient;
-        c = np.dot(projMatrix, gradient)
-#        spVec[indexes] = gradient;
-#        c = dictionary.synthesize( spVec , currentApprox.length)
-
-        # calcul step size
-        alpha = np.dot(residualSignal.data, c) / np.dot(c.T, c)
-
-        # update residual
-        gains += alpha * gradient
-
-        if doWatchSRR:
-            # recreate the approximation
-            currentApprox.recomposed_signal.data = np.dot(
-                projMatrix, gains)
-# currentApprox.recomposedSignal.dataVec = gains * projMatrix[: ,
-# columnIndexes].tocsc().T;
-        # update residual
-#        substract(residualSignal , alpha , c)
-        residualSignal.data -= alpha * c
-# residualSignal.dataVec = originalSignal.dataVec -
-# currentApprox.recomposedSignal.dataVec
-
-        if debug > 1:
-            print alpha
-            print gradient
-#            print bestAtom.mdct_value
-#            print gains
-
-            plt.figure()
-            plt.plot(originalSignal.data, 'b--')
-            plt.plot(currentApprox.recomposed_signal.data, 'k-')
-            plt.plot(residualSignal.data, 'r:')
-            plt.plot(alpha * c, 'g')
-            plt.legend(
-                ('original', 'recomposed so far', 'residual', 'subtracted'))
-            plt.show()
-
-# resEnergy.append(sum((originalSignal.dataVec -
-# currentApprox.recomposedSignal.dataVec)**2))
-        resEnergy.append(
-            np.dot(residualSignal.data.T, residualSignal.data))
-
-        if doWatchSRR:
-            recomposedEnergy = np.dot(currentApprox.recomposed_signal.
-                data.T, currentApprox.recomposed_signal.data)
-
-            # compute new SRR and increment iteration Number
-            approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
-            if debug > 0:
-                print "SRR reached of ", approxSRR, " at iteration ", iterationNumber
-
-        iterationNumber += 1
-
-        # cleaning
-        if itClean:
-            del bestAtom.waveform
-
-    # recreate the approxs
-#    for atom ,i in zip(currentApprox.atoms , range(currentApprox.atomNumber)):
-#        atom.mdct_value = gains[i];
-
-    return currentApprox, resEnergy
+#def GP(originalSignal,
+#        dictionary,
+#        targetSRR,
+#        maxIteratioNumber,
+#        debug=0,
+#        padSignal=True,
+#        itClean=False, doWatchSRR=False):
+#    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
+#    #Gradient Pursuit Loop """
+#    #==========================================================================
+#    # from scipy.sparse import lil_matrix
+#    #==========================================================================
+#    # back compatibility - use debug levels now
+#    if not debug:
+#        doWatchSRR = True
+#        debug = 0
+#
+#    # optional add zeroes to the edge
+#    if padSignal:
+#        originalSignal.pad(dictionary.getN())
+#    residualSignal = originalSignal.copy()
+#
+#    # initialize blocks
+#    dictionary.initialize(residualSignal)
+#
+#    # initialize approximant
+#    currentApprox = Approx.Approx(dictionary, [], originalSignal)
+#
+#    # residualEnergy
+#    resEnergy = []
+#
+#    iterationNumber = 0
+#    approxSRR = currentApprox.compute_srr()
+#
+##    projMatrix = lil_matrix((currentApprox.length , maxIteratioNumber))
+##    projMatrix = np.zeros((currentApprox.length , maxIteratioNumber))
+#    columnIndexes = []
+#    projMatrix = []
+#    gradient = []
+#    G = []
+#    indexes = []
+#
+#    gains = []
+#    # loop is same as mp except for orthogonal projection of the atom on the
+#    # residual
+#    while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
+#        maxBlockScore = 0
+#        bestBlock = None
+#
+#        if iterationNumber % 100 == 0:
+#            print "reached iteration ", iterationNumber
+#
+#        # Compute inner products and selects the best atom
+#        dictionary.update(residualSignal, iterationNumber)
+#
+#        # retrieve best correlated atom
+#        bestAtom = dictionary.getBestAtom(debug)
+#
+#        if bestAtom is None:
+#            print 'No atom selected anymore'
+#            return currentApprox, resEnergy
+#
+#        if debug > 0:
+#            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.frequencyBin)
+#                                            + " at " + str(
+#                                                bestAtom.timePosition)
+#                                            + " value : " + str(
+#                                                bestAtom.mdct_value)
+#                                            + " time shift : " + str(bestAtom.timeShift))
+#            print strO
+#
+#        newIndex = dictionary.getAtomKey(bestAtom, currentApprox.length)
+#
+#        # add the new index to the subset of indexes
+#        isNew = False
+#        if not newIndex in indexes:
+#            indexes.append(newIndex)
+#            isNew = True
+#
+#        # retrive the gradient from the previously computed inner products
+#        gradient = np.array(
+#            dictionary.getProjections(indexes, currentApprox.length))
+#
+#        if isNew:
+##            columnIndexes.append(iterationNumber);
+## projMatrix[ bestAtom.timePosition : bestAtom.timePosition+ bestAtom.length,
+## columnIndexes[-1]] = bestAtom.waveform/bestAtom.mdct_value
+#                # add atom to projection matrix
+#            vec1 = np.concatenate((np.zeros((bestAtom.timePosition, 1)), bestAtom.
+#                waveform.reshape(bestAtom.length, 1) / bestAtom.mdct_value))
+#            vec2 = np.zeros((originalSignal.length - bestAtom.
+#                timePosition - bestAtom.length, 1))
+#            atomVec = np.concatenate((vec1, vec2))
+##            atomVec = atomVec/math.sqrt(sum(atomVec**2))
+#            if iterationNumber > 0:
+#
+#                projMatrix = np.concatenate((projMatrix, atomVec), axis=1)
+#                gains = np.concatenate((gains, np.zeros((1,))))
+#
+#            else:
+#                projMatrix = atomVec
+#                gains = 0
+#
+#            # add it to the collection
+#            currentApprox.add(bestAtom)
+#
+#        # calcul c : direction
+##        c =projMatrix[: , columnIndexes].tocsc() * gradient;
+#        c = np.dot(projMatrix, gradient)
+##        spVec[indexes] = gradient;
+##        c = dictionary.synthesize( spVec , currentApprox.length)
+#
+#        # calcul step size
+#        alpha = np.dot(residualSignal.data, c) / np.dot(c.T, c)
+#
+#        # update residual
+#        gains += alpha * gradient
+#
+#        if doWatchSRR:
+#            # recreate the approximation
+#            currentApprox.recomposed_signal.data = np.dot(
+#                projMatrix, gains)
+## currentApprox.recomposedSignal.dataVec = gains * projMatrix[: ,
+## columnIndexes].tocsc().T;
+#        # update residual
+##        substract(residualSignal , alpha , c)
+#        residualSignal.data -= alpha * c
+## residualSignal.dataVec = originalSignal.dataVec -
+## currentApprox.recomposedSignal.dataVec
+#
+#        if debug > 1:
+#            print alpha
+#            print gradient
+##            print bestAtom.mdct_value
+##            print gains
+#
+#            plt.figure()
+#            plt.plot(originalSignal.data, 'b--')
+#            plt.plot(currentApprox.recomposed_signal.data, 'k-')
+#            plt.plot(residualSignal.data, 'r:')
+#            plt.plot(alpha * c, 'g')
+#            plt.legend(
+#                ('original', 'recomposed so far', 'residual', 'subtracted'))
+#            plt.show()
+#
+## resEnergy.append(sum((originalSignal.dataVec -
+## currentApprox.recomposedSignal.dataVec)**2))
+#        resEnergy.append(
+#            np.dot(residualSignal.data.T, residualSignal.data))
+#
+#        if doWatchSRR:
+#            recomposedEnergy = np.dot(currentApprox.recomposed_signal.
+#                data.T, currentApprox.recomposed_signal.data)
+#
+#            # compute new SRR and increment iteration Number
+#            approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
+#            if debug > 0:
+#                print "SRR reached of ", approxSRR, " at iteration ", iterationNumber
+#
+#        iterationNumber += 1
+#
+#        # cleaning
+#        if itClean:
+#            del bestAtom.waveform
+#
+#    # recreate the approxs
+##    for atom ,i in zip(currentApprox.atoms , range(currentApprox.atomNumber)):
+##        atom.mdct_value = gains[i];
+#
+#    return currentApprox, resEnergy
 
 #def substract(residualSignal , alpha , c):
 #    residualSignal.dataVec -= alpha*c;
 #    return residualSignal
 
 
-def OMP(originalSignal,
-        dictionary,
-        targetSRR,
-        maxIteratioNumber,
-        debug=0,
-        padSignal=True,
-        itClean=False):
-    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
-    # Orthogonal Matching Pursuit Loop """
-
-    # back compatibility - use debug levels now
-    if not debug:
-        debug = 0
-
-    # optional add zeroes to the edge
-    if padSignal:
-        originalSignal.pad(dictionary.getN())
-    residualSignal = originalSignal.copy()
-
-    # FFTW C code optimization
-    if parallelProjections.initialize_plans(np.array(dictionary.sizes)) != 1:
-            raise ValueError(
-                "Something failed during FFTW initialization step ")
-
-    # initialize blocks
-    dictionary.initialize(residualSignal)
-
-    # initialize approximant
-    currentApprox = Approx.Approx(dictionary, [], originalSignal)
-
-    # residualEnergy
-    resEnergy = []
-
-    iterationNumber = 0
-    approxSRR = currentApprox.compute_srr()
-
-#    projMatrix = np.zeros((originalSignal.length,1))
-    projMatrix = []
-    atomKeys = []
-    # loop is same as mp except for orthogonal projection of the atom on the
-    # residual
-    while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
-        maxBlockScore = 0
-        bestBlock = None
-
-        # Compute inner products and selects the best atom
-        dictionary.update(residualSignal, iterationNumber)
-
-        bestAtom = dictionary.getBestAtom(debug)
-
-        if bestAtom is None:
-            print 'No atom selected anymore'
-            return currentApprox, resEnergy
-
-        if debug > 0:
-            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.frequencyBin)
-                                            + " at " + str(
-                                                bestAtom.timePosition)
-                                            + " value : " + str(
-                                                bestAtom.mdct_value)
-                                            + " time shift : " + str(bestAtom.timeShift))
-            print strO
-
-        # need to recompute all the atoms projection scores to orthogonalise
-        # residual
-        # approximate with moore-penrose inverse
-        # add atom to projection matrix
-        vec1 = np.concatenate((np.zeros((bestAtom.timePosition, 1)), bestAtom.
-            waveform.reshape(bestAtom.length, 1) / bestAtom.mdct_value))
-        vec2 = np.zeros((originalSignal.length - bestAtom.
-            timePosition - bestAtom.length, 1))
-        atomVec = np.concatenate((vec1, vec2))
-
-#        atomVec = atomVec/math.sqrt(sum(atomVec**2))
-        atomKey = (
-            bestAtom.length, bestAtom.timePosition, bestAtom.frequencyBin)
-
-        if iterationNumber > 0:
-            if atomKey not in atomKeys:
-                projMatrix = np.concatenate((projMatrix, atomVec), axis=1)
-                atomKeys.append(atomKey)
-        else:
-            projMatrix = atomVec
-            atomKeys.append(atomKey)
-
-        # Orthogonal projection via pseudo inverse calculation
-        ProjectedScores = np.dot(np.linalg.pinv(projMatrix),
-            original_signal.data.reshape(originalSignal.length, 1))
-
-        # update residual
-        currentApprox.recomposed_signal.data = np.dot(
-            projMatrix, ProjectedScores)[:, 0]
-
-        residualSignal.data = originalSignal.data - currentApprox.recomposed_signal.data
-
-#        # add atom to dictionary
-#        currentApprox.add(bestAtom , dictionary.bestCurrentBlock.wLong)
+#def OMP(originalSignal,
+#        dictionary,
+#        targetSRR,
+#        maxIteratioNumber,
+#        debug=0,
+#        padSignal=True,
+#        itClean=False):
+#    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
+#    # Orthogonal Matching Pursuit Loop """
 #
-# for atom,i in zip(currentApprox.atoms , range(currentApprox.atomNumber)):
-#            atom.projectionScore = ProjectedScores[i];
-# atom.waveform = (ProjectedScores[i]/math.sqrt(sum(atom.waveform**2))) *
-# atom.waveform;
-
-#        residualSignal.subtract(bestAtom , debug)
-#        dictionary.computeTouchZone(bestAtom)
-        resEnergy.append(
-            np.dot(residualSignal.data.T, residualSignal.data))
-        recomposedEnergy = np.dot(currentApprox.recomposed_signal.
-            data.T, currentApprox.recomposed_signal.data)
-
-        # compute new SRR and increment iteration Number
-        approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
-#        approxSRR = currentApprox.compute_srr();
-        if debug > 0:
-            print "SRR reached of ", approxSRR, " at iteration ", iterationNumber
-
-        iterationNumber += 1
-
-        # cleaning
-        if itClean:
-            del bestAtom.waveform
-
-    # VERY IMPORTANT CLEANING STAGE!
-    if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
-        raise ValueError("Something failed during FFTW cleaning stage ")
-
-    return currentApprox, resEnergy
+#    # back compatibility - use debug levels now
+#    if not debug:
+#        debug = 0
+#
+#    # optional add zeroes to the edge
+#    if padSignal:
+#        originalSignal.pad(dictionary.getN())
+#    residualSignal = originalSignal.copy()
+#
+#    # FFTW C code optimization
+#    if parallelProjections.initialize_plans(np.array(dictionary.sizes)) != 1:
+#            raise ValueError(
+#                "Something failed during FFTW initialization step ")
+#
+#    # initialize blocks
+#    dictionary.initialize(residualSignal)
+#
+#    # initialize approximant
+#    currentApprox = Approx.Approx(dictionary, [], originalSignal)
+#
+#    # residualEnergy
+#    resEnergy = []
+#
+#    iterationNumber = 0
+#    approxSRR = currentApprox.compute_srr()
+#
+##    projMatrix = np.zeros((originalSignal.length,1))
+#    projMatrix = []
+#    atomKeys = []
+#    # loop is same as mp except for orthogonal projection of the atom on the
+#    # residual
+#    while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
+#        maxBlockScore = 0
+#        bestBlock = None
+#
+#        # Compute inner products and selects the best atom
+#        dictionary.update(residualSignal, iterationNumber)
+#
+#        bestAtom = dictionary.getBestAtom(debug)
+#
+#        if bestAtom is None:
+#            print 'No atom selected anymore'
+#            return currentApprox, resEnergy
+#
+#        if debug > 0:
+#            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.frequencyBin)
+#                                            + " at " + str(
+#                                                bestAtom.timePosition)
+#                                            + " value : " + str(
+#                                                bestAtom.mdct_value)
+#                                            + " time shift : " + str(bestAtom.timeShift))
+#            print strO
+#
+#        # need to recompute all the atoms projection scores to orthogonalise
+#        # residual
+#        # approximate with moore-penrose inverse
+#        # add atom to projection matrix
+#        vec1 = np.concatenate((np.zeros((bestAtom.timePosition, 1)), bestAtom.
+#            waveform.reshape(bestAtom.length, 1) / bestAtom.mdct_value))
+#        vec2 = np.zeros((originalSignal.length - bestAtom.
+#            timePosition - bestAtom.length, 1))
+#        atomVec = np.concatenate((vec1, vec2))
+#
+##        atomVec = atomVec/math.sqrt(sum(atomVec**2))
+#        atomKey = (
+#            bestAtom.length, bestAtom.timePosition, bestAtom.frequencyBin)
+#
+#        if iterationNumber > 0:
+#            if atomKey not in atomKeys:
+#                projMatrix = np.concatenate((projMatrix, atomVec), axis=1)
+#                atomKeys.append(atomKey)
+#        else:
+#            projMatrix = atomVec
+#            atomKeys.append(atomKey)
+#
+#        # Orthogonal projection via pseudo inverse calculation
+#        ProjectedScores = np.dot(np.linalg.pinv(projMatrix),
+#            original_signal.data.reshape(originalSignal.length, 1))
+#
+#        # update residual
+#        currentApprox.recomposed_signal.data = np.dot(
+#            projMatrix, ProjectedScores)[:, 0]
+#
+#        residualSignal.data = originalSignal.data - currentApprox.recomposed_signal.data
+#
+##        # add atom to dictionary
+##        currentApprox.add(bestAtom , dictionary.bestCurrentBlock.wLong)
+##
+## for atom,i in zip(currentApprox.atoms , range(currentApprox.atomNumber)):
+##            atom.projectionScore = ProjectedScores[i];
+## atom.waveform = (ProjectedScores[i]/math.sqrt(sum(atom.waveform**2))) *
+## atom.waveform;
+#
+##        residualSignal.subtract(bestAtom , debug)
+##        dictionary.computeTouchZone(bestAtom)
+#        resEnergy.append(
+#            np.dot(residualSignal.data.T, residualSignal.data))
+#        recomposedEnergy = np.dot(currentApprox.recomposed_signal.
+#            data.T, currentApprox.recomposed_signal.data)
+#
+#        # compute new SRR and increment iteration Number
+#        approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
+##        approxSRR = currentApprox.compute_srr();
+#        if debug > 0:
+#            print "SRR reached of ", approxSRR, " at iteration ", iterationNumber
+#
+#        iterationNumber += 1
+#
+#        # cleaning
+#        if itClean:
+#            del bestAtom.waveform
+#
+#    # VERY IMPORTANT CLEANING STAGE!
+#    if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
+#        raise ValueError("Something failed during FFTW cleaning stage ")
+#
+#    return currentApprox, resEnergy
 
 
 def mp_joint(originalSignalList,
