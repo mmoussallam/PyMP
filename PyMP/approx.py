@@ -33,9 +33,10 @@ The main class is :class:`approx`
 
 '''
 
-import signals , log
+import signals
+import log
 from base import BaseAtom
-from numpy import math , array , zeros , sum , NINF , PINF, log2
+from numpy import math, array, zeros, sum, NINF, PINF, log2
 from tools.mdct import imdct
 import matplotlib.patches as mpatches
 import matplotlib
@@ -47,6 +48,7 @@ import matplotlib.colors as cc
 #import xml.dom.ext
 global _Logger
 _Logger = log.Log('Approx')
+
 
 class Approx:
     """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm
@@ -105,7 +107,7 @@ class Approx:
     recomposedSignal = None
     samplingFrequency = 0
 
-    def __init__(self , dico = None , atoms = [] , originalSignal = None , length=0 , Fs=0, debugLevel=None):
+    def __init__(self, dico=None, atoms=[], originalSignal=None, length=0, Fs=0, debugLevel=None):
         """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm """
         if debugLevel is not None:
             _Logger.setLevel(debugLevel)
@@ -126,10 +128,11 @@ class Approx:
         if self.frameNumber > 0:
             self.frameLength = self.length / self.frameNumber
 
-        self.recomposedSignal = signals.Signal(zeros(self.length), self.samplingFrequency )
+        self.recomposedSignal = signals.Signal(
+            zeros(self.length), self.samplingFrequency)
         self.recomposedSignal.isNormalized = isNormalized
 
-    def synthesize(self , method = 0 , forceReSynthesis = True):
+    def synthesize(self, method=0, forceReSynthesis=True):
         """ function that will synthesise the approximant using the list of atoms
             this is mostly DEPRECATED"""
         if self.originalSignal == None:
@@ -150,45 +153,49 @@ class Approx:
                     for atom in self.atoms:
                         if atom.length == mdctSize:
                             # bugFIx
-                            n = atom.timePosition +1
-                            frame = math.floor( float(n) / float(atom.length /2) ) +1
-#                            mdctVec[frame*float(atom.length /2) + atom.frequencyBin] += atom.amplitude
-                            mdctVec[frame*float(atom.length /2) + atom.frequencyBin] += atom.mdct_value
-                    synthesizedSignal += imdct(mdctVec , mdctSize)
-#                    synthesizedSignal += concatenate((zeros(mdctSize/4) , imdct(mdctVec , mdctSize)) )[1:-mdctSize/4+1]
-
+                            n = atom.timePosition + 1
+                            frame = math.floor(
+                                 float(n) / float(atom.length / 2)) + 1
+# mdctVec[frame*float(atom.length /2) + atom.frequencyBin] += atom.amplitude
+                            mdctVec[frame * float(atom.length /
+                                2) + atom.frequencyBin] += atom.mdct_value
+                    synthesizedSignal += imdct(mdctVec, mdctSize)
+# synthesizedSignal += concatenate((zeros(mdctSize/4) , imdct(mdctVec ,
+# mdctSize)) )[1:-mdctSize/4+1]
 
             # second method by recursive atom synthesis - NOT WORKING
             elif method == 1:
                 for atom in self.atoms:
                     atom.synthesizeIFFT()
-                    synthesizedSignal[atom.timePosition : atom.timePosition + atom.length] += atom.waveform
-
-
+                    synthesizedSignal[atom.timePosition:
+                         atom.timePosition + atom.length] += atom.waveform
 
             # HACK here to resynthesize using LOMP atoms
             elif method == 2:
                 for atom in self.atoms:
                     atom.waveForm = atom.synthesizeIFFT()
                     if (atom.projectionScore is not None):
-                            if (atom.projectionScore <0):
-                                atom.waveform = (-math.sqrt(-atom.projectionScore/sum(atom.waveform**2)) )*atom.waveform
-                            else:
-                                atom.waveform = (math.sqrt(atom.projectionScore/sum(atom.waveform**2)) )*atom.waveform
+                        if (atom.projectionScore < 0):
+                            atom.waveform = (-math.sqrt(-atom.projectionScore /
+                                sum(atom.waveform ** 2))) * atom.waveform
+                        else:
+                            atom.waveform = (math.sqrt(atom.projectionScore /
+                                sum(atom.waveform ** 2))) * atom.waveform
 
-                    synthesizedSignal[atom.timePosition : atom.timePosition + atom.length] += atom.waveform
+                    synthesizedSignal[atom.timePosition:
+                         atom.timePosition + atom.length] += atom.waveform
 
-
-            self.recomposedSignal = signals.Signal(synthesizedSignal , self.samplingFrequency)
+            self.recomposedSignal = signals.Signal(
+                synthesizedSignal, self.samplingFrequency)
             #return self.recomposedSignal
         # other case: we just give the existing synthesized Signal.
         return self.recomposedSignal
 
-
     # Filter the atom list by the given criterion
-    def filterAtoms(self , mdctSize=0 , posInterv = None , freqInterv = None):
+    def filterAtoms(self, mdctSize=0, posInterv=None, freqInterv=None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
-        filteredApprox = Approx(self.dico,[], self.originalSignal, self.length, self.samplingFrequency)
+        filteredApprox = Approx(self.dico, [], self.originalSignal,
+             self.length, self.samplingFrequency)
         doAppend = True
         for atom in self.atoms:
 #            if atom.length == mdctSize:
@@ -201,13 +208,13 @@ class Approx:
                 doAppend &= False
 
             if(posInterv != None):
-                if (min(posInterv) < atom.timePosition <= max(posInterv) ) :
+                if (min(posInterv) < atom.timePosition <= max(posInterv)):
                     doAppend &= True
                 else:
                     doAppend &= False
 
             if(freqInterv != None):
-                if (min(freqInterv) < atom.reducedFrequency <= max(freqInterv) ) :
+                if (min(freqInterv) < atom.reducedFrequency <= max(freqInterv)):
                     doAppend &= True
                 else:
                     doAppend &= False
@@ -218,12 +225,11 @@ class Approx:
 
         return filteredApprox
 
-
-
-    # this function adds an atom to the collection and updates the internal signal approximant
-    def addAtom(self , newAtom , window =None , clean =False,noWf=False):
+    # this function adds an atom to the collection and updates the internal
+    # signal approximant
+    def addAtom(self, newAtom, window=None, clean=False, noWf=False):
         '''this function adds an atom to the collection and updates the internal signal approximant'''
-        if not isinstance(newAtom , BaseAtom):
+        if not isinstance(newAtom, BaseAtom):
             raise TypeError("addAtom need a py_pursuit_Atom as parameter ")
 
         self.atoms.append(newAtom)
@@ -231,7 +237,7 @@ class Approx:
         # add atom waveform to the internal signal if exists
         if not noWf:
             if self.recomposedSignal != None:
-                self.recomposedSignal.add(newAtom , window)
+                self.recomposedSignal.add(newAtom, window)
             else:
                 self.synthesize(0, True)
     #            print "approx resynthesized"
@@ -240,25 +246,25 @@ class Approx:
                 del newAtom.waveform
 
     #
-    def removeAtom(self , atom):
+    def removeAtom(self, atom):
         ''' We need a routine to remove an atom , by default the last atom is removed '''
-        if not isinstance(atom , BaseAtom):
+        if not isinstance(atom, BaseAtom):
             raise TypeError("addAtom need a py_pursuit_Atom as parameter ")
         self.atoms.remove(atom)
         self.atomNumber -= 1
 
         if self.recomposedSignal != None:
-            self.recomposedSignal.subtract(atom , preventEnergyIncrease=False)
+            self.recomposedSignal.subtract(atom, preventEnergyIncrease=False)
 
     # routine to compute approximation Signal To Residual ratio so far
-    def computeSRR(self , residual=None):
+    def computeSRR(self, residual=None):
         ''' routine to compute approximation Signal To Residual ratio so far using:
 
             .. math::SRR = 10 \log_10 \frac{\| \tilde{x} \|^2}{\| \tilde{x} - x \|^2}
 
             where :math:`\tilde{x}` is the reconstructed signal and :math:`x` the original
         '''
-        if not isinstance(self.recomposedSignal , signals.Signal):
+        if not isinstance(self.recomposedSignal, signals.Signal):
             return NINF
 
 #        recomposedEnergy = sum((self.recomposedSignal.dataVec)**2)
@@ -268,20 +274,21 @@ class Approx:
             return NINF
 
         if residual is None:
-            resEnergy = sum((self.originalSignal.dataVec - self.recomposedSignal.dataVec)**2)
+            resEnergy = sum((self.originalSignal.dataVec -
+                 self.recomposedSignal.dataVec) ** 2)
         else:
             resEnergy = residual.energy
-#        resEnergy = sum((self.originalSignal.dataVec - self.recomposedSignal.dataVec)**2)
+# resEnergy = sum((self.originalSignal.dataVec -
+# self.recomposedSignal.dataVec)**2)
         if resEnergy == 0:
             return PINF
 
-        return 10*math.log10( recomposedEnergy/ resEnergy )
-
+        return 10 * math.log10(recomposedEnergy / resEnergy)
 
     # ploting routine 2d in a time-frequency plane
-    def plotTF(self , labelX=True , labelY=True, fontsize=12 , ylim=None, patchColor=None , labelColor=None ,
-               multicolor=False ,axes=None ,maxAtoms=None, recenter=None,keepValues=False,
-               french=False,Alpha=False,logF=False):
+    def plotTF(self, labelX=True, labelY=True, fontsize=12, ylim=None, patchColor=None, labelColor=None,
+               multicolor=False, axes=None, maxAtoms=None, recenter=None, keepValues=False,
+               french=False, Alpha=False, logF=False):
         """ A time Frequency plot routine using Matplotlib
 
             each atom of the approx is plotted in a time-frequency plane with a gray scale for amplitudes
@@ -324,11 +331,13 @@ class Approx:
         maxFreq = 1.0
         minFreq = 22000.0
         if not keepValues:
-            valueArray = array([math.log10(abs(atom.getAmplitude())) for atom in self.atoms])
+            valueArray = array(
+                [math.log10(abs(atom.getAmplitude())) for atom in self.atoms])
         else:
-            valueArray = array([abs(atom.getAmplitude()) for atom in self.atoms])
+            valueArray = array(
+                [abs(atom.getAmplitude()) for atom in self.atoms])
         if multicolor:
-            cmap = cc.LinearSegmentedColormap('jet',abs(valueArray) )
+            cmap = cc.LinearSegmentedColormap('jet', abs(valueArray))
             for atom in self.atoms:
                 if abs(atom.mdct_value) > maxValue:
                     maxValue = abs(atom.mdct_value)
@@ -337,7 +346,7 @@ class Approx:
 #        if min(valueArray) < 0:
         if len(valueArray) > 0 and not keepValues:
             valueArray = valueArray - min(valueArray)
-            valueArray = valueArray/max(valueArray)
+            valueArray = valueArray / max(valueArray)
 
         # Get target axes
         if axes is None:
@@ -348,39 +357,39 @@ class Approx:
 #            normedValues = cc.Normalize(valueArray)
 
         if maxAtoms is not None:
-            maxTom = min(maxAtoms,len(self.atoms))
+            maxTom = min(maxAtoms, len(self.atoms))
         else:
             maxTom = len(self.atoms)
 
         # Deal with static offsets
         if recenter is not None:
-            yOffset= recenter[0]
-            xOffset= recenter[1]
+            yOffset = recenter[0]
+            xOffset = recenter[1]
         else:
-            yOffset,xOffset = 0,0
+            yOffset, xOffset = 0, 0
 
 #        print yOffset,xOffset
 
         if Alpha:
-            alphaCoeff=0.6
+            alphaCoeff = 0.6
         else:
-            alphaCoeff=1
+            alphaCoeff = 1
         patches = []
         colors = []
         for i in range(maxTom):
             atom = self.atoms[i]
             L = atom.length
-            K = L/2
+            K = L / 2
             freq = atom.frequencyBin
-            f = float(freq)*float(Fs)/float(L)
-            bw = ( float(Fs) / float(K) ) #/ 2
-            p  = float(atom.timePosition + K) / float(Fs)
-            l  = float(L - K/2) / float(Fs)
+            f = float(freq) * float(Fs) / float(L)
+            bw = (float(Fs) / float(K))  # / 2
+            p = float(atom.timePosition + K) / float(Fs)
+            l = float(L - K / 2) / float(Fs)
 #            print "f =  " ,f , " Hz"
-            if f>maxFreq:
-                maxFreq = f+bw+bw
+            if f > maxFreq:
+                maxFreq = f + bw + bw
             if f < minFreq:
-                minFreq = f-bw-10*bw
+                minFreq = f - bw - 10 * bw
 
 #            xy = p, f-bw,
             xy = p - xOffset, f - yOffset,
@@ -388,29 +397,33 @@ class Approx:
 #            xy = p - xOffset, log10(f) - yOffset,
 
             if logF:
-                xy = p - xOffset , (12*log2(f - yOffset))
+                xy = p - xOffset, (12 * log2(f - yOffset))
 
-                height = 1.0 # BUGFIX
+                height = 1.0  # BUGFIX
 
 #            print xy , f
             colorvalue = math.sqrt(valueArray[i])
 
             if multicolor:
                 patchtuplecolor = (math.sqrt(colorvalue),
-                                   math.exp(-((colorvalue - 0.35)**2)/(0.15)),
-                                   1-math.sqrt(colorvalue))
+                                   math.exp(
+                                       -((colorvalue - 0.35) ** 2) / (0.15)),
+                                   1 - math.sqrt(colorvalue))
                 colors.append(colorvalue)
             else:
                 if patchColor is None:
-                    patchtuplecolor = (1-math.sqrt(colorvalue),1- math.sqrt(colorvalue),1- math.sqrt(colorvalue))
+                    patchtuplecolor = (1 - math.sqrt(colorvalue),
+                         1 - math.sqrt(colorvalue), 1 - math.sqrt(colorvalue))
                     colors.append(colorvalue)
                 else:
                     patchtuplecolor = patchColor
                     colors.append(patchColor)
 #            patchtuplecolor = (colorvalue, colorvalue, colorvalue)
-#            patch = mpatches.Rectangle(xy, width, height, facecolor=patchtuplecolor, edgecolor=patchtuplecolor , zorder=colorvalue )
+# patch = mpatches.Rectangle(xy, width, height, facecolor=patchtuplecolor,
+# edgecolor=patchtuplecolor , zorder=colorvalue )
 #            xy = p + L/2 , f-bw,
-            patch = mpatches.Ellipse(xy, width, height, facecolor=patchtuplecolor, edgecolor=patchtuplecolor , zorder=colorvalue )
+            patch = mpatches.Ellipse(xy, width, height, facecolor=patchtuplecolor,
+                 edgecolor=patchtuplecolor, zorder=colorvalue)
             if keepValues:
                 patches.append(patch)
             else:
@@ -421,7 +434,7 @@ class Approx:
             # first sort the patches by values
             sortedIndexes = valueArray.argsort()
             PatchArray = array(patches)
-            p = PatchCollection(PatchArray[sortedIndexes].tolist(),linewidths=0.,cmap=matplotlib.cm.copper_r,match_original=False, alpha=alphaCoeff)
+            p = PatchCollection(PatchArray[sortedIndexes].tolist(), linewidths=0., cmap=matplotlib.cm.copper_r, match_original=False, alpha=alphaCoeff)
     #        print array(colors).shape
             p.set_array(valueArray[sortedIndexes])
 
@@ -431,13 +444,13 @@ class Approx:
             labelColor = 'k'
 
         # finalize graphic options
-        axes.set_xlim(0- xOffset , (self.length)/float(Fs)- xOffset)
+        axes.set_xlim(0 - xOffset, (self.length) / float(Fs) - xOffset)
         if ylim is None:
-            axes.set_ylim(max(0 ,minFreq)- yOffset , maxFreq- yOffset)
+            axes.set_ylim(max(0, minFreq) - yOffset, maxFreq - yOffset)
         else:
             axes.set_ylim(ylim)
         if labelY:
-            axes.set_ylabel(laby , fontsize=fontsize , color=labelColor)
+            axes.set_ylabel(laby, fontsize=fontsize, color=labelColor)
 #            plt.ylabel.set_color(labelColor)
         else:
             plt.setp(axes, 'yticklabels', [])
@@ -449,20 +462,23 @@ class Approx:
         if keepValues:
             plt.colorbar(p)
 
-    def plot3D(self,itStep,fig=None):
+    def plot3D(self, itStep, fig=None):
         """ Creates a 3D Time-Frequency plot with various steps NOT WORKING below 0.99
         EXPERIMENTAL"""
         from mpl_toolkits.mplot3d import Axes3D
         if fig is None:
-            fig=plt.figure()
+            fig = plt.figure()
 
         # beware of compatibility issues here
         ax = Axes3D(fig)
         #for atom, idx in zip(self.atoms, range(self.atomNumber)):
-        ts = [atom.timePosition/float(self.samplingFrequency) for atom in self.atoms]
-        fs = [atom.reducedFrequency*self.samplingFrequency for atom in self.atoms]
+        ts = [atom.timePosition / float(self.samplingFrequency)
+             for atom in self.atoms]
+        fs = [atom.reducedFrequency * self.
+            samplingFrequency for atom in self.atoms]
         zs = range(self.atomNumber)
-#        ss = [float(atom.length)/float(self.samplingFrequency) for atom in self.atoms]
+# ss = [float(atom.length)/float(self.samplingFrequency) for atom in
+# self.atoms]
 
         # More complicated but not working
 #        ts = []
@@ -492,7 +508,7 @@ class Approx:
 #                    fs.append(f+vdispIdx)
 #                    zs.append(idx)
 
-        ax.scatter(ts,zs,fs,color="k",s=10,marker='o')
+        ax.scatter(ts, zs, fs, color="k", s=10, marker='o')
         ax.set_xlabel('Temps (s)')
         ax.set_ylabel('Iteration ')
         ax.set_zlabel('Frequence (Hz) ')
@@ -506,41 +522,41 @@ class Approx:
 #            subAx = Axes3D(fig)
 #            self.plotTF(axes=subAx, maxAtoms=plotIdx*itStep)
 
-
-
-
     def dumpToDisk(self, dumpFileName, dumpFilePath='./'):
         import cPickle
 
         output = open(dumpFilePath + dumpFileName, 'wb')
-        _Logger.info("Dumping approx to  "+dumpFilePath + dumpFileName)
+        _Logger.info("Dumping approx to  " + dumpFilePath + dumpFileName)
         cPickle.dump(self, output, protocol=0)
         _Logger.info("Done ")
 
 #        plt.show()
-    def writeToXml(self, xmlFileName , outputXmlPath="./"):
+    def writeToXml(self, xmlFileName, outputXmlPath="./"):
         """ Write the atoms using an XML formalism to the designated output file """
 
         #from xml.dom.minidom import Document
         import xml.dom
-		# creates the xml document
+                # creates the xml document
         doc = xml.dom.minidom.Document()
 
         # populate root node information
         _Logger.info("Retrieving Root node attributes")
         ApproxNode = doc.createElement("Approx")
-        ApproxNode.setAttribute('length' , str(self.length))
-        ApproxNode.setAttribute('originalLocation', self.originalSignal.location)
-        ApproxNode.setAttribute('frameNumber' , str(self.frameNumber))
+        ApproxNode.setAttribute('length', str(self.length))
+        ApproxNode.setAttribute(
+            'originalLocation', self.originalSignal.location)
+        ApproxNode.setAttribute('frameNumber', str(self.frameNumber))
         ApproxNode.setAttribute('frameLength', str(self.frameLength))
-        ApproxNode.setAttribute('Fs' , str(self.originalSignal.samplingFrequency))
+        ApproxNode.setAttribute(
+            'Fs', str(self.originalSignal.samplingFrequency))
         # add dictionary node
         ApproxNode.appendChild(self.dico.toXml(doc))
 
         # now add as many nodes as atoms
         AtomsNode = doc.createElement("Atoms")
         AtomsNode.setAttribute('number', str(self.atomNumber))
-        _Logger.info("Getting Child info for "+str(self.atomNumber)+" existing atoms")
+        _Logger.info(
+            "Getting Child info for " + str(self.atomNumber) + " existing atoms")
         for atom in self.atoms:
             AtomsNode.appendChild(atom.toXml(doc))
 
@@ -563,19 +579,23 @@ class Approx:
         dico = {}
 
         for atom in self.atoms:
-            block = [i for i in range(len(self.dico.sizes)) if self.dico.sizes[i]==atom.length][0]
-            n = atom.timePosition +1
-            frame = math.floor( float(n) / float(atom.length /2) ) +1
-#            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) - atom.timePosition)
-#            dico[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = atom
-            key = int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)
+            block = [i for i in range(
+                len(self.dico.sizes)) if self.dico.sizes[i] == atom.length][0]
+            n = atom.timePosition + 1
+            frame = math.floor(float(n) / float(atom.length / 2)) + 1
+# sparseArray[int(block*self.length +  frame*float(atom.length /2) +
+# atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) -
+# atom.timePosition)
+# dico[int(block*self.length +  frame*float(atom.length /2) +
+# atom.frequencyBin)] = atom
+            key = int(block * self.length + frame * float(atom.
+                length / 2) + atom.frequencyBin)
             if key in dico:
                 dico[key].append(atom)
             else:
                 dico[key] = [atom]
 
         return dico
-
 
     def toSparseArray(self):
         """ Returns the approximant as a sparse dictionary object , key is the index of the atom and value is its amplitude"""
@@ -587,14 +607,18 @@ class Approx:
 
         for atom in self.atoms:
             block = blockIndexes[atom.length]
-            n = atom.timePosition +1
-            frame = math.floor( float(n) / float(atom.length /2) ) +1
-#            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) - atom.timePosition)
-            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , atom.timePosition)
+            n = atom.timePosition + 1
+            frame = math.floor(float(n) / float(atom.length / 2)) + 1
+# sparseArray[int(block*self.length +  frame*float(atom.length /2) +
+# atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) -
+# atom.timePosition)
+            sparseArray[int(block * self.length + frame * float(atom.length / 2)
+                 + atom.frequencyBin)] = (atom.mdct_value, atom.timePosition)
         return sparseArray
 
 #    def toSparseMatrix(self):
-#        """ Returns the approximant as a sparse dictionary object , key is the index of the atom and value is its amplitude"""
+# """ Returns the approximant as a sparse dictionary object , key is the index
+# of the atom and value is its amplitude"""
 #        sparseArray = {}
 #        # quickly creates a dictionary for block numbering
 #        blockIndexes = {}
@@ -605,14 +629,17 @@ class Approx:
 #            block = blockIndexes[atom.length]
 #            n = atom.timePosition +1
 #            frame = math.floor( float(n) / float(atom.length /2) ) +1
-##            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) - atom.timePosition)
-#            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = (atom.mdct_value , atom.timePosition)
+# sparseArray[int(block*self.length +  frame*float(atom.length /2) +
+# atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) -
+# atom.timePosition)
+# sparseArray[int(block*self.length +  frame*float(atom.length /2) +
+# atom.frequencyBin)] = (atom.mdct_value , atom.timePosition)
 #        return sparseArray
 
     def toArray(self):
         """ Returns the approximant as an array object , key is the index of the atom and value is its amplitude"""
-        sparseArray = zeros(len(self.dico.sizes)*self.length)
-        timeShifts = zeros(len(self.dico.sizes)*self.length)
+        sparseArray = zeros(len(self.dico.sizes) * self.length)
+        timeShifts = zeros(len(self.dico.sizes) * self.length)
         # quickly creates a dictionary for block numbering
         blockIndexes = {}
         for i in range(len(self.dico.sizes)):
@@ -620,11 +647,12 @@ class Approx:
 
         for atom in self.atoms:
             block = blockIndexes[atom.length]
-            n = atom.timePosition +1
-            frame = math.floor( float(n) / float(atom.length /2) ) +1
-            sparseArray[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = atom.mdct_value
-            timeShifts[int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)] = frame*float(atom.length /2) - atom.timePosition - atom.length/4
-        return sparseArray , timeShifts
+            n = atom.timePosition + 1
+            frame = math.floor(float(n) / float(atom.length / 2)) + 1
+            sparseArray[int(block * self.length + frame * float(
+                atom.length / 2) + atom.frequencyBin)] = atom.mdct_value
+            timeShifts[int(block * self.length + frame * float(atom.length / 2) + atom.frequencyBin)] = frame * float(atom.length / 2) - atom.timePosition - atom.length / 4
+        return sparseArray, timeShifts
 
 #    def __del__(self):
 #        """ Full Cleaning is sometimes useful """
@@ -633,22 +661,24 @@ class Approx:
 #            del atom
 #        del self.recomposedSignal.dataVec
 
+
 def loadFromDisk(inputFilePath):
     import cPickle
     return cPickle.load(inputFilePath)
 
-def readFromXml(InputXmlFilePath , xmlDoc=None , buildSignal =True):
+
+def readFromXml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
     """ reads an xml document and create the corresponding Approx object
     WARNING this method is only designed for MDCT pursuits for now"""
 
     from xml.dom.minidom import Document
     import xml.dom
-    from classes.mdct import Dico , Atom
+    from classes.mdct import Dico, Atom
     # check if reading from file is needed
     if xmlDoc == None:
         xmlDoc = xml.dom.minidom.parse(InputXmlFilePath)
 
-    if not isinstance(xmlDoc , Document):
+    if not isinstance(xmlDoc, Document):
         raise TypeError('Xml document is wrong')
 
     # retrieve the main approx node
@@ -660,7 +690,7 @@ def readFromXml(InputXmlFilePath , xmlDoc=None , buildSignal =True):
     # retrieve atom list
     AtomsNode = xmlDoc.getElementsByTagName('Atoms')[0]
     atoms = []
-    approx =  Approx(Dico, atoms, None, int(ApproxNode.getAttribute('length')),
+    approx = Approx(Dico, atoms, None, int(ApproxNode.getAttribute('length')),
                                    int(ApproxNode.getAttribute('Fs')))
     for node in AtomsNode.childNodes:
         if node.localName == 'Atom':
@@ -673,10 +703,12 @@ def readFromXml(InputXmlFilePath , xmlDoc=None , buildSignal =True):
 #        approx.atomNumber = len(approx.atoms)
     # optional: if load original signal - TODO
 
-#    approx =  py_pursuit_Approx(Dico, atoms, None, int(ApproxNode.getAttribute('length')),
+# approx =  py_pursuit_Approx(Dico, atoms, None,
+# int(ApproxNode.getAttribute('length')),
 #                                   int(ApproxNode.getAttribute('Fs')))
     approx.atomNumber = len(atoms)
     return approx
+
 
 def ReadFromMatStruct(matl_struct):
     """ retrieve the python object from a saved version in matlab format
@@ -684,40 +716,39 @@ def ReadFromMatStruct(matl_struct):
     routine and you loaded it back using scipy.io.loadmat"""
 
     # Convert to object struct
-    appObject = matl_struct[0,0]
-    dico = appObject.dico[0,0]
+    appObject = matl_struct[0, 0]
+    dico = appObject.dico[0, 0]
     # TODO proper lecture of dictionary objects
 
     # So far we only read the parameters
 
-    approx = Approx(None, [], None, appObject.length[0,0], appObject.samplingFrequency[0,0])
+    approx = Approx(None, [], None, appObject.length[0, 0], appObject.
+        samplingFrequency[0, 0])
     return approx
 
-def FusionApproxs( approxCollection , unPad = True):
+
+def FusionApproxs(approxCollection, unPad=True):
     """ fusion a collection of frame by frame approximation.
     The collection is assumed to be temporally ordered """
 
     if not len(approxCollection) > 0:
         raise ValueError('Approx collection appears to be actually empty')
 
-    dico  = approxCollection[0].dico
+    dico = approxCollection[0].dico
     approxLength = approxCollection[0].length * len(approxCollection)
     if unPad:
-        approxLength -= 2*dico.sizes[-1] * len(approxCollection)
+        approxLength -= 2 * dico.sizes[-1] * len(approxCollection)
     Fs = approxCollection[0].samplingFrequency
 
-    approx =  Approx(dico, [], None, approxLength,Fs)
-    for segIdx in range(len(approxCollection) ):
+    approx = Approx(dico, [], None, approxLength, Fs)
+    for segIdx in range(len(approxCollection)):
         currentApprox = approxCollection[segIdx]
         offset = segIdx * currentApprox.length
         if unPad:
-            offset -= (segIdx+1)*dico.sizes[-1]
+            offset -= (segIdx + 1) * dico.sizes[-1]
 
         for atom in currentApprox.atoms:
             atom.timePosition += offset
             approx.atoms.append(atom)
 
     return approx
-
-
-

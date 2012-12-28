@@ -23,7 +23,8 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330,                            */
 #  Boston, MA  02111-1307, USA.                                              */
 #                                                                            */
-#******************************************************************************/
+# *****************************************************************************
+# */
 
 '''
 Module Log
@@ -32,15 +33,15 @@ Module Log
 '''
 
 import logging
-import sys , traceback
+import sys
+import traceback
 import matplotlib.pyplot as plt
 
 Levels = {-1: logging.NOTSET,
-          0:logging.ERROR,
-          1:logging.WARNING,
-          2:logging.DEBUG,
-          3:logging.INFO};
-
+          0: logging.ERROR,
+          1: logging.WARNING,
+          2: logging.DEBUG,
+          3: logging.INFO}
 
 
 class Log():
@@ -54,21 +55,21 @@ class Log():
     the imode attribute sets matplotlib drawing mode to interactive"""
 
     # attributes
-    name = None;
-    outputFile = None;
-    debugLevel = 0;
-    imode = True;
+    name = None
+    outputFile = None
+    debugLevel = 0
+    imode = True
     logger = None
-    noCtx = False;
+    noCtx = False
 
     # constructor
-    def __init__(self ,loggerName,  level=0 , outputFilePath = None , imode = False , noContext=False):
+    def __init__(self, loggerName,  level=0, outputFilePath=None, imode=False, noContext=False):
         """ constructor """
-        self.name = loggerName;
-        self.outputFile = outputFilePath;
-        self.debugLevel = level;
-        self.imode = imode;
-        self.noCtx = noContext;
+        self.name = loggerName
+        self.outputFile = outputFilePath
+        self.debugLevel = level
+        self.imode = imode
+        self.noCtx = noContext
         # create logger
         self.logger = logging.getLogger(self.name)
         self.logger.setLevel(Levels[self.debugLevel])
@@ -89,36 +90,35 @@ class Log():
 
         # "application" code
         if self.outputFile is None:
-            self.logger.info("created log handler with no file output for function : " + self.name)
+            self.logger.info("created log handler with no file output for function : " +
+                 self.name)
         else:
             self.logger.info("created log handler for function : " + self.name)
 
         if self.imode:
             plt.ion()
-            self.logger.info("Set interactive mode ON for pyplot" )
+            self.logger.info("Set interactive mode ON for pyplot")
 
-    def setLevel(self , newLevel):
-        self.debugLevel = newLevel;
+    def setLevel(self, newLevel):
+        self.debugLevel = newLevel
         self.logger.setLevel(Levels[self.debugLevel])
-
 
     def getContext(self):
         if self.noCtx:
-            return '';
+            return ''
         list = traceback.extract_stack(limit=3)
-        str_context = list[0][0].split('/')[-1]+ '::'+str(list[0][1]) + '::'+ list[0][2] +'::';
+        str_context = list[0][0].split('/')[-1] + '::' + str(list[0][
+            1]) + '::' + list[0][2] + '::'
         return str_context
 
-
-    def info(self , message):
+    def info(self, message):
         self.logger.info(self.getContext() + message)
 
-    def debug(self , message):
+    def debug(self, message):
         self.logger.debug(self.getContext() + message)
 
-    def warning(self , message):
+    def warning(self, message):
         self.logger.warning(self.getContext() + message)
 
-    def error(self , message):
+    def error(self, message):
         self.logger.error(self.getContext() + message)
-

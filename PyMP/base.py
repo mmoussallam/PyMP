@@ -32,23 +32,23 @@ class BaseAtom(object):
     """
 
     # default values
-    nature = 'Abstract';
-    length = 0 ;
-    timePosition = 0;
-    waveform = None;
-    samplingFrequency = 0;
-    amplitude = 0;
-    phase = None;
+    nature = 'Abstract'
+    length = 0
+    timePosition = 0
+    waveform = None
+    samplingFrequency = 0
+    amplitude = 0
+    phase = None
 
-    def __init__(self  ):
-        self.length = 0;
-        self.amplitude = 0;
-        self.timePosition = 0;
+    def __init__(self):
+        self.length = 0
+        self.amplitude = 0
+        self.timePosition = 0
 
     # mandatory functions
     def getWaveform(self):
         # A function to retrieve the atom waveform
-        return self.waveform;
+        return self.waveform
 
 
 class BaseBlock(object):
@@ -65,12 +65,13 @@ class BaseBlock(object):
             - getMaxAtom : return a corresponding Atom instance'''
 
     #members
-    scale = 0;
-    residualSignal = None;
+    scale = 0
+    residualSignal = None
 
     # methods
     def __init__(self):
         """ empty constructor """
+
 
 class BaseDico(object):
     """ This class creates an interface that any type of dictionary should reproduce
@@ -82,15 +83,14 @@ class BaseDico(object):
                         the selection of a projection maximum given a transform and a criteria
         """
     # attributes:
-    sizes = None;
-    tolerances = None;
-    blocks = None;
-    overlap = 0.5;
+    sizes = None
+    tolerances = None
+    blocks = None
+    overlap = 0.5
     nature = 'Abstract'
 
     def __init__(self):
         """ default constructor doesn't do anything"""
 
     def getN(self):
-        return self.sizes[-1] # last element of the list should be the biggest
-
+        return self.sizes[-1]  # last element of the list should be the biggest
