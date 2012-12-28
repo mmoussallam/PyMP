@@ -39,8 +39,8 @@ class SetBlock(mdct_block.Block):
         """
 
     # parameters
-    frameLength = 0
-    frameNumber = 0
+    frame_len = 0
+    frame_num = 0
 
     maxIndex = 0
     maxValue = 0
@@ -56,17 +56,17 @@ class SetBlock(mdct_block.Block):
 
     # constructor - initialize residual signals and projection matrix for each of the signals
     def __init__(self , length = 0 , resSignalList = None , frameLen = 0 , useC =True,
-                 debugLevel = None , nature = 'sum' , tolerance = None):
-        if debugLevel is not None:
-            _Logger.setLevel(debugLevel)
+                 debug_level = None , nature = 'sum' , tolerance = None):
+        if debug_level is not None:
+            _Logger.setLevel(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
 
         if frameLen==0:
-            self.frameLength = length/2
+            self.frame_len = length/2
         else:
-            self.frameLength = frameLen
+            self.frame_len = frameLen
         if self.residualSignalList ==None:
             raise ValueError("no signal given")
 
@@ -93,7 +93,7 @@ class SetBlock(mdct_block.Block):
 
             self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].data
 
-        self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
+        self.frame_num = len(self.enframedDataMatrixList[0]) / self.frame_len
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
@@ -132,7 +132,7 @@ class SetBlock(mdct_block.Block):
         self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = np.zeros(self.frameNumber)
+        self.bestScoreTree = np.zeros(self.frame_num)
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
@@ -146,11 +146,11 @@ class SetBlock(mdct_block.Block):
             startingFrameList = [2]*self.sigNumber
 
         if endFrameList is None:
-            endFrameList = [self.frameNumber -3]*self.sigNumber
+            endFrameList = [self.frame_num -3]*self.sigNumber
 
         for i in range(self.sigNumber):
-            if endFrameList[i] <0 or endFrameList[i]>self.frameNumber -3:
-                endFrameList[i] = self.frameNumber -3
+            if endFrameList[i] <0 or endFrameList[i]>self.frame_num -3:
+                endFrameList[i] = self.frame_num -3
 
             if startingFrameList[i]<2:
                 startingFrameList[i] = 2
@@ -200,18 +200,18 @@ class SetBlock(mdct_block.Block):
             startFrameList = [2]*self.sigNumber
 
         if stopFrameList is None:
-            stopFrameList = [self.frameNumber -3]*self.sigNumber
+            stopFrameList = [self.frame_num -3]*self.sigNumber
 #
     # MODIF: each signal is updated according to its own limits since sometimes no atoms have been subtracted
         L = self.scale
         for sigIdx in range(self.sigNumber):
 
             if stopFrameList[sigIdx] <0:
-                stopFrameList[sigIdx] = self.frameNumber - 2
+                stopFrameList[sigIdx] = self.frame_num - 2
             else:
-                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
+                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frame_num - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frame_len : stopFrameList[sigIdx]*self.frame_len + 2*self.frame_len]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -252,7 +252,7 @@ class SetBlock(mdct_block.Block):
         AtomList = []
         for sigIdx in range(self.sigNumber):
             offset = self.scale/4
-            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].samplingFrequency)
+            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
             Atom.frame = self.maxFrameIdx
             Atom.synthesizeIFFT(1)
 #            Atom.waveform /= sum(Atom.waveform**2)
@@ -277,8 +277,8 @@ class SetLOBlock(mdct_block.Block):
         """
 
     # parameters
-    frameLength = 0
-    frameNumber = 0
+    frame_len = 0
+    frame_num = 0
 
     maxIndex = 0
     maxValue = 0
@@ -294,17 +294,17 @@ class SetLOBlock(mdct_block.Block):
 
     # constructor - initialize residual signals and projection matrix for each of the signals
     def __init__(self , length = 0 , resSignalList = None , frameLen = 0 , useC =True,
-                 debugLevel = None , nature = 'sum' , tolerance = None):
-        if debugLevel is not None:
-            _Logger.setLevel(debugLevel)
+                 debug_level = None , nature = 'sum' , tolerance = None):
+        if debug_level is not None:
+            _Logger.setLevel(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
 
         if frameLen==0:
-            self.frameLength = length/2
+            self.frame_len = length/2
         else:
-            self.frameLength = frameLen
+            self.frame_len = frameLen
         if self.residualSignalList ==None:
             raise ValueError("no signal given")
 
@@ -331,7 +331,7 @@ class SetLOBlock(mdct_block.Block):
 
             self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].data
 
-        self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
+        self.frame_num = len(self.enframedDataMatrixList[0]) / self.frame_len
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
@@ -370,7 +370,7 @@ class SetLOBlock(mdct_block.Block):
         self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = np.zeros(self.frameNumber)
+        self.bestScoreTree = np.zeros(self.frame_num)
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
@@ -384,11 +384,11 @@ class SetLOBlock(mdct_block.Block):
             startingFrameList = [2]*self.sigNumber
 
         if endFrameList is None:
-            endFrameList = [self.frameNumber -3]*self.sigNumber
+            endFrameList = [self.frame_num -3]*self.sigNumber
 
         for i in range(self.sigNumber):
-            if endFrameList[i] <0 or endFrameList[i]>self.frameNumber -3:
-                endFrameList[i] = self.frameNumber -3
+            if endFrameList[i] <0 or endFrameList[i]>self.frame_num -3:
+                endFrameList[i] = self.frame_num -3
 
             if startingFrameList[i]<2:
                 startingFrameList[i] = 2
@@ -412,7 +412,7 @@ class SetLOBlock(mdct_block.Block):
 #        plt.plot(self.bestScoreTree)
 #        plt.show()
         # WORKAROUND DEBUG
-        self.projectionMatrix[startingFrameList[0]*self.frameLength : endFrameList[0]*self.frameLength] = abs(self.projectionMatrix[startingFrameList[0]*self.frameLength : endFrameList[0]*self.frameLength])
+        self.projectionMatrix[startingFrameList[0]*self.frame_len : endFrameList[0]*self.frame_len] = abs(self.projectionMatrix[startingFrameList[0]*self.frame_len : endFrameList[0]*self.frame_len])
 
         # next signals: update depend on strategies!
         for sigIdx in range(1,self.sigNumber):
@@ -442,18 +442,18 @@ class SetLOBlock(mdct_block.Block):
             startFrameList = [2]*self.sigNumber
 
         if stopFrameList is None:
-            stopFrameList = [self.frameNumber -3]*self.sigNumber
+            stopFrameList = [self.frame_num -3]*self.sigNumber
 #
     # MODIF: each signal is updated according to its own limits since sometimes no atoms have been subtracted
         L = self.scale
         for sigIdx in range(self.sigNumber):
 
             if stopFrameList[sigIdx] <0:
-                stopFrameList[sigIdx] = self.frameNumber - 2
+                stopFrameList[sigIdx] = self.frame_num - 2
             else:
-                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
+                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frame_num - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frame_len : stopFrameList[sigIdx]*self.frame_len + 2*self.frame_len]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -512,7 +512,7 @@ class SetLOBlock(mdct_block.Block):
         # so that we can find the maximum correlation and best adapt the time-shift
         # Construct prototype atom
 
-        Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignalList[0].samplingFrequency)
+        Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
         Atom.frame = self.maxFrameIdx
 
         Atom.mdct_value = 1.0
@@ -568,7 +568,7 @@ class SetLOBlock(mdct_block.Block):
             return Atom
 
         if len(input1) != len(input2):
-            print self.maxFrameIdx , self.maxIdx , self.frameNumber
+            print self.maxFrameIdx , self.maxIdx , self.frame_num
             print len(input1) , len(input2)
             if debug>0:
                 print "atom in the borders , no timeShift calculated"
@@ -608,7 +608,7 @@ class SetLOBlock(mdct_block.Block):
         AtomList = []
         for sigIdx in range(self.sigNumber):
             offset = self.scale/4
-            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].samplingFrequency)
+            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
             Atom.frame = self.maxFrameIdx
             Atom.synthesizeIFFT(1)
             Atom.waveform /= np.sum(Atom.waveform**2)
@@ -639,8 +639,8 @@ class RandomSetBlock(SetBlock):
         """
 
     # parameters
-    frameLength = 0
-    frameNumber = 0
+    frame_len = 0
+    frame_num = 0
 
     maxIndex = 0
     maxValue = 0
@@ -656,17 +656,17 @@ class RandomSetBlock(SetBlock):
 
     # constructor - initialize residual signals and projection matrix for each of the signals
     def __init__(self , length = 0 , resSignalList = None , frameLen = 0 , useC =True,
-                 debugLevel = None , nature = 'sum' , tolerance = None):
-        if debugLevel is not None:
-            _Logger.setLevel(debugLevel)
+                 debug_level = None , nature = 'sum' , tolerance = None):
+        if debug_level is not None:
+            _Logger.setLevel(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
 
         if frameLen==0:
-            self.frameLength = length/2
+            self.frame_len = length/2
         else:
-            self.frameLength = frameLen
+            self.frame_len = frameLen
         if self.residualSignalList ==None:
             raise ValueError("no signal given")
 
@@ -693,7 +693,7 @@ class RandomSetBlock(SetBlock):
 
             self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].data
 
-        self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
+        self.frame_num = len(self.enframedDataMatrixList[0]) / self.frame_len
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
@@ -730,7 +730,7 @@ class RandomSetBlock(SetBlock):
         self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = np.zeros(self.frameNumber)
+        self.bestScoreTree = np.zeros(self.frame_num)
 
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.wLong * self.pre_twidVec
@@ -745,18 +745,18 @@ class RandomSetBlock(SetBlock):
             startFrameList = [2]*self.sigNumber
 
         if stopFrameList is None:
-            stopFrameList = [self.frameNumber -3]*self.sigNumber
+            stopFrameList = [self.frame_num -3]*self.sigNumber
 #
     # MODIF: each signal is updated according to its own limits since sometimes no atoms have been subtracted
         L = self.scale
         for sigIdx in range(self.sigNumber):
 
             if stopFrameList[sigIdx] <0:
-                stopFrameList[sigIdx] = self.frameNumber - 2
+                stopFrameList[sigIdx] = self.frame_num - 2
             else:
-                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
+                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frame_num - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrixList[sigIdx][startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frame_len : stopFrameList[sigIdx]*self.frame_len + 2*self.frame_len]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -772,11 +772,11 @@ class RandomSetBlock(SetBlock):
             startingFrameList = [2]*self.sigNumber
 
         if endFrameList is None:
-            endFrameList = [self.frameNumber -3]*self.sigNumber
+            endFrameList = [self.frame_num -3]*self.sigNumber
 
         for i in range(self.sigNumber):
-            if endFrameList[i] <0 or endFrameList[i]>self.frameNumber -3:
-                endFrameList[i] = self.frameNumber -3
+            if endFrameList[i] <0 or endFrameList[i]>self.frame_num -3:
+                endFrameList[i] = self.frame_num -3
 
             if startingFrameList[i]<2:
                 startingFrameList[i] = 2
@@ -816,7 +816,7 @@ class RandomSetBlock(SetBlock):
         AtomList = []
         for sigIdx in range(self.sigNumber):
             offset = self.scale/4
-            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].samplingFrequency)
+            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
             Atom.frame = self.maxFrameIdx
             Atom.synthesizeIFFT(1)
 #            Atom.waveform /= sum(Atom.waveform**2)
@@ -841,17 +841,17 @@ class SetNLLOBlock(SetLOBlock):
 
     # constructor - initialize residual signals and projection matrix for each of the signals
     def __init__(self , length = 0 , resSignalList = None , frameLen = 0 , useC =True,
-                 debugLevel = None , nature = 'median' , tolerance = None , lambd = 1):
-        if debugLevel is not None:
-            _Logger.setLevel(debugLevel)
+                 debug_level = None , nature = 'median' , tolerance = None , lambd = 1):
+        if debug_level is not None:
+            _Logger.setLevel(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
 
         if frameLen==0:
-            self.frameLength = length/2
+            self.frame_len = length/2
         else:
-            self.frameLength = frameLen
+            self.frame_len = frameLen
         if self.residualSignalList ==None:
             raise ValueError("no signal given")
 
@@ -886,7 +886,7 @@ class SetNLLOBlock(SetLOBlock):
             self.enframedDataMatrix[sigIdx,:] = self.residualSignalList[sigIdx].data
 
 #        self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
-        self.frameNumber = self.enframedDataMatrix.shape[1] / self.frameLength
+        self.frame_num = self.enframedDataMatrix.shape[1] / self.frame_len
         # The projection matrix is Multidimensional: we need to compute all projections before selecting the right atom
 #        self.intermediateProjectionList = []
 ##
@@ -935,18 +935,18 @@ class SetNLLOBlock(SetLOBlock):
             startFrameList = [2]*self.sigNumber
 
         if stopFrameList is None:
-            stopFrameList = [self.frameNumber -3]*self.sigNumber
+            stopFrameList = [self.frame_num -3]*self.sigNumber
 #
     # MODIF: each signal is updated according to its own limits since sometimes no atoms have been subtracted
         L = self.scale
         for sigIdx in range(self.sigNumber):
 
             if stopFrameList[sigIdx] <0:
-                stopFrameList[sigIdx] = self.frameNumber - 2
+                stopFrameList[sigIdx] = self.frame_num - 2
             else:
-                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frameNumber - 2))
+                stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frame_num - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrix[sigIdx,startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frameLength : stopFrameList[sigIdx]*self.frameLength + 2*self.frameLength]
+            self.enframedDataMatrix[sigIdx,startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frame_len : stopFrameList[sigIdx]*self.frame_len + 2*self.frame_len]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -957,7 +957,7 @@ class SetNLLOBlock(SetLOBlock):
         # so that we can find the maximum correlation and best adapt the time-shift
         # Construct prototype atom
 
-        Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignalList[0].samplingFrequency)
+        Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
         Atom.frame = self.maxFrameIdx
 
         Atom.mdct_value = 1.0
@@ -986,7 +986,7 @@ class SetNLLOBlock(SetLOBlock):
 
 
         if len(input1) != len(input2):
-            print self.maxFrameIdx , self.maxIdx , self.frameNumber
+            print self.maxFrameIdx , self.maxIdx , self.frame_num
             print len(input1) , len(input2)
             #if debug>0:
             print "atom in the borders , no timeShift calculated"
@@ -1031,11 +1031,11 @@ class SetNLLOBlock(SetLOBlock):
             startingFrameList = [2]*self.sigNumber
 
         if endFrameList is None:
-            endFrameList = [self.frameNumber -3]*self.sigNumber
+            endFrameList = [self.frame_num -3]*self.sigNumber
 
         for i in range(self.sigNumber):
-            if endFrameList[i] <0 or endFrameList[i]>self.frameNumber -3:
-                endFrameList[i] = self.frameNumber -3
+            if endFrameList[i] <0 or endFrameList[i]>self.frame_num -3:
+                endFrameList[i] = self.frame_num -3
 
             if startingFrameList[i]<2:
                 startingFrameList[i] = 2

@@ -36,7 +36,7 @@ class BaseAtom(object):
     length = 0
     timePosition = 0
     waveform = None
-    samplingFrequency = 0
+    fs = 0
     amplitude = 0
     phase = None
 

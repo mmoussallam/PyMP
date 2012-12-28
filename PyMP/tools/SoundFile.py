@@ -52,7 +52,7 @@ class SoundFile:
             self.nbChannel = 1 # fixed value
             self.sampleRate = 11025 # fixed value
             #self.nframes = file.getnframes() # fixed value
-            self.sampleWidth = 2 # format is signed int16
+            self.sample_width = 2 # format is signed int16
             #data = data/max([abs(min(data)) max(data)]);
             str_bytestream = file.read(-1)
             self.data = numpy.fromstring(str_bytestream,'h')
@@ -68,20 +68,20 @@ class SoundFile:
             self.nbChannel = file.getnchannels()
             self.sampleRate = file.getframerate()
             self.nframes = file.getnframes()
-            self.sampleWidth = file.getsampwidth()
+            self.sample_width = file.getsampwidth()
 
             #self.data = array.array('h') #creates an array of ints
             str_bytestream = file.readframes(self.nframes)
 
             #print filename,self.sampleWidth, self.nbChannel , self.sampleRate,self.nframes
 
-            if self.sampleWidth == 1:
+            if self.sample_width == 1:
                 typeStr = 'int8'
-            elif self.sampleWidth == 2:
+            elif self.sample_width == 2:
                 typeStr = 'int16'
-            elif self.sampleWidth == 3:
+            elif self.sample_width == 3:
                 typeStr ='int24' # WARNING NOT SUPPORTED BY NUMPY
-            elif self.sampleWidth == 4:
+            elif self.sample_width == 4:
                 typeStr = 'uint32'
             self.data = numpy.fromstring(str_bytestream,dtype=typeStr)
 
@@ -97,7 +97,7 @@ class SoundFile:
         print "Channels :" , self.nbChannel
         print "Sample Frequency :" , self.sampleRate , " Hz"
         print "Duration :" , (self.nframes), " frames  or " , float(self.nframes)/float(self.sampleRate) , ' seconds'
-        print "Sample width :" , self.sampleWidth , ' bytes'
+        print "Sample width :" , self.sample_width , ' bytes'
 
     # returns a numerical matrix of the file
     def GetAsMatrix(self):
@@ -118,7 +118,7 @@ class SoundFile:
             outputpath = destination
 
         file = wave.open(outputpath + outputname, 'w')
-        file.setparams((self.nbChannel, self.sampleWidth , self.sampleRate , self.nframes , 'NONE', 'noncompressed'))
+        file.setparams((self.nbChannel, self.sample_width , self.sampleRate , self.nframes , 'NONE', 'noncompressed'))
         file.writeframes(self.data.tostring())
         file.close()
 

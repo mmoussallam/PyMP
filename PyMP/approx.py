@@ -65,15 +65,15 @@ class Approx:
 
         * `atoms`    : a list of :class:`.Atom` objets
 
-        * `atomNumber`    : the length of the atoms list
+        * `atom_number`    : the length of the atoms list
 
-        * `SRR`           : the Signal to Residual Ratio achieved by the approximation
+        * `srr`           : the Signal to Residual Ratio achieved by the approximation
 
-        * `originalSignal`    : a :class:`.Signal` object that is the original signal
+        * `original_signal`    : a :class:`.Signal` object that is the original signal
 
-        * `length`        : Length in samples of the time signal, same as the one of `originalSignal`
+        * `length`        : Length in samples of the time signal, same as the one of `original_signal`
 
-        * `recomposedSignal`   : a :class:`.Signal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
+        * `recomposed_signal`   : a :class:`.Signal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
 
 
     An approximant can be manipulated in various ways. Obviously atoms can be edited by several methods among which
@@ -99,50 +99,50 @@ class Approx:
 
     dico = []
     atoms = []
-    atomNumber = 0
-    SRR = 0
-    originalSignal = []
-    frameNumber = 0
-    frameLength = 0
+    atom_number = 0
+    srr = 0
+    original_signal = []
+    frame_num = 0
+    frame_len = 0
     length = 0
-    recomposedSignal = None
-    samplingFrequency = 0
+    recomposed_signal = None
+    fs = 0
 
-    def __init__(self, dico=None, atoms=[], originalSignal=None, length=0, Fs=0, debugLevel=None):
+    def __init__(self, dico=None, atoms=[], originalSignal=None, length=0, Fs=0, debug_level=None):
         """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm """
-        if debugLevel is not None:
-            _Logger.setLevel(debugLevel)
+        if debug_level is not None:
+            _Logger.setLevel(debug_level)
 
         self.dico = dico
         self.atoms = atoms
-        self.originalSignal = originalSignal
+        self.original_signal = originalSignal
         if originalSignal != None:
             self.length = originalSignal.length
-            self.samplingFrequency = originalSignal.samplingFrequency
-            isNormalized = originalSignal.isNormalized
+            self.fs = originalSignal.fs
+            isNormalized = originalSignal.is_normalized
         else:
             self.length = length
-            self.samplingFrequency = Fs
+            self.fs = Fs
             isNormalized = False
         if dico != None:
-            self.frameNumber = self.length / max(self.dico.sizes)
-        if self.frameNumber > 0:
-            self.frameLength = self.length / self.frameNumber
+            self.frame_num = self.length / max(self.dico.sizes)
+        if self.frame_num > 0:
+            self.frame_len = self.length / self.frame_num
 
-        self.recomposedSignal = signals.Signal(
-            np.zeros(self.length), self.samplingFrequency)
-        self.recomposedSignal.isNormalized = isNormalized
+        self.recomposed_signal = signals.Signal(
+            np.zeros(self.length), self.fs)
+        self.recomposed_signal.is_normalized = isNormalized
 
     
 
     def synthesize(self, method=0, forceReSynthesis=True):
         """ function that will synthesise the approximant using the list of atoms
             this is mostly DEPRECATED"""
-        if self.originalSignal == None:
+        if self.original_signal == None:
             _Logger.warning("No original Signal provided")
 #            return None
 
-        if (self.recomposedSignal == None) | forceReSynthesis:
+        if (self.recomposed_signal == None) | forceReSynthesis:
             synthesizedSignal = np.zeros(self.length)
 
             if len(self.atoms) == 0:
@@ -188,16 +188,16 @@ class Approx:
                     synthesizedSignal[atom.timePosition:
                          atom.timePosition + atom.length] += atom.waveform
 
-            self.recomposedSignal = signals.Signal(synthesizedSignal, self.samplingFrequency)
-            #return self.recomposedSignal
+            self.recomposed_signal = signals.Signal(synthesizedSignal, self.fs)
+            #return self.recomposed_signal
         # other case: we just give the existing synthesized Signal.
-        return self.recomposedSignal
+        return self.recomposed_signal
 
     # Filter the atom list by the given criterion
     def filter(self, mdctSize=0, posInterv=None, freqInterv=None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
-        filteredApprox = Approx(self.dico, [], self.originalSignal,
-             self.length, self.samplingFrequency)
+        filteredApprox = Approx(self.dico, [], self.original_signal,
+             self.length, self.fs)
         doAppend = True
         for atom in self.atoms:
 #            if atom.length == mdctSize:
@@ -235,11 +235,11 @@ class Approx:
             raise TypeError("add need a py_pursuit_Atom as parameter ")
 
         self.atoms.append(newAtom)
-        self.atomNumber += 1
+        self.atom_number += 1
         # add atom waveform to the internal signal if exists
         if not noWf:
-            if self.recomposedSignal != None:
-                self.recomposedSignal.add(newAtom)
+            if self.recomposed_signal != None:
+                self.recomposed_signal.add(newAtom)
             else:
                 self.synthesize(0, True)
     #            print "approx resynthesized"
@@ -253,35 +253,35 @@ class Approx:
         if not isinstance(atom, BaseAtom):
             raise TypeError("add need a py_pursuit_Atom as parameter ")
         self.atoms.remove(atom)
-        self.atomNumber -= 1
+        self.atom_number -= 1
 
-        if self.recomposedSignal != None:
-            self.recomposedSignal.subtract(atom, preventEnergyIncrease=False)
+        if self.recomposed_signal != None:
+            self.recomposed_signal.subtract(atom, preventEnergyIncrease=False)
 
     # routine to compute approximation Signal To Residual ratio so far
     def compute_srr(self, residual=None):
         ''' routine to compute approximation Signal To Residual ratio so far using:
 
-            .. math::SRR = 10 \log_10 \frac{\| \tilde{x} \|^2}{\| \tilde{x} - x \|^2}
+            .. math::srr = 10 \log_10 \frac{\| \tilde{x} \|^2}{\| \tilde{x} - x \|^2}
 
             where :math:`\tilde{x}` is the reconstructed signal and :math:`x` the original
         '''
-        if not isinstance(self.recomposedSignal, signals.Signal):
+        if not isinstance(self.recomposed_signal, signals.Signal):
             return np.NINF
 
-#        recomposedEnergy = sum((self.recomposedSignal.dataVec)**2)
-        recomposedEnergy = self.recomposedSignal.energy
+#        recomposedEnergy = sum((self.recomposed_signal.dataVec)**2)
+        recomposedEnergy = self.recomposed_signal.energy
 
         if recomposedEnergy <= 0:
             return np.NINF
 
         if residual is None:            
-            resEnergy = sum((self.originalSignal.data - 
-                 self.recomposedSignal.data) ** 2)
+            resEnergy = sum((self.original_signal.data - 
+                 self.recomposed_signal.data) ** 2)
         else:
             resEnergy = residual.energy
-# resEnergy = sum((self.originalSignal.dataVec -
-# self.recomposedSignal.dataVec)**2)
+# resEnergy = sum((self.original_signal.dataVec -
+# self.recomposed_signal.dataVec)**2)
         if resEnergy == 0:
             return np.PINF
 
@@ -327,7 +327,7 @@ class Approx:
             labx = "Time (s)"
             laby = "Frequency (Hz)"
 
-        Fs = self.samplingFrequency
+        Fs = self.fs
         # first loop to recover max value
         maxValue = 0
         maxFreq = 1.0
@@ -473,21 +473,21 @@ class Approx:
 
         # beware of compatibility issues here
         ax = Axes3D(fig)
-        #for atom, idx in zip(self.atoms, range(self.atomNumber)):
-        ts = [atom.timePosition / float(self.samplingFrequency)
+        #for atom, idx in zip(self.atoms, range(self.atom_number)):
+        ts = [atom.timePosition / float(self.fs)
              for atom in self.atoms]
         fs = [atom.reducedFrequency * self.
-            samplingFrequency for atom in self.atoms]
-        zs = range(self.atomNumber)
-# ss = [float(atom.length)/float(self.samplingFrequency) for atom in
+            fs for atom in self.atoms]
+        zs = range(self.atom_number)
+# ss = [float(atom.length)/float(self.fs) for atom in
 # self.atoms]
 
         # More complicated but not working
 #        ts = []
 #        fs = []
 #        zs=  []
-#        Fs = float(self.samplingFrequency)
-#        for atom,idx in zip(self.atoms, range(self.atomNumber)):
+#        Fs = float(self.fs)
+#        for atom,idx in zip(self.atoms, range(self.atom_number)):
 #            L = atom.length
 #            K = L/2
 #
@@ -546,19 +546,19 @@ class Approx:
         ApproxNode = doc.createElement("Approx")
         ApproxNode.setAttribute('length', str(self.length))
         ApproxNode.setAttribute(
-            'originalLocation', self.originalSignal.location)
-        ApproxNode.setAttribute('frameNumber', str(self.frameNumber))
-        ApproxNode.setAttribute('frameLength', str(self.frameLength))
+            'originalLocation', self.original_signal.location)
+        ApproxNode.setAttribute('frame_num', str(self.frame_num))
+        ApproxNode.setAttribute('frame_len', str(self.frame_len))
         ApproxNode.setAttribute(
-            'Fs', str(self.originalSignal.samplingFrequency))
+            'Fs', str(self.original_signal.fs))
         # add dictionary node
         ApproxNode.appendChild(self.dico.toXml(doc))
 
         # now add as many nodes as atoms
         AtomsNode = doc.createElement("Atoms")
-        AtomsNode.setAttribute('number', str(self.atomNumber))
+        AtomsNode.setAttribute('number', str(self.atom_number))
         _Logger.info(
-            "Getting Child info for " + str(self.atomNumber) + " existing atoms")
+            "Getting Child info for " + str(self.atom_number) + " existing atoms")
         for atom in self.atoms:
             AtomsNode.appendChild(atom.toXml(doc))
 
@@ -661,7 +661,7 @@ class Approx:
 #        for atom in self.atoms:
 #            del atom.waveform
 #            del atom
-#        del self.recomposedSignal.dataVec
+#        del self.recomposed_signal.dataVec
 
 
 def load_from_disk(inputFilePath):
@@ -702,13 +702,13 @@ def read_from_xml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
                 approx.atoms.append(atom.fromXml(node))
 #            atoms.append(py_pursuit_Atom.fromXml(node))
 #    if not buildSignal:
-#        approx.atomNumber = len(approx.atoms)
+#        approx.atom_number = len(approx.atoms)
     # optional: if load original signal - TODO
 
 # approx =  py_pursuit_Approx(Dico, atoms, None,
 # int(ApproxNode.getAttribute('length')),
 #                                   int(ApproxNode.getAttribute('Fs')))
-    approx.atomNumber = len(atoms)
+    approx.atom_number = len(atoms)
     return approx
 
 
@@ -725,7 +725,7 @@ def read_from_mat_struct(matl_struct):
     # So far we only read the parameters
 
     approx = Approx(None, [], None, appObject.length[0, 0], appObject.
-        samplingFrequency[0, 0])
+        fs[0, 0])
     return approx
 
 
@@ -740,7 +740,7 @@ def fusion_approxs(approxCollection, unPad=True):
     approxLength = approxCollection[0].length * len(approxCollection)
     if unPad:
         approxLength -= 2 * dico.sizes[-1] * len(approxCollection)
-    Fs = approxCollection[0].samplingFrequency
+    Fs = approxCollection[0].fs
 
     approx = Approx(dico, [], None, approxLength, Fs)
     for segIdx in range(len(approxCollection)):

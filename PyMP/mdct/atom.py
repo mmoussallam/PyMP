@@ -93,7 +93,7 @@ class Atom(BaseAtom):
         self.amplitude = amp
         self.timePosition = timePos
         self.frequencyBin = freqBin
-        self.samplingFrequency = Fs
+        self.fs = Fs
         if self.length != 0:
             self.reducedFrequency = (
                 float(self.frequencyBin + 0.5) / float(self.length))
@@ -143,7 +143,7 @@ class Atom(BaseAtom):
         atomNode.setAttribute('fB', str(int(self.frequencyBin)))
         atomNode.setAttribute('frame', str(int(self.frame)))
         atomNode.setAttribute('value', str(self.mdct_value))
-        atomNode.setAttribute('Fs', str(self.samplingFrequency))
+        atomNode.setAttribute('Fs', str(self.fs))
 
         if self.projectionScore is not None:
             atomNode.setAttribute('timeShift', str(self.timeShift))
@@ -187,7 +187,7 @@ class Atom(BaseAtom):
                                    self.amplitude,
                                    self.timePosition,
                                    self.frequencyBin,
-                                   self.samplingFrequency,
+                                   self.fs,
                                    self.mdct_value)
         copyAtom.frame = self.frame
         copyAtom.projectionScore = self.projectionScore

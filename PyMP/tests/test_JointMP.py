@@ -116,8 +116,8 @@ class Test(unittest.TestCase):
 
         decalage = 50;
 
-        pySig.crop(0, 5*pySig.samplingFrequency);
-        pySig2.crop(decalage, decalage + 5*pySig.samplingFrequency);
+        pySig.crop(0, 5*pySig.fs);
+        pySig2.crop(decalage, decalage + 5*pySig.fs);
 
         pySig.pad(2048)
         pySig2.pad(2048)
@@ -161,8 +161,8 @@ class Test(unittest.TestCase):
 
         decalage = 500;
 
-        pySig.crop(0, 4.5*pySig.samplingFrequency);
-        pySig2.crop(decalage, decalage + 4.5*pySig.samplingFrequency);
+        pySig.crop(0, 4.5*pySig.fs);
+        pySig2.crop(decalage, decalage + 4.5*pySig.fs);
 #        pySig3.crop(decalage, decalage + 4.5*pySig.samplingFrequency);
 
         pySig.pad(16384)
@@ -200,9 +200,9 @@ class Test(unittest.TestCase):
 #        print approxSpecList
 #        print decayList
 
-        approxCommon.recomposedSignal.write('CommonPattern.wav')
-        approxSpecList[0].recomposedSignal.write('pattern1.wav')
-        approxSpecList[1].recomposedSignal.write('pattern2.wav')
+        approxCommon.recomposed_signal.write('CommonPattern.wav')
+        approxSpecList[0].recomposed_signal.write('pattern1.wav')
+        approxSpecList[1].recomposed_signal.write('pattern2.wav')
 
 #        plt.figure(figsize=(16,8))
 #        plt.subplot(121)
@@ -244,10 +244,10 @@ class Test(unittest.TestCase):
         Start = 1.0;
         Stop = 1.5
 
-        pySig.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
-        pySig2.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
-        pySig3.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
-        pySig4.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
+        pySig.crop(Start*pySig.fs, Stop*pySig.fs);
+        pySig2.crop(Start*pySig.fs, Stop*pySig.fs);
+        pySig3.crop(Start*pySig.fs, Stop*pySig.fs);
+        pySig4.crop(Start*pySig.fs, Stop*pySig.fs);
 
         pySig2.data += pySig.data
         pySig3.data += pySig.data
@@ -308,10 +308,10 @@ class Test(unittest.TestCase):
         Start = 1.0;
         Stop = 1.5
 
-        pySig.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
-        pySig2.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
-        pySig3.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
-        pySig4.crop(Start*pySig.samplingFrequency, Stop*pySig.samplingFrequency);
+        pySig.crop(Start*pySig.fs, Stop*pySig.fs);
+        pySig2.crop(Start*pySig.fs, Stop*pySig.fs);
+        pySig3.crop(Start*pySig.fs, Stop*pySig.fs);
+        pySig4.crop(Start*pySig.fs, Stop*pySig.fs);
 
         pySig2.data += pySig.data
         pySig3.data += pySig.data
@@ -397,8 +397,8 @@ class Test(unittest.TestCase):
 
         decalage = 500;
 
-        pySig.crop(0, 4.5*pySig.samplingFrequency);
-        pySig2.crop(decalage, decalage + 4.5*pySig.samplingFrequency);
+        pySig.crop(0, 4.5*pySig.fs);
+        pySig2.crop(decalage, decalage + 4.5*pySig.fs);
 #        pySig3.crop(decalage, decalage + 4.5*pySig.samplingFrequency);
 
         pySig.pad(16384)
@@ -425,8 +425,8 @@ class Test(unittest.TestCase):
 
         decalage = 500;
 
-        pySig.crop(0, 4.5*pySig.samplingFrequency);
-        pySig2.crop(decalage, decalage + 4.5*pySig.samplingFrequency);
+        pySig.crop(0, 4.5*pySig.fs);
+        pySig2.crop(decalage, decalage + 4.5*pySig.fs);
 #        pySig3.crop(decalage, decalage + 4.5*pySig.samplingFrequency);
 
         pySig.pad(16384)

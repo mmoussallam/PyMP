@@ -79,9 +79,9 @@ def simple_mdct_encoding(app ,
     # instantiate the quantized approximation
     quantizedApprox = approx.Approx(app.dico, 
                                                [], 
-                                               app.originalSignal, 
+                                               app.original_signal, 
                                                app.length, 
-                                               app.samplingFrequency)
+                                               app.fs)
 
     
     total = 0
@@ -99,7 +99,7 @@ def simple_mdct_encoding(app ,
     if quantizerWidth == 0:
         raise ValueError('zero found for quantizer step width...')
     
-    if app.atomNumber <= 0:
+    if app.atom_number <= 0:
         raise ValueError('approx object has an empty list of atoms')
     
     # second loop: atom after atom    
@@ -124,7 +124,7 @@ def simple_mdct_encoding(app ,
                                                     atom.amplitude , 
                                                     atom.timePosition , 
                                                     atom.frequencyBin , 
-                                                    atom.samplingFrequency,                                                         
+                                                    atom.fs,                                                         
                                                     mdctCoeff = quantizedValue)    
             
         # recompute true waveform        
@@ -142,16 +142,16 @@ def simple_mdct_encoding(app ,
                 
         # estimate current bitrate: Each atom coding cost is fixed!!
         nbBitsSoFar = (total *( indexcost + Coeffcost)) + TsCosts;
-        br = float(nbBitsSoFar)/(float(app.length)/float(app.samplingFrequency))
+        br = float(nbBitsSoFar)/(float(app.length)/float(app.fs))
                 
         if br >= targetBitrate:
             break;
 
     # Evaluate True Bitrate            
-    bitrate = float(nbBitsSoFar)/(float(app.length)/float(app.samplingFrequency))
+    bitrate = float(nbBitsSoFar)/(float(app.length)/float(app.fs))
         
-    approxEnergy = sum(quantizedApprox.recomposedSignal.data**2)
-    resEnergy = sum((app.originalSignal.data - quantizedApprox.recomposedSignal.data)**2)
+    approxEnergy = sum(quantizedApprox.recomposed_signal.data**2)
+    resEnergy = sum((app.original_signal.data - quantizedApprox.recomposed_signal.data)**2)
     
     # Evaluate distorsion 
     SNR = 10.0*log( approxEnergy / resEnergy , 10)

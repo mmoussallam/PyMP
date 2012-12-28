@@ -263,7 +263,7 @@ def main(argv):
     if writeOutput:
         if _debug > 0:
             print "Writing to output file :", outputPath
-        approx.originalSignal = longSignal
+        approx.original_signal = longSignal
         approx.dumpToDisk(outputPath)
 #        approx.writeToXml(outputPath)
 

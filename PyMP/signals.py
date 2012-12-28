@@ -60,17 +60,17 @@ class Signal(object):
 
     Attributes:
 
-        `channelNumber`:The number of channel
+        `channel_num`:The number of channel
 
-        `length`:                The length in samples (integer) of the signal (total dimension of the numpy array is channelNumber x length)
+        `length`:                The length in samples (integer) of the signal (total dimension of the numpy array is channel_num x length)
 
         `samplingFrequency`:     The sampling frequency
 
         `location`:              (optional) Where the original file is located on the disk
 
-        `sampleWidth` :          Various bit format exist for wav file, this allows to handle it
+        `sample_width` :          Various bit format exist for wav file, this allows to handle it
 
-        `isNormalized` :         A boolean telling is the numpy array has been normalized (which here means its values are between -1 and 1)
+        `is_normalized` :         A boolean telling is the numpy array has been normalized (which here means its values are between -1 and 1)
 
         `energy`:                The energy (:math:`\sum_i x[i]^2`) of the array
 
@@ -100,46 +100,46 @@ class Signal(object):
 
     # att
     data = []    
-    channelNumber = 0
+    channel_num = 0
     length = 0
-    samplingFrequency = 0
+    fs = 0
     location = ""
-    sampleWidth = 2
-    isNormalized = False
+    sample_width = 2
+    is_normalized = False
     energy = 0
 
     # Constructor
-    def __init__(self, data=[], Fs=0, doNormalize=False, forceMono=False, debugLevel=None):
+    def __init__(self, data=[], Fs=0, normalize=False, mono=False, debug_level=None):
         ''' Simple constructor from a numpy array (data) or a string '''
         
         if isinstance(data, str):
             self.location = data        
             Sf = SoundFile.SoundFile(data)            
             self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
-            self.sampleWidth = Sf.sampleWidth
-            if forceMono:
+            self.sample_width = Sf.sample_width
+            if mono:
                 self.data = self.data[:, 0]
     
             Fs = Sf.sampleRate;
         else:
             self.data = np.array(data)
         
-        if debugLevel is not None:
-            _Logger.setLevel(debugLevel)
+        if debug_level is not None:
+            _Logger.setLevel(debug_level)
         
         self.length = len(data)
-        self.samplingFrequency = Fs
+        self.fs = Fs
 
         if len(self.data.shape) > 1:
-            self.channelNumber = min(self.data.shape)
+            self.channel_num = min(self.data.shape)
         else:
-            self.channelNumber = 1
+            self.channel_num = 1
 
-        if doNormalize & (self.length > 0):
+        if normalize & (self.length > 0):
             _Logger.info('Normalizing Signal')
             normaFact = self.data.max()
             self.data = self.data.astype(float) / float(normaFact)
-            self.isNormalized = True
+            self.is_normalized = True
 
         if len(data) > 0:
             self.energy = sum(self.data ** 2)
@@ -151,7 +151,7 @@ class Signal(object):
         normaFact = abs(self.data).max()
         self.data = self.data.astype(float) / float(normaFact)
         self.energy = sum(self.data ** 2)
-        self.isNormalized = True
+        self.is_normalized = True
 
     def plot(self, legend=None):
         ''' DEPRECATED plot the array using matplotlib '''
@@ -181,11 +181,11 @@ class Signal(object):
         self.length = stopIndex - startIndex
 
     def copy(self):
-        copiedSignal = Signal(self.data.copy(), self.samplingFrequency)
+        copiedSignal = Signal(self.data.copy(), self.fs)
         copiedSignal.location = self.location
-        copiedSignal.channelNumber = self.channelNumber
-        copiedSignal.sampleWidth = self.sampleWidth
-        copiedSignal.isNormalized = self.isNormalized
+        copiedSignal.channel_num = self.channel_num
+        copiedSignal.sample_width = self.sample_width
+        copiedSignal.is_normalized = self.is_normalized
         return copiedSignal
 
     def subtract(self, atom, debug=0, preventEnergyIncrease=True):
@@ -236,16 +236,16 @@ class Signal(object):
     def downsample(self, newFs):
         """ downsampling the signal by taking only a portion of the data """
 
-        if newFs >= self.samplingFrequency:
+        if newFs >= self.fs:
             raise ValueError('new sampling frequency is bigger than actual, try upsampling instead')
 
         # ratio of selected points
-        subRatio = float(self.samplingFrequency) / float(newFs)
+        subRatio = float(self.fs) / float(newFs)
         indexes = np.floor(np.arange(0, self.length, subRatio))
 #        print indexes
         self.data = self.data[indexes.tolist()]
         self.length = len(self.data)
-        self.samplingFrequency = newFs
+        self.fs = newFs
 
     def add(self, atom):
         ''' adds the contribution of the atom at the position specified by the atom.timeLocalization property '''
@@ -311,15 +311,15 @@ class Signal(object):
 #            print "Warning!!!! Zero-energy signal:"
 
         wav_file = wave.open(fileOutputPath, 'wb')
-        wav_file.setparams((self.channelNumber,
-                            self.sampleWidth,
-                            self.samplingFrequency,
+        wav_file.setparams((self.channel_num,
+                            self.sample_width,
+                            self.fs,
                             self.length,
                             'NONE', 'not compressed'))
 
         # prepare binary output
         values = []
-        if not self.isNormalized:
+        if not self.is_normalized:
             self.normalize()
 
         for i in range(len(self.data)):
@@ -403,13 +403,13 @@ class Signal(object):
 #        reshapedData = reshapedData[:, 0]
 #
 #    sig = Signal(reshapedData, Sf.sampleRate, doNormalize)
-#    sig.sampleWidth = Sf.sampleWidth
+#    sig.sample_width = Sf.sample_width
 #    sig.location = filepath
 #
 #    _Logger.info("Created Signal of length " + str(
-#        sig.length) + " samples of " + str(sig.channelNumber) + "channels")
+#        sig.length) + " samples of " + str(sig.channel_num) + "channels")
 #    # print "Created Signal of length " + str(Signal.length) +" samples " #of "
-#    # + str(Signal.channelNumber) + "channels"
+#    # + str(Signal.channel_num) + "channels"
 #    return sig
 
 
@@ -441,7 +441,7 @@ class LongSignal(Signal):
     # more attr
 #    filetype = ''       # file extension : .wav or .mp3
 #    nframes = 0;        # number of
-#    sampleWidth = 0;    # bit width of each frame
+#    sample_width = 0;    # bit width of each frame
 # segmentSize = 0;      # in 16-bits samples : different from nframes which is
 # internal wav representation
 #    segmentNumber =0;     # numberof audio segments to be consideres
@@ -458,10 +458,10 @@ class LongSignal(Signal):
 #        elif (filepath[-4:] =='.raw'):
 #            file = open()
         self.filetype = filepath[len(filepath) - 3:]
-        self.channelNumber = file.getnchannels()
-        self.samplingFrequency = file.getframerate()
+        self.channel_num = file.getnchannels()
+        self.fs = file.getframerate()
         self.nframes = file.getnframes()
-        self.sampleWidth = file.getsampwidth()
+        self.sample_width = file.getsampwidth()
 
         self.overlap = Noverlap
 
@@ -469,7 +469,7 @@ class LongSignal(Signal):
             # optionally set the length in seconds, adapt to the sigbal
             # sampling frequency
             self.segmentSize = math.floor(
-                frameDuration * self.samplingFrequency)
+                frameDuration * self.fs)
 
         self.segmentNumber = math.floor(
             self.nframes / (self.segmentSize * (1 - self.overlap)))
@@ -480,9 +480,9 @@ class LongSignal(Signal):
         self.segmentNumber -= self.overlap / (1 - self.overlap)
 
         _Logger.info('Loaded ' + filepath + ' , ' + str(
-            self.nframes) + ' frames of ' + str(self.sampleWidth) + ' bytes')
+            self.nframes) + ' frames of ' + str(self.sample_width) + ' bytes')
         _Logger.info('Type is ' + self.filetype + ' , ' + str(self.
-            channelNumber) + ' channels at ' + str(self.samplingFrequency))
+            channel_num) + ' channels at ' + str(self.fs))
         _Logger.info('Separated in ' + str(self.segmentNumber) + ' segments of size ' + str(self.segmentSize) + ' samples overlap of ' + str(self.overlap * self.segmentSize))
         self.length = self.segmentNumber * frameSize
         file.close()
@@ -518,8 +518,8 @@ class LongSignal(Signal):
         data = np.fromstring(str_bytestream, 'h')
         file.close()
 
-        if self.channelNumber > 1:
-            reshapedData = data.reshape(nFrames, self.channelNumber)
+        if self.channel_num > 1:
+            reshapedData = data.reshape(nFrames, self.channel_num)
         else:
             reshapedData = data.reshape(nFrames, )
         if forceMono:
@@ -528,12 +528,12 @@ class LongSignal(Signal):
 
             reshapedData = reshapedData.reshape(nFrames, )
 
-        SubSignal = Signal(reshapedData, self.samplingFrequency, doNormalize)
+        SubSignal = Signal(reshapedData, self.fs, doNormalize)
         SubSignal.location = self.location
 
         if padSignal != 0:
             SubSignal.pad(padSignal)
 
 # print "Created Signal of length " + str(SubSignal.length) +" samples " #of "
-# + str(Signal.channelNumber) + "channels"
+# + str(Signal.channel_num) + "channels"
         return SubSignal

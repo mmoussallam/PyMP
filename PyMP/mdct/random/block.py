@@ -60,14 +60,14 @@ class RandomBlock(mdct_block.Block):
         self.residualSignal = resSignal
 
         if frameLen == 0:
-            self.frameLength = length / 2
+            self.frame_len = length / 2
         else:
-            self.frameLength = frameLen
+            self.frame_len = frameLen
         if self.residualSignal == None:
             raise ValueError("no signal given")
 
         self.enframedDataMatrix = self.residualSignal.data
-        self.frameNumber = len(self.enframedDataMatrix) / self.frameLength
+        self.frame_num = len(self.enframedDataMatrix) / self.frame_len
         self.projectionMatrix = zeros(len(self.enframedDataMatrix))
 
         self.randomType = randomType
@@ -114,13 +114,13 @@ class RandomBlock(mdct_block.Block):
         self.residualSignal = newResidual
 
         if stopFrameIdx < 0:
-            endFrameIdx = self.frameNumber - 1
+            endFrameIdx = self.frame_num - 1
         else:
             endFrameIdx = stopFrameIdx
         L = self.scale
 
         # update residual signal
-        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frameLength: endFrameIdx * self.frameLength + 2 * self.frameLength]
+        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
         # TODO changes here
         self.computeTransform(startFrameIdx, stopFrameIdx)
@@ -134,7 +134,7 @@ class RandomBlock(mdct_block.Block):
             self.initialize()
 
         if endFrame < 0:
-            endFrame = self.frameNumber - 2
+            endFrame = self.frame_num - 2
 
         if startingFrame < 2:
             startingFrame = 2
@@ -198,7 +198,7 @@ class RandomBlock(mdct_block.Block):
     def getMaxAtom(self):
         self.maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
         self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5 * self.scale)
-        Atom = mdct_atom.Atom(self.scale, 1, max((self.maxFrameIdx * self.scale / 2) - self.scale / 4, 0), self.maxBinIdx, self.residualSignal.samplingFrequency)
+        Atom = mdct_atom.Atom(self.scale, 1, max((self.maxFrameIdx * self.scale / 2) - self.scale / 4, 0), self.maxBinIdx, self.residualSignal.fs)
         Atom.frame = self.maxFrameIdx
         Atom.mdct_value = self.maxValue
 

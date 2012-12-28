@@ -123,7 +123,7 @@ def mp(originalSignal,
 
     # initialize approximant
     currentApprox = Approx.Approx(
-        dictionary, [], originalSignal, debugLevel=debug)
+        dictionary, [], originalSignal, debug_level=debug)
 
     # residualEnergy
     resEnergy = []
@@ -224,7 +224,7 @@ def mp(originalSignal,
 #            plt.subplot(121)
             plt.title('Iteration : ' + str(iterationNumber) +
                  ' , SRR : ' + str(approxSRR))
-            ax1.plot(currentApprox.recomposedSignal.data)
+            ax1.plot(currentApprox.recomposed_signal.data)
             ax2.clear()
 
             plt.draw()
@@ -262,8 +262,8 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
     residualSignal = originalSignal.copy()
 
     # retrieve approximation from residual
-    if currentApprox.recomposedSignal is not None:
-        residualSignal.data -= currentApprox.recomposedSignal.data
+    if currentApprox.recomposed_signal is not None:
+        residualSignal.data -= currentApprox.recomposed_signal.data
         residualSignal.energy = sum(residualSignal.data ** 2)
     else:
         for atom in currentApprox.atoms:
@@ -329,7 +329,7 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
             signalPath = "currentApproxRecomposedSignal_failed_iteration_" + str(
                 iterationNumber) + ".wav"
             currentApprox.write_to_xml(approxPath)
-            currentApprox.recomposedSignal.write(signalPath)
+            currentApprox.recomposed_signal.write(signalPath)
             print " approx saved to ", approxPath
             print " recomposed signal saved to ", signalPath
             return currentApprox, resEnergy
@@ -537,7 +537,7 @@ def GP(originalSignal,
 
         if doWatchSRR:
             # recreate the approximation
-            currentApprox.recomposedSignal.data = np.dot(
+            currentApprox.recomposed_signal.data = np.dot(
                 projMatrix, gains)
 # currentApprox.recomposedSignal.dataVec = gains * projMatrix[: ,
 # columnIndexes].tocsc().T;
@@ -555,7 +555,7 @@ def GP(originalSignal,
 
             plt.figure()
             plt.plot(originalSignal.data, 'b--')
-            plt.plot(currentApprox.recomposedSignal.data, 'k-')
+            plt.plot(currentApprox.recomposed_signal.data, 'k-')
             plt.plot(residualSignal.data, 'r:')
             plt.plot(alpha * c, 'g')
             plt.legend(
@@ -568,8 +568,8 @@ def GP(originalSignal,
             np.dot(residualSignal.data.T, residualSignal.data))
 
         if doWatchSRR:
-            recomposedEnergy = np.dot(currentApprox.recomposedSignal.
-                data.T, currentApprox.recomposedSignal.data)
+            recomposedEnergy = np.dot(currentApprox.recomposed_signal.
+                data.T, currentApprox.recomposed_signal.data)
 
             # compute new SRR and increment iteration Number
             approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
@@ -680,13 +680,13 @@ def OMP(originalSignal,
 
         # Orthogonal projection via pseudo inverse calculation
         ProjectedScores = np.dot(np.linalg.pinv(projMatrix),
-            originalSignal.data.reshape(originalSignal.length, 1))
+            original_signal.data.reshape(originalSignal.length, 1))
 
         # update residual
-        currentApprox.recomposedSignal.data = np.dot(
+        currentApprox.recomposed_signal.data = np.dot(
             projMatrix, ProjectedScores)[:, 0]
 
-        residualSignal.data = originalSignal.data - currentApprox.recomposedSignal.data
+        residualSignal.data = originalSignal.data - currentApprox.recomposed_signal.data
 
 #        # add atom to dictionary
 #        currentApprox.add(bestAtom , dictionary.bestCurrentBlock.wLong)
@@ -700,8 +700,8 @@ def OMP(originalSignal,
 #        dictionary.computeTouchZone(bestAtom)
         resEnergy.append(
             np.dot(residualSignal.data.T, residualSignal.data))
-        recomposedEnergy = np.dot(currentApprox.recomposedSignal.
-            data.T, currentApprox.recomposedSignal.data)
+        recomposedEnergy = np.dot(currentApprox.recomposed_signal.
+            data.T, currentApprox.recomposed_signal.data)
 
         # compute new SRR and increment iteration Number
         approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
