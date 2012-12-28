@@ -43,9 +43,9 @@ import parallelProjections
 print "---- OK"
 
 
-from PyMP import mp , signals
-from PyMP.mdct import dico
-from PyMP.mdct import atom
+import mp , signals
+from mdct import dico
+from mdct import atom
 
 import cProfile
 

@@ -1,4 +1,3 @@
-'''
 #                                                                            */
 #                               PyWinServer.py                               */
 #                                                                            */
@@ -23,7 +22,7 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330,                            */
 #  Boston, MA  02111-1307, USA.                                              */
 #     
-
+'''
  This class avoid the recomputation of the atoms by ensuring waveforms are 
  just computed once tehn re-used
                                                                        */

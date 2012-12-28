@@ -27,7 +27,7 @@
 
 """
 
-Module MPCoder
+Module mp_coder
 ==============
 A collection of method handling the (theoretical) encoding of sparse approximations.
 
@@ -35,11 +35,11 @@ A collection of method handling the (theoretical) encoding of sparse approximati
 
 """ 
 
-from Classes import pymp_Approx
-from Classes.mdct import pymp_MDCTAtom
+import approx
+from mdct import atom
 from math import  ceil , log , sqrt
 
-def SimpleMDCTEncoding(approx ,  
+def simple_mdct_encoding(approx ,  
                    targetBitrate , 
                    Q=7 , 
                    encodeCoeffs=True,                     
@@ -52,7 +52,7 @@ def SimpleMDCTEncoding(approx ,
     
     Arguments:
     
-        - `approx`: a :class:`.pymp_Approx` object containing atoms from the decomposition
+        - `approx`: a :class:`.Approx` object containing atoms from the decomposition
         
         - `targetBitrate`: a float indicating the target bitrate. Atoms are considered in decreasing amplitude order. 
         The encoding will stop either when the target Bitrate it reached or when all atoms of `approx` have been considered
@@ -67,7 +67,7 @@ def SimpleMDCTEncoding(approx ,
         
         - `Bitrate`: The achieved bitrate, not necessarily equal to the given target 
         
-        - `quantizedApprox`: a :class:`.pymp_Approx` object containing the quantized atoms
+        - `quantizedApprox`: a :class:`.Approx` object containing the quantized atoms
     
     """ 
     # determine the fixed cost (in bits) of an atom's index 
@@ -77,7 +77,7 @@ def SimpleMDCTEncoding(approx ,
     Coeffcost = Q;
         
     # instantiate the quantized approximation
-    quantizedApprox = pymp_Approx.pymp_Approx(approx.dico, 
+    quantizedApprox = approx.Approx(approx.dico, 
                                                [], 
                                                approx.originalSignal, 
                                                approx.length, 
@@ -120,7 +120,7 @@ def SimpleMDCTEncoding(approx ,
             total += 1
 
         # instantiate the quantized atom        
-        quantizedAtom = pymp_MDCTAtom.pymp_MDCTAtom(atom.length , 
+        quantizedAtom = atom.Atom(atom.length , 
                                                     atom.amplitude , 
                                                     atom.timePosition , 
                                                     atom.frequencyBin , 

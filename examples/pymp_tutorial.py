@@ -4,7 +4,7 @@
 
 import signals , approx
 
-myPympSignal =  signals.InitFromFile('data/glocs.wav',debugLevel=3)
+myPympSignal =  signals.InitFromFile('../data/glocs.wav',debugLevel=3)
 print myPympSignal
 
 print myPympSignal.dataVec
@@ -32,7 +32,7 @@ newSig.dataVec
 
 from mdct import dico , atom
 pyDico = dico.Dico([128,1024,8192]);
-myPympSignal =  signals.InitFromFile('data/glocs.wav',forceMono=True)
+myPympSignal =  signals.InitFromFile('../data/glocs.wav',forceMono=True)
 pyApprox = approx.Approx(pyDico, [], myPympSignal);
 
 
