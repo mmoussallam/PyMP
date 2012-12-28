@@ -50,28 +50,28 @@ Encoding of standard MP decompositions
 Let us perform a MP decomposition of a 1 second audio exceprt of Glockenspiel using a 3xMDCT dictionary::
 
 >>> from math import floor 
->>> from Classes import *
->>> from Classes.mdct import pymp_MDCTDico
->>> import MP , MPCoder
->>> myPympSignal =  pymp_Signal.InitFromFile('data/ClocheB.wav',forceMono=True) # Load Signal
->>> myPympSignal.crop(0, 4.0*myPympSignal.samplingFrequency)     # Keep only 4 seconds
+>>> from PyMP.mdct import dico
+>>> from PyMP import mp , mp_coder, signals
+>>> myPympSignal =  signals.Signal('data/ClocheB.wav',mono=True) # Load Signal
+>>> myPympSignal.crop(0, 4.0*myPympSignal.fs)     # Keep only 4 seconds
 >>> # atom of scales 8, 64 and 512 ms
->>> scales = [(s * myPympSignal.samplingFrequency / 1000) for s in (8,64,512)] 
+>>> scales = [(s * myPympSignal.fs / 1000) for s in (8,64,512)] 
+>>> myPympSignal.pad(scales[-1])
 >>> # Dictionary for Standard MP
->>> pyDico = pymp_MDCTDico.pymp_MDCTDico(scales);                
+>>> pyDico = dico.Dico(scales);                
 >>> # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
->>> mpApprox , mpDecay = MP.MP(myPympSignal, pyDico, 20, 2000);  
+>>> mpApprox , mpDecay = mp.mp(myPympSignal, pyDico, 20, 2000,padSignal=False) 
 
 This should be relatively fast, the algorithm stops when it reaches 20 dB of SRR and a number of atoms determined by:
 
->>> mpApprox.atomNumber
+>>> mpApprox.atom_number
 565
 
 From the *mpApprox* object constructed we can now evaluate a (theoretical) rate and an associated distorsion by quantizing
-the atoms weights and counting the cost of both indices and weights. To do that, we use the :func:`.SimpleMDCTEncoding` method
-in the :mod:`.MPCoder` module. Here's an example where we set a target of 8kbps with a midtread uniform quantizer with :math:`2^14` steps
+the atoms weights and counting the cost of both indices and weights. To do that, we use the :func:`.simple_mdct_encoding` method
+in the :mod:`.mp_coder` module. Here's an example where we set a target of 8kbps with a midtread uniform quantizer with :math:`2^{14}` steps
 
->>> SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 8000, Q=14);
+>>> SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(mpApprox, 8000, Q=14)
 
 And we can check the results:
 
@@ -81,24 +81,24 @@ And we can check the results:
 In other words, we achieved a 20 dB SNR with a (theoretical) 3.4 kbps bitrate. We can change the coder properties, 
 in particular the number of quantizing steps (recall this is :math:`2^Q`  and not directly Q!!):
 
->>> SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 8000, Q=5);
+>>> SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(mpApprox, 8000, Q=5)
 >>> (SNR, bitrate)
 (12.556647717619505, 997.29788299389475)
 
 Indeed we have reduced the bitrate, but increased the distorsion. We can also fix the bitrate at a lower value:
 
->>> SNR, bitrate, quantizedApprox = MPCoder.SimpleMDCTEncoding(mpApprox, 2000, Q=14);
+>>> SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(mpApprox, 2000, Q=14)
 >>> (SNR, bitrate)
 (16.03645910615025, 2003.7309194613388)
 
 The coder stopped when the given bitrate was reached, yieled a higher distorsion. If you wonder how many atoms where used:
 
->>> quantizedApprox.atomNumber
+>>> quantizedApprox.atom_number
 326
 
 In order to listen to the results, you'll need to save the approximant as wav files:
 
->>> quantizedApprox.recomposedSignal.write('data/ClocheB_quantized_2kbps.wav')
+>>> quantizedApprox.recomposed_signal.write('data/ClocheB_quantized_2kbps.wav')
 
 But a simple Time-Frequency plot already tells you there's going to be some highly disturbing artefacts:
 
@@ -117,18 +117,18 @@ Encoding of Locally Optimized MP decompositions
 
 Running a locally-optimized MP in an equivalent configuration accounts to using the appropriate dictionary.
 
->>> pyLODico = pymp_MDCTDico.pymp_LODico(scales);
->>> lompApprox , lompDecay = MP.MP(myPympSignal, pyLODico, 20, 2000,padSignal=False);  
+>>> pyLODico = dico.LODico(scales)
+>>> lompApprox , lompDecay = mp.mp(myPympSignal, pyLODico, 20, 2000,padSignal=False)  
 
 .. warning::
 
 	beware to set the option *padSignal* to `False`. Otherwise zeroes are added by default to the signal edges each time 
-	you call MP on the same :class:`.pymp_Signal` object, this can mess up the bitrate since it is in bps!
+	you call MP on the same :class:`.Signal` object, this can mess up the bitrate since it is in bps!
 
-An estimation of the SNR and bitrate achieved is done using the same function :func:`.SimpleMDCTEncoding` but with
+An estimation of the SNR and bitrate achieved is done using the same function :func:`.simple_mdct_encoding` but with
 the *TsPenalty* argument set to `True` in order to take the additionnal parameter cost into account
 
->>> SNRlo, bitratelo, quantizedApproxLO = MPCoder.SimpleMDCTEncoding(lompApprox, 2000, Q=14, TsPenalty=True);
+>>> SNRlo, bitratelo, quantizedApproxLO = mp_coder.simple_mdct_encoding(lompApprox, 2000, Q=14, TsPenalty=True)
 
 Then one can check that the encoding is more efficient:
 
@@ -139,7 +139,7 @@ For the same bitrate of 2 kbps, we now have an SNR of nearly 20 dB where a stand
 Each atom is more expensive, but also creates less dark energy. One can verify that the coder has used a 
 lower number of Locally-optimized atoms:
 
->>> (quantizedApprox.atomNumber , quantizedApproxLO.atomNumber)
+>>> (quantizedApprox.atom_number , quantizedApproxLO.atom_number)
 (326, 249)
 
 Encoding of RSS MP decompositions
@@ -149,10 +149,10 @@ Using RSS MP, one need not encode the additionnal time-shift parameter per atom,
 sequence of subdictionaries is known both at the coder and decoder side. This is possible because this sequence is 
 not signal-dependant.
 
->>> from Classes.mdct.random import pymp_RandomDicos 
->>> pyRSSDico = pymp_RandomDicos.pymp_RandomDico(scales);
->>> rssApprox , rssDecay = MP.MP(myPympSignal, pyRSSDico, 20, 2000,padSignal=False);  
->>> SNRrss, bitraterss, quantizedApproxRSS = MPCoder.SimpleMDCTEncoding(rssApprox, 2000, Q=14);
+>>> from PyMP.mdct.random import dico as random_dico
+>>> pyRSSDico = random_dico.RandomDico(scales)
+>>> rssApprox , rssDecay = mp.mp(myPympSignal, pyRSSDico, 20, 2000,padSignal=False)  
+>>> SNRrss, bitraterss, quantizedApproxRSS = mp_coder.simple_mdct_encoding(rssApprox, 2000, Q=14)
 
 Now we can check that RSSMP atoms are much more efficient at representing the signal than the ones selected in a 
 fixed dictionary, but the cost of each atom is the same thus:
@@ -162,14 +162,14 @@ fixed dictionary, but the cost of each atom is the same thus:
 
 And we can verify:
 
->>> (quantizedApprox.atomNumber,  quantizedApproxLO.atomNumber , quantizedApproxRSS.atomNumber)
+>>> (quantizedApprox.atom_number,  quantizedApproxLO.atom_number , quantizedApproxRSS.atom_number)
 (326, 249, 326)
 
 You can now compare these approach for different signals and dictionaries either directly with the given SNR and bitrate values,
 or by listening to the diverse solutions:
 
->>> quantizedApproxLO.recomposedSignal.write('data/ClocheB_LOMP_quantized_2kbps.wav')
->>> quantizedApproxRSS.recomposedSignal.write('data/ClocheB_RSSMP_quantized_2kbps.wav')
+>>> quantizedApproxLO.recomposed_signal.write('data/ClocheB_LOMP_quantized_2kbps.wav')
+>>> quantizedApproxRSS.recomposed_signal.write('data/ClocheB_RSSMP_quantized_2kbps.wav')
 
 And that concludes this tutorial.
 
