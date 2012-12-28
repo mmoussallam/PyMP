@@ -17,19 +17,19 @@
 #  along with this program; if not, write to the Free Software               */
 #  Foundation, Inc., 59 Temple Place - Suite 330,                            */
 #  Boston, MA  02111-1307, USA.                                              */
-#     
+#
 
 """
  This class tests whether the extension C module parallelProjections is
  correctly installed and accessible.
- 
+
  This module is intended to greatly accelerate calculations projections step of mp
  using MDCT and Gabor Dictionaries by using optimized C routines and fftw library
- 
+
  Before proceeding, make sure FFTW library is available on your system and that
  proper authorization are granted
-  
- 
+
+
 
 """
 import os, sys, platform
@@ -64,24 +64,24 @@ tol = [2 for i in mdctDico];
 
 print "test the initialization function"
 if parallelProjections.initialize_plans(np.array(mdctDico),np.array(tol)) != 1:
-    
+
     print "Initiliazing Stage Failed"
 if parallelProjections.clean_plans() != 1:
     print "Initiliazing Stage Failed"
-    
-    
-pySigOriginal = signals.InitFromFile("../../data/ClocheB.wav" , True , True);        
-pyDico2 = dico.Dico(mdctDico) 
 
-pyDico_Lomp = dico.LODico(mdctDico) 
+
+pySigOriginal = signals.InitFromFile("../../data/ClocheB.wav" , True , True);
+pyDico2 = dico.Dico(mdctDico)
+
+pyDico_Lomp = dico.LODico(mdctDico)
 residualSignal = pySigOriginal.copy();
 
 app, decay = mp.mp(pySigOriginal, pyDico2, 20, 200 ,0)
 
 print " profiling test with C integration"
-cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 200 ,0)' , globals() , locals())     
+cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 200 ,0)' , globals() , locals())
 
-cProfile.runctx('mp.mp(pySigOriginal, pyDico_Lomp, 20, 200 ,0)' , globals() , locals())     
+cProfile.runctx('mp.mp(pySigOriginal, pyDico_Lomp, 20, 200 ,0)' , globals() , locals())
 
 
 
@@ -99,7 +99,7 @@ projectionMatrix_real = np.zeros((N,1));
 projectionMatrix_comp = np.zeros((N,1),complex);
 scoreTree = np.zeros((P,1))
 pre_twidVec = np.array([exp(n*(-1j)*pi/L) for n in range(L)]).reshape(L,1);
-post_twidVec = np.array([exp((float(n) + 0.5) * -1j*pi*(L/2 +1)/L) for n in range(L/2)]).reshape(L/2,1) ; 
+post_twidVec = np.array([exp((float(n) + 0.5) * -1j*pi*(L/2 +1)/L) for n in range(L/2)]).reshape(L/2,1) ;
 
 print scoreTree.shape , pre_twidVec.shape , post_twidVec.shape
 
@@ -111,8 +111,8 @@ takeReal = 1;
 #computeMCLT.project(input_data )
 
 print " ---Testing good call"
-parallelProjections.project(input_data, scoreTree , 
-                    projectionMatrix_real , 
+parallelProjections.project(input_data, scoreTree ,
+                    projectionMatrix_real ,
                     pre_twidVec , post_twidVec , i , j , L ,0)
 
 #if parallelFFT.clean_plans() != 1:
@@ -127,8 +127,8 @@ print "--- OK"
 #    print "Initiliazing Stage Failed"
 
 print "---Testing good call: complex"
-res = parallelProjections.project_mclt(input_data, scoreTree , 
-                         projectionMatrix_comp , 
+res = parallelProjections.project_mclt(input_data, scoreTree ,
+                         projectionMatrix_comp ,
                          pre_twidVec , post_twidVec , i , j , L)
 print scoreTree
 if res is not None:
@@ -138,8 +138,8 @@ else:
 #
 print "---Testing good call: complex set"
 
-res =parallelProjections.project_mclt_set(input_data, scoreTree , 
-                             projectionMatrix_comp , 
+res =parallelProjections.project_mclt_set(input_data, scoreTree ,
+                             projectionMatrix_comp ,
                              pre_twidVec , post_twidVec , i , j , L , 1)
 if res is not None:
     print "--- Ok"
@@ -149,7 +149,7 @@ else:
 
 
 print "---Testing good call: complex Non Linear set with Median"
-# Feed it with numpy matrices 
+# Feed it with numpy matrices
 sigNumber = 3;
 NLinput_data =  np.concatenate((input_data,0.42*np.random.randn(N,sigNumber-1)),axis=1)
 
@@ -158,8 +158,8 @@ NLinput_data = NLinput_data.T;
 print NLinput_data.shape
 NLprojectionMatrix_comp = np.zeros(NLinput_data.shape)
 projResult = np.zeros((N,1))
-res =parallelProjections.project_mclt_NLset(NLinput_data, scoreTree , 
-                             NLprojectionMatrix_comp , 
+res =parallelProjections.project_mclt_NLset(NLinput_data, scoreTree ,
+                             NLprojectionMatrix_comp ,
                              projResult,
                              pre_twidVec , post_twidVec , i , j , L , 0)
 
@@ -178,25 +178,25 @@ else:
 
 print "---Testing good call: complex Non Linear set with Penalized"
 projResult = np.zeros((N,1))
-res =parallelProjections.project_mclt_NLset(NLinput_data, scoreTree , 
-                             NLprojectionMatrix_comp , 
+res =parallelProjections.project_mclt_NLset(NLinput_data, scoreTree ,
+                             NLprojectionMatrix_comp ,
                              projResult,
                              pre_twidVec , post_twidVec , i , j , L , 1)
 
 A = (NLprojectionMatrix_comp)**2;
-B = np.sum(A,axis=0) 
+B = np.sum(A,axis=0)
 for l in range(sigNumber):
-    for m in range(l+1,sigNumber):      
-#                    print i,j              
+    for m in range(l+1,sigNumber):
+#                    print i,j
         diff = (abs(NLprojectionMatrix_comp[l,:]) - abs(NLprojectionMatrix_comp[m,:]))**2
 #                    print diff
         B[:] += diff
-        
+
 #plt.figure()
 #plt.plot(B)
 #plt.plot(projResult,'r:')
 #plt.draw()
-#plt.draw()     
+#plt.draw()
 assert np.sum((B.reshape(projResult.shape)-projResult)**2) < 0.000000000001;
 if res is not None:
     print "--- Ok",scoreTree
@@ -206,8 +206,8 @@ else:
 print "---Testing good call: complex Non Linear set with Weighted"
 projResult = np.zeros((N,1))
 scoreTree = np.zeros((P,1))
-res =parallelProjections.project_mclt_NLset(NLinput_data, scoreTree , 
-                             NLprojectionMatrix_comp , 
+res =parallelProjections.project_mclt_NLset(NLinput_data, scoreTree ,
+                             NLprojectionMatrix_comp ,
                              projResult,
                              pre_twidVec , post_twidVec , i , j , L , 2)
 
@@ -306,11 +306,11 @@ timeShift3 = parallelProjections.project_atom(input1,input2 ,score3 , scale)
 
 #if not(scoreOld == score):
 #    print "ERROR: new score calculus isn't consistent with old one"
-#    print scoreOld , score 
+#    print scoreOld , score
 #    print timeShift , timeShift2
 #    raise TypeError("ARf");
 #print score3 , scoreOld2
-#    
+#
 if ts==-timeShift:
     print "---- cross-correlation works!"
 else:
