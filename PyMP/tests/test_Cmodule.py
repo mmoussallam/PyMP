@@ -38,14 +38,14 @@ import string
 
 print "---- Test import du module!"
 
-import parallelProjections
+from PyMP import parallelProjections
 
 print "---- OK"
 
 
-import mp , signals
-from mdct import dico
-from mdct import atom
+from PyMP import mp, signals
+from PyMP.mdct import dico
+from PyMP.mdct import atom
 
 import cProfile
 

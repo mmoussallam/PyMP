@@ -32,7 +32,8 @@ Module approx
 The main class is :class:`approx`
 
 '''
-from numpy import math, array, zeros, sum, NINF, PINF, log2
+import math
+import numpy as np
 
 import matplotlib.patches as mpatches
 import matplotlib
@@ -129,7 +130,7 @@ class Approx:
             self.frameLength = self.length / self.frameNumber
 
         self.recomposedSignal = signals.Signal(
-            zeros(self.length), self.samplingFrequency)
+            np.zeros(self.length), self.samplingFrequency)
         self.recomposedSignal.isNormalized = isNormalized
 
     def synthesize(self, method=0, forceReSynthesis=True):
@@ -140,7 +141,7 @@ class Approx:
 #            return None
 
         if (self.recomposedSignal == None) | forceReSynthesis:
-            synthesizedSignal = zeros(self.length)
+            synthesizedSignal = np.zeros(self.length)
 
             if len(self.atoms) == 0:
                 _Logger.info("No Atoms")
@@ -149,7 +150,7 @@ class Approx:
             # first method by inverse MDCT
             if method == 0:
                 for mdctSize in self.dico.sizes:
-                    mdctVec = zeros(self.length)
+                    mdctVec = np.zeros(self.length)
                     for atom in self.atoms:
                         if atom.length == mdctSize:
                             # bugFIx
@@ -265,13 +266,13 @@ class Approx:
             where :math:`\tilde{x}` is the reconstructed signal and :math:`x` the original
         '''
         if not isinstance(self.recomposedSignal, signals.Signal):
-            return NINF
+            return np.NINF
 
 #        recomposedEnergy = sum((self.recomposedSignal.dataVec)**2)
         recomposedEnergy = self.recomposedSignal.energy
 
         if recomposedEnergy <= 0:
-            return NINF
+            return np.NINF
 
         if residual is None:
             resEnergy = sum((self.originalSignal.dataVec -
@@ -281,7 +282,7 @@ class Approx:
 # resEnergy = sum((self.originalSignal.dataVec -
 # self.recomposedSignal.dataVec)**2)
         if resEnergy == 0:
-            return PINF
+            return np.PINF
 
         return 10 * math.log10(recomposedEnergy / resEnergy)
 
@@ -331,10 +332,10 @@ class Approx:
         maxFreq = 1.0
         minFreq = 22000.0
         if not keepValues:
-            valueArray = array(
+            valueArray = np.array(
                 [math.log10(abs(atom.getAmplitude())) for atom in self.atoms])
         else:
-            valueArray = array(
+            valueArray = np.array(
                 [abs(atom.getAmplitude()) for atom in self.atoms])
         if multicolor:
             cmap = cc.LinearSegmentedColormap('jet', abs(valueArray))
@@ -397,7 +398,7 @@ class Approx:
 #            xy = p - xOffset, log10(f) - yOffset,
 
             if logF:
-                xy = p - xOffset, (12 * log2(f - yOffset))
+                xy = p - xOffset, (12 * np.log2(f - yOffset))
 
                 height = 1.0  # BUGFIX
 
@@ -433,7 +434,7 @@ class Approx:
 
             # first sort the patches by values
             sortedIndexes = valueArray.argsort()
-            PatchArray = array(patches)
+            PatchArray = np.array(patches)
             p = PatchCollection(PatchArray[sortedIndexes].tolist(), linewidths=0., cmap=matplotlib.cm.copper_r, match_original=False, alpha=alphaCoeff)
     #        print array(colors).shape
             p.set_array(valueArray[sortedIndexes])
@@ -638,8 +639,8 @@ class Approx:
 
     def toArray(self):
         """ Returns the approximant as an array object , key is the index of the atom and value is its amplitude"""
-        sparseArray = zeros(len(self.dico.sizes) * self.length)
-        timeShifts = zeros(len(self.dico.sizes) * self.length)
+        sparseArray = np.zeros(len(self.dico.sizes) * self.length)
+        timeShifts = np.zeros(len(self.dico.sizes) * self.length)
         # quickly creates a dictionary for block numbering
         blockIndexes = {}
         for i in range(len(self.dico.sizes)):
@@ -673,7 +674,7 @@ def readFromXml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
 
     from xml.dom.minidom import Document
     import xml.dom
-    from classes.mdct import Dico, Atom
+    from .mdct import dico, atom
     # check if reading from file is needed
     if xmlDoc == None:
         xmlDoc = xml.dom.minidom.parse(InputXmlFilePath)
@@ -685,7 +686,7 @@ def readFromXml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
     ApproxNode = xmlDoc.getElementsByTagName('Approx')[0]
 
     # retrieve the dictionary
-    Dico = Dico.fromXml(xmlDoc.getElementsByTagName('Dictionary')[0])
+    Dico = dico.fromXml(xmlDoc.getElementsByTagName('Dictionary')[0])
 
     # retrieve atom list
     AtomsNode = xmlDoc.getElementsByTagName('Atoms')[0]
@@ -695,9 +696,9 @@ def readFromXml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
     for node in AtomsNode.childNodes:
         if node.localName == 'Atom':
             if buildSignal:
-                approx.addAtom(Atom.fromXml(node))
+                approx.addAtom(atom.fromXml(node))
             else:
-                approx.atoms.append(Atom.fromXml(node))
+                approx.atoms.append(atom.fromXml(node))
 #            atoms.append(py_pursuit_Atom.fromXml(node))
 #    if not buildSignal:
 #        approx.atomNumber = len(approx.atoms)
