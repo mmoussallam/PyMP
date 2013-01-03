@@ -5,12 +5,17 @@ import numpy.core
 
 NUMPYDIR = os.path.dirname(numpy.core.__file__)
 libraries = ['fftw3']
-include_dirs = [os.path.join(NUMPYDIR, r'include/numpy')]
-library_dirs = ['/usr/lib/openmpi/lib/openmpi/', "/Users/alex/work/src/fftw-3.2.2/.libs/"]
+include_dirs = [os.path.join(NUMPYDIR, r'include/numpy'),'/usr/local/include']
+library_dirs = ['/usr/lib/openmpi/lib/openmpi/', "/usr/local/lib"]
 
 
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
+    import platform
+    if platform.architecture()[0]:
+        plt_str = '-DX=1'
+    else:
+        plt_str =''
 
     config = Configuration('PyMP', parent_package, top_path)
 
@@ -20,8 +25,8 @@ def configuration(parent_package='', top_path=None):
                          library_dirs=library_dirs,
                          sources=[join('src', 'parProj.c'),
                                   join('src', 'parallelProjections.c')],
-                         extra_compile_args=['-fopenmp', '-fPIC', '-DDEBUG=0'],
-                         extra_link_args=['-lgomp'])
+                         extra_compile_args=['-fopenmp', '-fPIC', '-DDEBUG=0',plt_str],
+                         extra_link_args=['-lgomp',])
 
     return config
 

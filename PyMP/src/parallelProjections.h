@@ -37,13 +37,13 @@
 #include "parProj.h"
 #define PI 3.14159265359
 
-/* Basic feature 64  bits platform */
+/* Basic feature 64  bits platform 
 #define X 2
 
-/* modify if 32 bit detected */
+/* modify if 32 bit detected 
 #ifdef _M_X86
 #define X 1
-#endif
+#endif*/
 
 /* MCLT functions */
 

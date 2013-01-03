@@ -33,12 +33,16 @@
 
 /* Basic feature 64  bits platform */
 #define VERSION 0.1
-/*#define DEBUG 1*/
+#ifndef X
 #define X 2
-/* modify if 32 bit detected */
-#ifdef _M_X86
-#define X 1
 #endif
+
+/*#define DEBUG 1
+ #define X 2
+ /* modify if 32 bit detected 
+ #ifdef _M_X86
+ #define X 1
+ #endif */
 
 #endif /* PARPROJ_H_ */
 
