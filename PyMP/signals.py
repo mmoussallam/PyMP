@@ -505,8 +505,7 @@ class LongSignal(Signal):
         :Example:
 
             longSig = LongSignal(**myLongSigFilePath**, frameDuration=5) # Initialize long signal
-            subSig = longSig.get_sub_signal(
-                0,10) # Loads the first 50 seconds of data
+            subSig = longSig.get_sub_signal(0,10) # Loads the first 50 seconds of data
 
         """
 

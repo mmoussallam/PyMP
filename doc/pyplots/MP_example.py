@@ -14,7 +14,7 @@ mpl.rcParams['font.size'] = 16.0
 mpl.rcParams['legend.fancybox'] = True
 mpl.rcParams['legend.shadow'] = True
 mpl.rcParams['image.interpolation'] = 'Nearest'
-mpl.rcParams['text.usetex'] = True
+#mpl.rcParams['text.usetex'] = True
 
 from PyMP import signals, mp
 from PyMP.mdct import dico

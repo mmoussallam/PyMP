@@ -17,8 +17,8 @@ Classes for Standard Algorithm
 Classes for Random Matching Pursuit
 ***********************************
 
-	.. automodule:: PyMP.mdct.random.block
-		:members: RandomBlock	
+	.. automodule:: PyMP.mdct.rand.block
+		:members: SequenceBlock	
 		
-	.. automodule:: PyMP.mdct.random.dico
-		:members: RandomDico
+	.. automodule:: PyMP.mdct.rand.dico
+		:members: SequenceDico

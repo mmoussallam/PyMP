@@ -21,7 +21,6 @@ PyMP's documentation!
    classes.rst
 		
    Mdct.rst
-   test
 
 Indices and tables
 ==================
