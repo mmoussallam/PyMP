@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
-    <link rel="next" title="MP routines Documentation" href="MP.html" />
+    <link rel="next" title="Manipulating Signals" href="example_objects.html" />
     <link rel="prev" title="PyMP Tutorial 1. Signal decomposition" href="example.html" /> 
   </head>
   <body>
@@ -41,7 +41,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="MP.html" title="MP routines Documentation"
+          <a href="example_objects.html" title="Manipulating Signals"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="example.html" title="PyMP Tutorial 1. Signal decomposition"
@@ -78,8 +78,8 @@
   <p class="topless"><a href="example.html"
                         title="previous chapter">PyMP Tutorial 1. Signal decomposition</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="MP.html"
-                        title="next chapter">MP routines Documentation</a></p>
+  <p class="topless"><a href="example_objects.html"
+                        title="next chapter">Manipulating Signals</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/example_coder.txt"
@@ -145,29 +145,29 @@ an additionnal parameter (e.g. a local optimal time-shift) must be transmitted a
 <div class="section" id="encoding-of-standard-mp-decompositions">
 <h3>Encoding of standard MP decompositions<a class="headerlink" href="#encoding-of-standard-mp-decompositions" title="Permalink to this headline">¶</a></h3>
 <p>Let us perform a MP decomposition of a 1 second audio exceprt of Glockenspiel using a 3xMDCT dictionary:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes.mdct</span> <span class="kn">import</span> <span class="n">pymp_MDCTDico</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MP</span> <span class="o">,</span> <span class="nn">MPCoder</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span>  <span class="n">pymp_Signal</span><span class="o">.</span><span class="n">InitFromFile</span><span class="p">(</span><span class="s">&#39;data/ClocheB.wav&#39;</span><span class="p">,</span><span class="n">forceMono</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="c"># Load Signal</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">4.0</span><span class="o">*</span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">samplingFrequency</span><span class="p">)</span>     <span class="c"># Keep only 4 seconds</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct</span> <span class="kn">import</span> <span class="n">dico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct.rand</span> <span class="kn">import</span> <span class="n">dico</span> <span class="k">as</span> <span class="n">random_dico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP</span> <span class="kn">import</span> <span class="n">mp</span><span class="p">,</span> <span class="n">mp_coder</span><span class="p">,</span> <span class="n">signals</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span> <span class="o">=</span> <span class="n">signals</span><span class="o">.</span><span class="n">Signal</span><span class="p">(</span><span class="s">&#39;../data/ClocheB.wav&#39;</span><span class="p">,</span> <span class="n">mono</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c"># Load Signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">myPympSignal</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>     <span class="c"># Keep only 4 seconds</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c"># atom of scales 8, 64 and 512 ms</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">scales</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span> <span class="o">*</span> <span class="n">myPympSignal</span><span class="o">.</span><span class="n">samplingFrequency</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">512</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scales</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span> <span class="o">*</span> <span class="n">myPympSignal</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">512</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">myPympSignal</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c"># Dictionary for Standard MP</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pyDico</span> <span class="o">=</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_MDCTDico</span><span class="p">(</span><span class="n">scales</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pyDico</span> <span class="o">=</span> <span class="n">dico</span><span class="o">.</span><span class="n">Dico</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c"># Launching decomposition, stops either at 20 dB of SRR or 2000 iterations</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mpApprox</span> <span class="p">,</span> <span class="n">mpDecay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyDico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">);</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mpApprox</span><span class="p">,</span> <span class="n">mpDecay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyDico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This should be relatively fast, the algorithm stops when it reaches 20 dB of SRR and a number of atoms determined by:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mpApprox</span><span class="o">.</span><span class="n">atomNumber</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mpApprox</span><span class="o">.</span><span class="n">atom_number</span>
 <span class="go">565</span>
 </pre></div>
 </div>
 <p>From the <em>mpApprox</em> object constructed we can now evaluate a (theoretical) rate and an associated distorsion by quantizing
-the atoms weights and counting the cost of both indices and weights. To do that, we use the <a class="reference internal" href="#MPCoder.SimpleMDCTEncoding" title="MPCoder.SimpleMDCTEncoding"><tt class="xref py py-func docutils literal"><span class="pre">SimpleMDCTEncoding()</span></tt></a> method
-in the <a class="reference internal" href="#module-MPCoder" title="MPCoder"><tt class="xref py py-mod docutils literal"><span class="pre">MPCoder</span></tt></a> module. Here&#8217;s an example where we set a target of 8kbps with a midtread uniform quantizer with <img src="_images/mathmpl/math-96f9abdd5c.png" style="position: relative; bottom: -3px"/> steps</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+the atoms weights and counting the cost of both indices and weights. To do that, we use the <a class="reference internal" href="#PyMP.mp_coder.simple_mdct_encoding" title="PyMP.mp_coder.simple_mdct_encoding"><tt class="xref py py-func docutils literal"><span class="pre">simple_mdct_encoding()</span></tt></a> method
+in the <a class="reference internal" href="#module-PyMP.mp_coder" title="PyMP.mp_coder"><tt class="xref py py-mod docutils literal"><span class="pre">mp_coder</span></tt></a> module. Here&#8217;s an example where we set a target of 8kbps with a midtread uniform quantizer with <img src="_images/mathmpl/math-a1c50679e1.png" style="position: relative; bottom: -3px"/> steps</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">mp_coder</span><span class="o">.</span><span class="n">simple_mdct_encoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>And we can check the results:</p>
@@ -177,28 +177,28 @@ in the <a class="reference internal" href="#module-MPCoder" title="MPCoder"><tt 
 </div>
 <p>In other words, we achieved a 20 dB SNR with a (theoretical) 3.4 kbps bitrate. We can change the coder properties,
 in particular the number of quantizing steps (recall this is <img src="_images/mathmpl/math-6f18d98412.png" style="position: relative; bottom: -3px"/>  and not directly Q!!):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">5</span><span class="p">);</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">mp_coder</span><span class="o">.</span><span class="n">simple_mdct_encoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">)</span>
 <span class="go">(12.556647717619505, 997.29788299389475)</span>
 </pre></div>
 </div>
 <p>Indeed we have reduced the bitrate, but increased the distorsion. We can also fix the bitrate at a lower value:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantizedApprox</span> <span class="o">=</span> <span class="n">mp_coder</span><span class="o">.</span><span class="n">simple_mdct_encoding</span><span class="p">(</span><span class="n">mpApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">SNR</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">)</span>
 <span class="go">(16.03645910615025, 2003.7309194613388)</span>
 </pre></div>
 </div>
 <p>The coder stopped when the given bitrate was reached, yieled a higher distorsion. If you wonder how many atoms where used:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atomNumber</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atom_number</span>
 <span class="go">326</span>
 </pre></div>
 </div>
 <p>In order to listen to the results, you&#8217;ll need to save the approximant as wav files:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">recomposedSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_quantized_2kbps.wav&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">recomposed_signal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_quantized_2kbps.wav&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>But a simple Time-Frequency plot already tells you there&#8217;s going to be some highly disturbing artefacts:</p>
-<p>[<a class="reference external" href="./plot_directive/pyplots/plot_encoded_cloche.py">source code</a>, <a class="reference external" href="./plot_directive/pyplots/plot_encoded_cloche.hires.png">hires.png</a>, <a class="reference external" href="./plot_directive/pyplots/plot_encoded_cloche.pdf">pdf</a>]</p>
+<p>(<a class="reference external" href="./pyplots/plot_encoded_cloche.py">Source code</a>, <a class="reference external" href="./pyplots/plot_encoded_cloche.png">png</a>, <a class="reference external" href="./pyplots/plot_encoded_cloche.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/plot_encoded_cloche.pdf">pdf</a>)</p>
 <div class="figure">
 <img alt="_images/plot_encoded_cloche.png" src="_images/plot_encoded_cloche.png" />
 </div>
@@ -214,18 +214,18 @@ when using this type of dictionaries. Only two way to get rid of it:</p>
 <div class="section" id="encoding-of-locally-optimized-mp-decompositions">
 <h3>Encoding of Locally Optimized MP decompositions<a class="headerlink" href="#encoding-of-locally-optimized-mp-decompositions" title="Permalink to this headline">¶</a></h3>
 <p>Running a locally-optimized MP in an equivalent configuration accounts to using the appropriate dictionary.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pyLODico</span> <span class="o">=</span> <span class="n">pymp_MDCTDico</span><span class="o">.</span><span class="n">pymp_LODico</span><span class="p">(</span><span class="n">scales</span><span class="p">);</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lompApprox</span> <span class="p">,</span> <span class="n">lompDecay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyLODico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">);</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pyLODico</span> <span class="o">=</span> <span class="n">dico</span><span class="o">.</span><span class="n">LODico</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lompApprox</span> <span class="p">,</span> <span class="n">lompDecay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyLODico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">beware to set the option <em>padSignal</em> to <cite>False</cite>. Otherwise zeroes are added by default to the signal edges each time
-you call MP on the same <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> object, this can mess up the bitrate since it is in bps!</p>
+you call MP on the same <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> object, this can mess up the bitrate since it is in bps!</p>
 </div>
-<p>An estimation of the SNR and bitrate achieved is done using the same function <a class="reference internal" href="#MPCoder.SimpleMDCTEncoding" title="MPCoder.SimpleMDCTEncoding"><tt class="xref py py-func docutils literal"><span class="pre">SimpleMDCTEncoding()</span></tt></a> but with
+<p>An estimation of the SNR and bitrate achieved is done using the same function <a class="reference internal" href="#PyMP.mp_coder.simple_mdct_encoding" title="PyMP.mp_coder.simple_mdct_encoding"><tt class="xref py py-func docutils literal"><span class="pre">simple_mdct_encoding()</span></tt></a> but with
 the <em>TsPenalty</em> argument set to <cite>True</cite> in order to take the additionnal parameter cost into account</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNRlo</span><span class="p">,</span> <span class="n">bitratelo</span><span class="p">,</span> <span class="n">quantizedApproxLO</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">lompApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">TsPenalty</span><span class="o">=</span><span class="bp">True</span><span class="p">);</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SNRlo</span><span class="p">,</span> <span class="n">bitratelo</span><span class="p">,</span> <span class="n">quantizedApproxLO</span> <span class="o">=</span> <span class="n">mp_coder</span><span class="o">.</span><span class="n">simple_mdct_encoding</span><span class="p">(</span><span class="n">lompApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">TsPenalty</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Then one can check that the encoding is more efficient:</p>
@@ -236,7 +236,7 @@ the <em>TsPenalty</em> argument set to <cite>True</cite> in order to take the ad
 <p>For the same bitrate of 2 kbps, we now have an SNR of nearly 20 dB where a standard MP yielded a mere 16 dB.
 Each atom is more expensive, but also creates less dark energy. One can verify that the coder has used a
 lower number of Locally-optimized atoms:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atomNumber</span> <span class="p">,</span> <span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">atomNumber</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atom_number</span> <span class="p">,</span> <span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">atom_number</span><span class="p">)</span>
 <span class="go">(326, 249)</span>
 </pre></div>
 </div>
@@ -246,10 +246,10 @@ lower number of Locally-optimized atoms:</p>
 <p>Using RSS MP, one need not encode the additionnal time-shift parameter per atom, since we assume the pseudo-random
 sequence of subdictionaries is known both at the coder and decoder side. This is possible because this sequence is
 not signal-dependant.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">Classes.mdct.random</span> <span class="kn">import</span> <span class="n">pymp_RandomDicos</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pyRSSDico</span> <span class="o">=</span> <span class="n">pymp_RandomDicos</span><span class="o">.</span><span class="n">pymp_RandomDico</span><span class="p">(</span><span class="n">scales</span><span class="p">);</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rssApprox</span> <span class="p">,</span> <span class="n">rssDecay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyRSSDico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">);</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">SNRrss</span><span class="p">,</span> <span class="n">bitraterss</span><span class="p">,</span> <span class="n">quantizedApproxRSS</span> <span class="o">=</span> <span class="n">MPCoder</span><span class="o">.</span><span class="n">SimpleMDCTEncoding</span><span class="p">(</span><span class="n">rssApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">);</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct.random</span> <span class="kn">import</span> <span class="n">dico</span> <span class="k">as</span> <span class="n">random_dico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pyRSSDico</span> <span class="o">=</span> <span class="n">random_dico</span><span class="o">.</span><span class="n">RandomDico</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rssApprox</span> <span class="p">,</span> <span class="n">rssDecay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">myPympSignal</span><span class="p">,</span> <span class="n">pyRSSDico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SNRrss</span><span class="p">,</span> <span class="n">bitraterss</span><span class="p">,</span> <span class="n">quantizedApproxRSS</span> <span class="o">=</span> <span class="n">mp_coder</span><span class="o">.</span><span class="n">simple_mdct_encoding</span><span class="p">(</span><span class="n">rssApprox</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now we can check that RSSMP atoms are much more efficient at representing the signal than the ones selected in a
@@ -259,14 +259,14 @@ fixed dictionary, but the cost of each atom is the same thus:</p>
 </pre></div>
 </div>
 <p>And we can verify:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atomNumber</span><span class="p">,</span>  <span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">atomNumber</span> <span class="p">,</span> <span class="n">quantizedApproxRSS</span><span class="o">.</span><span class="n">atomNumber</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">quantizedApprox</span><span class="o">.</span><span class="n">atom_number</span><span class="p">,</span>  <span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">atom_number</span> <span class="p">,</span> <span class="n">quantizedApproxRSS</span><span class="o">.</span><span class="n">atom_number</span><span class="p">)</span>
 <span class="go">(326, 249, 326)</span>
 </pre></div>
 </div>
 <p>You can now compare these approach for different signals and dictionaries either directly with the given SNR and bitrate values,
 or by listening to the diverse solutions:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">recomposedSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_LOMP_quantized_2kbps.wav&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApproxRSS</span><span class="o">.</span><span class="n">recomposedSignal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_RSSMP_quantized_2kbps.wav&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApproxLO</span><span class="o">.</span><span class="n">recomposed_signal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_LOMP_quantized_2kbps.wav&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">quantizedApproxRSS</span><span class="o">.</span><span class="n">recomposed_signal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;data/ClocheB_RSSMP_quantized_2kbps.wav&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>And that concludes this tutorial.</p>
@@ -276,17 +276,17 @@ or by listening to the diverse solutions:</p>
 <h2>Additionnal documentation<a class="headerlink" href="#additionnal-documentation" title="Permalink to this headline">¶</a></h2>
 <p>here&#8217;s the documentation of the method used in this tutorial</p>
 <blockquote>
-<div><span class="target" id="module-MPCoder"></span><div class="section" id="module-mpcoder">
-<h3>Module MPCoder<a class="headerlink" href="#module-mpcoder" title="Permalink to this headline">¶</a></h3>
+<div><span class="target" id="module-PyMP.mp_coder"></span><div class="section" id="module-mp-coder">
+<h3>Module mp_coder<a class="headerlink" href="#module-mp-coder" title="Permalink to this headline">¶</a></h3>
 <p>A collection of method handling the (theoretical) encoding of sparse approximations.</p>
 <dl class="function">
-<dt id="MPCoder.SimpleMDCTEncoding">
-<tt class="descclassname">MPCoder.</tt><tt class="descname">SimpleMDCTEncoding</tt><big>(</big><em>approx</em>, <em>targetBitrate</em>, <em>Q=7</em>, <em>encodeCoeffs=True</em>, <em>encodeIndexes=True</em>, <em>subsampling=1</em>, <em>TsPenalty=False</em>, <em>saveOutputFilePath=None</em>, <em>outputAllIndexes=False</em><big>)</big><a class="headerlink" href="#MPCoder.SimpleMDCTEncoding" title="Permalink to this definition">¶</a></dt>
+<dt id="PyMP.mp_coder.simple_mdct_encoding">
+<tt class="descclassname">PyMP.mp_coder.</tt><tt class="descname">simple_mdct_encoding</tt><big>(</big><em>app</em>, <em>targetBitrate</em>, <em>Q=7</em>, <em>encodeCoeffs=True</em>, <em>encodeIndexes=True</em>, <em>subsampling=1</em>, <em>TsPenalty=False</em>, <em>saveOutputFilePath=None</em>, <em>outputAllIndexes=False</em><big>)</big><a class="headerlink" href="#PyMP.mp_coder.simple_mdct_encoding" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simple encoder of a sparse approximation</p>
 <p>Arguments:</p>
 <blockquote>
 <div><ul class="simple">
-<li><cite>approx</cite>: a <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> object containing atoms from the decomposition</li>
+<li><cite>app</cite>: a <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> object containing atoms from the decomposition</li>
 <li><cite>targetBitrate</cite>: a float indicating the target bitrate. Atoms are considered in decreasing amplitude order.</li>
 </ul>
 <p>The encoding will stop either when the target Bitrate it reached or when all atoms of <cite>approx</cite> have been considered</p>
@@ -300,7 +300,7 @@ or by listening to the diverse solutions:</p>
 <div><ul class="simple">
 <li><cite>SNR</cite>: The achieved Signal to Noise Ratio</li>
 <li><cite>Bitrate</cite>: The achieved bitrate, not necessarily equal to the given target</li>
-<li><cite>quantizedApprox</cite>: a <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> object containing the quantized atoms</li>
+<li><cite>quantizedApprox</cite>: a <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> object containing the quantized atoms</li>
 </ul>
 </div></blockquote>
 </dd></dl>
@@ -326,7 +326,7 @@ or by listening to the diverse solutions:</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="MP.html" title="MP routines Documentation"
+          <a href="example_objects.html" title="Manipulating Signals"
              >next</a> |</li>
         <li class="right" >
           <a href="example.html" title="PyMP Tutorial 1. Signal decomposition"
@@ -336,7 +336,7 @@ or by listening to the diverse solutions:</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Manuel Moussallam.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

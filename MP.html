@@ -28,7 +28,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
     <link rel="next" title="Classes Package Documentation:" href="classes.html" />
-    <link rel="prev" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" /> 
+    <link rel="prev" title="Manipulating Signals" href="example_objects.html" /> 
   </head>
   <body>
     <div class="related">
@@ -44,7 +44,7 @@
           <a href="classes.html" title="Classes Package Documentation:"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+          <a href="example_objects.html" title="Manipulating Signals"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
       </ul>
@@ -64,8 +64,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="example_coder.html"
-                        title="previous chapter">PyMP Tutorial 2. Audio compression</a></p>
+  <p class="topless"><a href="example_objects.html"
+                        title="previous chapter">Manipulating Signals</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="classes.html"
                         title="next chapter">Classes Package Documentation:</a></p>
@@ -100,32 +100,32 @@
 <div class="section" id="main-module-providing-mp-methods">
 <h2>Main Module providing MP methods<a class="headerlink" href="#main-module-providing-mp-methods" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><span class="target" id="module-MP"></span><div class="section" id="module-mp">
-<h3>Module MP<a class="headerlink" href="#module-mp" title="Permalink to this headline">¶</a></h3>
+<div><span class="target" id="module-PyMP.mp"></span><div class="section" id="module-mp">
+<h3>Module mp<a class="headerlink" href="#module-mp" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="a-simple-mp-algorithm-using-the-pymp-objects">
-<h4>A Simple MP algorithm using the pymp objects<a class="headerlink" href="#a-simple-mp-algorithm-using-the-pymp-objects" title="Permalink to this headline">¶</a></h4>
+<h4>A Simple mp algorithm using the pymp objects<a class="headerlink" href="#a-simple-mp-algorithm-using-the-pymp-objects" title="Permalink to this headline">¶</a></h4>
 <dl class="function">
-<dt id="MP.MP">
-<tt class="descclassname">MP.</tt><tt class="descname">MP</tt><big>(</big><em>originalSignal</em>, <em>dictionary</em>, <em>targetSRR</em>, <em>maxIteratioNumber</em>, <em>debug=0</em>, <em>padSignal=True</em>, <em>itClean=False</em>, <em>silentFail=False</em>, <em>plot=False</em>, <em>debugSpecific=-1</em>, <em>cutBorders=False</em><big>)</big><a class="headerlink" href="#MP.MP" title="Permalink to this definition">¶</a></dt>
+<dt id="PyMP.mp.mp">
+<tt class="descclassname">PyMP.mp.</tt><tt class="descname">mp</tt><big>(</big><em>orig_signal</em>, <em>dictionary</em>, <em>target_srr</em>, <em>max_it_num</em>, <em>debug=0</em>, <em>pad=True</em>, <em>clean=False</em>, <em>silent_fail=False</em>, <em>debug_iteration=-1</em>, <em>unpad=False</em><big>)</big><a class="headerlink" href="#PyMP.mp.mp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Common Matching Pursuit Loop Options are detailed below:</p>
 <p>Args:</p>
 <blockquote>
-<div><p><cite>originalSignal</cite>:    the original signal (as a <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> object) <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> to decompose</p>
-<p><cite>dictionary</cite>:        the dictionary (as a <a class="reference internal" href="classes.html#Classes.pymp_Dico.pymp_Dico" title="Classes.pymp_Dico.pymp_Dico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Dico</span></tt></a> object) <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/> on which to decompose :math:x</p>
-<p><cite>targetSRR</cite>:         a target Signal to Residual Ratio</p>
-<p><cite>maxIteratioNumber</cite>: maximum number of iteration allowed</p>
+<div><p><cite>orig_signal</cite>:    the original signal (as a <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> object) <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> to decompose</p>
+<p><cite>dictionary</cite>:        the dictionary (as a <a class="reference internal" href="Mdct.html#PyMP.mdct.dico.Dico" title="PyMP.mdct.dico.Dico"><tt class="xref py py-class docutils literal"><span class="pre">Dico</span></tt></a> object) <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/> on which to decompose :math:x</p>
+<p><cite>target_srr</cite>:         a target Signal to Residual Ratio</p>
+<p><cite>max_it_num</cite>: maximum number of iteration allowed</p>
 </div></blockquote>
 <p>Returns:</p>
 <blockquote>
-<div><p><cite>approx</cite>:  A <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> object encapsulating the approximant</p>
+<div><p><cite>approx</cite>:  A <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> object encapsulating the approximant</p>
 <p><cite>decay</cite>:   A list of residual&#8217;s energy across iterations</p>
 </div></blockquote>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="p">,</span><span class="n">decay</span> <span class="o">=</span> <span class="n">MP</span><span class="o">.</span><span class="n">MP</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="p">,</span> <span class="n">decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For decomposing the signal x on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
-x must be a <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> and D a <a class="reference internal" href="classes.html#Classes.pymp_Dico.pymp_Dico" title="Classes.pymp_Dico.pymp_Dico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Dico</span></tt></a> object</p>
+x must be a <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> and D a <a class="reference internal" href="Mdct.html#PyMP.mdct.dico.Dico" title="PyMP.mdct.dico.Dico"><tt class="xref py py-class docutils literal"><span class="pre">Dico</span></tt></a> object</p>
 </dd></dl>
 
 </div>
@@ -135,8 +135,8 @@ x must be a <a class="reference internal" href="classes.html#Classes.pymp_Signal
 <div class="section" id="alternative-command-line-utility">
 <h2>Alternative: Command Line utility<a class="headerlink" href="#alternative-command-line-utility" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><span class="target" id="module-MPcmd"></span><div class="section" id="module-mpcmd">
-<h3>Module MPcmd<a class="headerlink" href="#module-mpcmd" title="Permalink to this headline">¶</a></h3>
+<div><span class="target" id="module-PyMP.mp_cmd"></span><div class="section" id="module-mp-cmd">
+<h3>Module mp_cmd<a class="headerlink" href="#module-mp-cmd" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
 <dt>PyPursuit command line arguments looks as follow:</dt>
 <dd><p class="first">-h or &#8211;help : print this help</p>
@@ -146,7 +146,7 @@ x must be a <a class="reference internal" href="classes.html#Classes.pymp_Signal
 <p>-m [maxAtomNumber] :  specifies the maximum number of selected atoms</p>
 <p>-s [SRR] : specifies the target Signal-To-Residual Ratio</p>
 <p>-d [dictionarySizes] : specifies the sizes: e.g -d 128,1024,8192</p>
-<p>-t or &#8211;type [&#8216;MP&#8217; | &#8216;LOMP&#8217;] : specify the chosen decomposition algorithm</p>
+<p>-t or &#8211;type [&#8216;mp&#8217; | &#8216;LOMP&#8217;] : specify the chosen decomposition algorithm</p>
 <p>&#8211;debug=[0|1|2|3] : debug level. Default is 0</p>
 <p>-a or &#8211;pad pad signal with zeroes , default is 1</p>
 <p>-p or &#8211;plot plots the approximation using matplotib</p>
@@ -181,14 +181,14 @@ x must be a <a class="reference internal" href="classes.html#Classes.pymp_Signal
           <a href="classes.html" title="Classes Package Documentation:"
              >next</a> |</li>
         <li class="right" >
-          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+          <a href="example_objects.html" title="Manipulating Signals"
              >previous</a> |</li>
         <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Manuel Moussallam.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

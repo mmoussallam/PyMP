@@ -130,12 +130,12 @@ signal. Thus, the algorithm builds an <em>approximant</em> <img src="_images/mat
 <p>PyMP provide an Object-Oriented implementation of the MP algorithm in the following manner:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Signals (such as <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#Classes.pymp_Signal.pymp_Signal" title="Classes.pymp_Signal.pymp_Signal"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Signal</span></tt></a> objects</li>
-<li>Dictionaries (such as <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#Classes.pymp_Dico.pymp_Dico" title="Classes.pymp_Dico.pymp_Dico"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Dico</span></tt></a> objects</li>
-<li>Approximants (such as <img src="_images/mathmpl/math-c69356f997.png" style="position: relative; bottom: -8px"/>) are handled through <a class="reference internal" href="classes.html#Classes.pymp_Approx.pymp_Approx" title="Classes.pymp_Approx.pymp_Approx"><tt class="xref py py-class docutils literal"><span class="pre">pymp_Approx</span></tt></a> objects</li>
+<li>Signals (such as <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> objects</li>
+<li>Dictionaries (such as <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#PyMP.base.BaseDico" title="PyMP.base.BaseDico"><tt class="xref py py-class docutils literal"><span class="pre">BaseDico</span></tt></a> objects</li>
+<li>Approximants (such as <img src="_images/mathmpl/math-c69356f997.png" style="position: relative; bottom: -8px"/>) are handled through <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> objects</li>
 </ul>
 </div></blockquote>
-<p>The algorithm itself is performed using funnction from the <a class="reference internal" href="MP.html#module-MP" title="MP"><tt class="xref py py-mod docutils literal"><span class="pre">MP</span></tt></a> module.  A comprehensive view of how it works is provided in the
+<p>The algorithm itself is performed using funnction from the <a class="reference internal" href="MP.html#module-PyMP.mp" title="PyMP.mp"><tt class="xref py py-mod docutils literal"><span class="pre">mp</span></tt></a> module.  A comprehensive view of how it works is provided in the
 next topic.</p>
 </div>
 </div>
@@ -166,19 +166,19 @@ may not be as straightforward as it should.</p>
 <p>PyMP is mainly a collection of pure python modules, which installation is quite traditionnal.
 However, in order to accelerate the inner product computations, it uses a low-level pure C library that is
 used through a python C extension module.</p>
-<p>Which means there are three installation steps:</p>
+<p>Which means there are two installation steps:</p>
 <blockquote>
 <div><ul>
-<li><p class="first">Compile the pure C library: located in <em>root/lib/fastPursuit/</em></p>
-</li>
 <li><p class="first">Build and install the Python C extension module called <em>parallelProjections</em></p>
 </li>
-<li><p class="first">Build and install the pure Python packages among which:</p>
+<li><p class="first">Build and install the pure Python modules among which:</p>
 <blockquote>
 <div><ul class="simple">
-<li><a class="reference internal" href="classes.html#module-Classes" title="Classes"><tt class="xref py py-mod docutils literal"><span class="pre">Classes</span></tt></a>: a package where all the Objects are stored</li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">Tools</span></tt>: a collection of tools</li>
-<li><tt class="xref py py-mod docutils literal"><span class="pre">Tests</span></tt>: a package of tests</li>
+<li><a class="reference internal" href="classes.html#module-PyMP.base" title="PyMP.base"><tt class="xref py py-mod docutils literal"><span class="pre">base</span></tt></a>: a module describing abstract atom, dictionary and block objects</li>
+<li><a class="reference internal" href="classes.html#module-PyMP.signals" title="PyMP.signals"><tt class="xref py py-mod docutils literal"><span class="pre">signals</span></tt></a>: a module containing the <cite>.Signal</cite> class and routines to manipulate them</li>
+<li><a class="reference internal" href="classes.html#module-PyMP.approx" title="PyMP.approx"><tt class="xref py py-mod docutils literal"><span class="pre">approx</span></tt></a>: a module containing the <cite>.Approx</cite> class and routines to manipulate them</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">tools</span></tt>: a collection of tools</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">tests</span></tt>: a package of tests</li>
 </ul>
 </div></blockquote>
 </li>
@@ -230,7 +230,7 @@ Signal Processing, vol. 92, pp. 2532-2544, 2012. <a class="reference external" h
     </div>
     <div class="footer">
         &copy; Copyright 2012, Manuel Moussallam.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
