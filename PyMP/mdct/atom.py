@@ -33,7 +33,7 @@ This class inherits from :class:`.pymp_Atom` and is used to represent and manipu
 
 """
 
-from numpy import math, zeros
+import numpy as np
 
 from ..base import BaseAtom
 from .. import win_server
@@ -60,54 +60,55 @@ class Atom(BaseAtom):
 
     Additionnal attributes are:
 
-            - `frequencyBin` : MDCT frequency bin index (default is 0)
+            - `freq_bin` : MDCT frequency bin index (default is 0)
 
             - `frame` : the frame index of the atom
 
-            - `reducedFrequency`: corresponding sampling frequency (default is 0)
+            - `reduced_frequency`: corresponding sampling frequency (default is 0)
 
             - `mdct_value` : the atom mdct coefficient
 
     Additionnal parameters for time-shifted atoms:
 
-            - `timeShift`: time shift in samples related to the closest MDCT grid index*
+            - `time_shift`: time shift in samples related to the closest MDCT grid index*
 
-            - `projectionScore`: useful when atom is reprojected using say.. LOMP algorithm
+            - `proj_score`: useful when atom is reprojected using say.. LOMP algorithm
 
     """
 
     # MDCT attibutes
     nature = 'MDCT'
-    frequencyBin = 0
+    freq_bin = 0
     frame = 0
-    reducedFrequency = 0
+    reduced_frequency = 0
     mdct_value = 0.0
+    time_position = 0;
 
     # for time-shift invariant atoms
-    timeShift = None
-    projectionScore = None
+    time_shift = None
+    proj_score = None
 
     # constructor
     def __init__(self, scale=0, amp=0, timePos=0, freqBin=0, Fs=0, mdctCoeff=0):
         ''' Basic constructor setting atom parameters '''
         self.length = scale
         self.amplitude = amp
-        self.timePosition = timePos
-        self.frequencyBin = freqBin
+        self.time_position = timePos
+        self.freq_bin = freqBin
         self.fs = Fs
         if self.length != 0:
-            self.reducedFrequency = (
-                float(self.frequencyBin + 0.5) / float(self.length))
+            self.reduced_frequency = (
+                float(self.freq_bin + 0.5) / float(self.length))
         self.mdct_value = mdctCoeff
 
     # Synthesis routine - always prefer the PyWinServer unless you want a
     # specific window to ba applied
-    def synthesize(self,  value=None):
+    def synthesize(self, value=None):
         """ synthesizes the waveform
             Specifies the amplitude, otherwise it will be initialiazed as unit-normed """
 
         global _PyServer
-        binIndex = math.floor(self.reducedFrequency * self.length)
+        binIndex = np.math.floor(self.reduced_frequency * self.length)
         if value is None:
             self.waveform = self.mdct_value * _PyServer.getWaveForm(
                 self.length, binIndex)
@@ -115,13 +116,13 @@ class Atom(BaseAtom):
             self.waveform = value * _PyServer.getWaveForm(
                 self.length, binIndex)
 
-    def synthesizeIFFT(self, newValue=None):
+    def synthesize_ifft(self, newValue=None):
         ''' DEPRECATED synthesis using Python fftw3 wrapper but no waveform server... a lot slower '''
-        mdctVec = zeros(3 * self.length)
+        mdctVec = np.zeros(3 * self.length)
         if newValue is None:
-            mdctVec[self.length + self.frequencyBin] = self.mdct_value
+            mdctVec[self.length + self.freq_bin] = self.mdct_value
         else:
-            mdctVec[self.length + self.frequencyBin] = newValue
+            mdctVec[self.length + self.freq_bin] = newValue
         self.waveform = imdct(
             mdctVec, self.length)[0.75 * self.length: 1.75 * self.length]
         return self.waveform
@@ -130,13 +131,13 @@ class Atom(BaseAtom):
         ''' overloaded equality operator, allows testing equality between atom objects '''
         if not isinstance(other, BaseAtom):
             return False
-        return ((self.length == other.length) & (self.timePosition == other.timePosition) & (self.frequencyBin == other.frequencyBin))
+        return ((self.length == other.length) & (self.time_position == other.time_position) & (self.freq_bin == other.freq_bin))
 
     def __repr__(self):
-        if self.timeShift is None:
+        if self.time_shift is None:
             ts_str = 'No local adaptation'
         else:
-            ts_str = str(self.timeShift)
+            ts_str = str(self.time_shift)
         return '''
     MDCT Atom :
         length = %d
@@ -147,13 +148,13 @@ class Atom(BaseAtom):
         Frequency = %2.2f Hz
         value = %2.2f ''' % (self.length,
                              self.frame,
-                             self.timePosition,
+                             self.time_position,
                              ts_str,
-                             self.frequencyBin,
-                             self.reducedFrequency * self.fs,
+                             self.freq_bin,
+                             self.reduced_frequency * self.fs,
                              self.mdct_value)
 
-    def toXml(self, xmlDoc):
+    def to_xml(self, xmlDoc):
         ''' Useful routine to output the object as an XML node '''
         if not isinstance(xmlDoc, Document):
             raise TypeError('Xml document not provided')
@@ -161,27 +162,27 @@ class Atom(BaseAtom):
         atomNode = xmlDoc.createElement('Atom')
         atomNode.setAttribute('nature', str(self.nature))
         atomNode.setAttribute('length', str(self.length))
-        atomNode.setAttribute('tP', str(int(self.timePosition)))
-        atomNode.setAttribute('fB', str(int(self.frequencyBin)))
+        atomNode.setAttribute('tP', str(int(self.time_position)))
+        atomNode.setAttribute('fB', str(int(self.freq_bin)))
         atomNode.setAttribute('frame', str(int(self.frame)))
         atomNode.setAttribute('value', str(self.mdct_value))
         atomNode.setAttribute('Fs', str(self.fs))
 
-        if self.projectionScore is not None:
-            atomNode.setAttribute('timeShift', str(self.timeShift))
-            atomNode.setAttribute('score', str(self.projectionScore))
+        if self.proj_score is not None:
+            atomNode.setAttribute('time_shift', str(self.time_shift))
+            atomNode.setAttribute('score', str(self.proj_score))
 
         return atomNode
 
-    def innerProd(self, otherAtom):
+    def inner_prod(self, otherAtom):
         """ DEPRECATED returns the inner product between current atom and the other one
             This method should be as fast as possible"""
-        waveform1 = self.getWaveform()
-        waveform2 = otherAtom.getWaveform()
+        waveform1 = self.get_waveform()
+        waveform2 = otherAtom.get_waveform()
         startIdx = max(
             self.frame * self.length, otherAtom.frame * otherAtom.length)
         stopIdx = min((self.frame + 1) * self.length, (otherAtom.
-            frame + 1) * otherAtom.length)
+                                                       frame + 1) * otherAtom.length)
 
         if startIdx >= stopIdx:
             return 0
@@ -190,37 +191,37 @@ class Atom(BaseAtom):
         start1 = startIdx - self.frame * self.length
         start2 = startIdx - otherAtom.frame * otherAtom.length
         duration = stopIdx - startIdx
-        norm1 = math.sqrt(sum(waveform1 ** 2))
-        norm2 = math.sqrt(sum(waveform2 ** 2))
+        norm1 = np.sqrt(sum(waveform1 ** 2))
+        norm2 = np.sqrt(sum(waveform2 ** 2))
 
         return (self.mdct_value * otherAtom.mdct_value) * sum(waveform1[start1: start1 + duration] * waveform2[start2: start2 + duration]) / (norm1 * norm2)
-#        return sum(self.getWaveform() * otherAtom.getWaveform())
+#        return sum(self.get_waveform() * otherAtom.get_waveform())
 
-    def getWaveform(self):
+    def get_waveform(self):
         ''' Retrieve the atom waveform '''
         if self.waveform is not None:
             return self.waveform
         else:
-            return self.synthesizeIFFT()
+            return self.synthesize_ifft()
 
     def copy(self):
         '''copycat routine '''
         copyAtom = Atom(self.length,
-                                   self.amplitude,
-                                   self.timePosition,
-                                   self.frequencyBin,
-                                   self.fs,
-                                   self.mdct_value)
+                        self.amplitude,
+                        self.time_position,
+                        self.freq_bin,
+                        self.fs,
+                        self.mdct_value)
         copyAtom.frame = self.frame
-        copyAtom.projectionScore = self.projectionScore
-        copyAtom.timeShift = self.timeShift
+        copyAtom.proj_score = self.proj_score
+        copyAtom.time_shift = self.time_shift
         if self.waveform is not None:
             copyAtom.waveform = self.waveform
         else:
             copyAtom.synthesize()
         return copyAtom
 
-    def getAmplitude(self):
+    def get_value(self):
         return self.mdct_value
 
 
@@ -230,15 +231,15 @@ def fromXml(xmlNode):
         raise TypeError('Xml element not provided')
 
     atom = Atom(int(xmlNode.getAttribute('length')),
-                              1,
-                              int(xmlNode.getAttribute('tP')),
-                              int(xmlNode.getAttribute('fB')),
-                              int(xmlNode.getAttribute('Fs')),
-                              float(xmlNode.getAttribute('value')))
+                1,
+                int(xmlNode.getAttribute('tP')),
+                int(xmlNode.getAttribute('fB')),
+                int(xmlNode.getAttribute('Fs')),
+                float(xmlNode.getAttribute('value')))
 
     atom.frame = int(xmlNode.getAttribute('frame'))
-    if not xmlNode.getAttribute('timeShift') in ('None', ''):
-        atom.timeShift = int(xmlNode.getAttribute('timeShift'))
+    if not xmlNode.getAttribute('time_shift') in ('None', ''):
+        atom.time_shift = int(xmlNode.getAttribute('time_shift'))
     if not xmlNode.getAttribute('score') in ('None', ''):
-        atom.projectionScore = float(xmlNode.getAttribute('score'))
+        atom.proj_score = float(xmlNode.getAttribute('score'))
     return atom

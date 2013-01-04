@@ -35,9 +35,9 @@ mpDico = dico.Dico(scales)
 lompDico = dico.LODico(scales)
 rssMPDico = random_dico.RandomDico(scales)
 
-approxMP , decayMP = mp.mp(pySig,mpDico,srr,nbAtom,padSignal=True)
-approxLoMP, decayLoMP = mp.mp(pySig,lompDico,srr,nbAtom,padSignal=True)
-approxRSSMP, decayRSSMP = mp.mp(pySig,rssMPDico,srr,nbAtom,padSignal=False)
+approxMP , decayMP = mp.mp(pySig,mpDico,srr,nbAtom,pad=True)
+approxLoMP, decayLoMP = mp.mp(pySig,lompDico,srr,nbAtom,pad=True)
+approxRSSMP, decayRSSMP = mp.mp(pySig,rssMPDico,srr,nbAtom,pad=False)
 
 
 plt.figure()

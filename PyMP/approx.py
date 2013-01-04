@@ -156,12 +156,12 @@ class Approx:
                     for atom in self.atoms:
                         if atom.length == mdctSize:
                             # bugFIx
-                            n = atom.timePosition + 1
+                            n = atom.time_position + 1
                             frame = math.floor(
                                 float(n) / float(atom.length / 2)) + 1
 # mdctVec[frame*float(atom.length /2) + atom.frequencyBin] += atom.amplitude
                             mdctVec[frame * float(atom.length /
-                                                  2) + atom.frequencyBin] += atom.mdct_value
+                                                  2) + atom.freq_bin] += atom.mdct_value
                     synthesizedSignal += imdct(mdctVec, mdctSize)
 # synthesizedSignal += concatenate((zeros(mdctSize/4) , imdct(mdctVec ,
 # mdctSize)) )[1:-mdctSize/4+1]
@@ -169,24 +169,24 @@ class Approx:
             # second method by recursive atom synthesis - NOT WORKING
             elif method == 1:
                 for atom in self.atoms:
-                    atom.synthesizeIFFT()
-                    synthesizedSignal[atom.timePosition:
-                                      atom.timePosition + atom.length] += atom.waveform
+                    atom.synthesize_ifft()
+                    synthesizedSignal[atom.time_position:
+                                      atom.time_position + atom.length] += atom.waveform
 
             # HACK here to resynthesize using LOMP atoms
             elif method == 2:
                 for atom in self.atoms:
-                    atom.waveForm = atom.synthesizeIFFT()
-                    if (atom.projectionScore is not None):
-                        if (atom.projectionScore < 0):
-                            atom.waveform = (-math.sqrt(-atom.projectionScore /
+                    atom.waveForm = atom.synthesize_ifft()
+                    if (atom.proj_score is not None):
+                        if (atom.proj_score < 0):
+                            atom.waveform = (-math.sqrt(-atom.proj_score /
                                                         sum(atom.waveform ** 2))) * atom.waveform
                         else:
-                            atom.waveform = (math.sqrt(atom.projectionScore /
+                            atom.waveform = (math.sqrt(atom.proj_score /
                                                        sum(atom.waveform ** 2))) * atom.waveform
 
-                    synthesizedSignal[atom.timePosition:
-                                      atom.timePosition + atom.length] += atom.waveform
+                    synthesizedSignal[atom.time_position:
+                                      atom.time_position + atom.length] += atom.waveform
 
             self.recomposed_signal = signals.Signal(synthesizedSignal, self.fs)
             # return self.recomposed_signal
@@ -220,7 +220,7 @@ class Approx:
         return output_approx
 
     def __repr__(self):        
-        return 'Approx Object("%d" atoms , length of "%d", SRR of "%2.2f")' % (self.atom_number, self.length, self.srr)
+        return 'Approx Object: %d atoms, SRR of %2.2f dB)' % (self.atom_number, self.srr)
 
     # Filter the atom list by the given criterion
     def filter_atoms(self, mdctSize=0, posInterv=None, freqInterv=None):
@@ -239,13 +239,13 @@ class Approx:
                 doAppend &= False
 
             if(posInterv != None):
-                if (min(posInterv) < atom.timePosition <= max(posInterv)):
+                if (min(posInterv) < atom.time_position <= max(posInterv)):
                     doAppend &= True
                 else:
                     doAppend &= False
 
             if(freqInterv != None):
-                if (min(freqInterv) < atom.reducedFrequency <= max(freqInterv)):
+                if (min(freqInterv) < atom.reduced_frequency <= max(freqInterv)):
                     doAppend &= True
                 else:
                     doAppend &= False
@@ -366,10 +366,10 @@ class Approx:
         minFreq = 22000.0
         if not keepValues:
             valueArray = np.array(
-                [math.log10(abs(atom.getAmplitude())) for atom in self.atoms])
+                [math.log10(abs(atom.get_value())) for atom in self.atoms])
         else:
             valueArray = np.array(
-                [abs(atom.getAmplitude()) for atom in self.atoms])
+                [abs(atom.get_value()) for atom in self.atoms])
         if multicolor:
             cmap = cc.LinearSegmentedColormap('jet', abs(valueArray))
             for atom in self.atoms:
@@ -414,10 +414,10 @@ class Approx:
             atom = self.atoms[i]
             L = atom.length
             K = L / 2
-            freq = atom.frequencyBin
+            freq = atom.freq_bin
             f = float(freq) * float(Fs) / float(L)
             bw = (float(Fs) / float(K))  # / 2
-            p = float(atom.timePosition + K) / float(Fs)
+            p = float(atom.time_position + K) / float(Fs)
             l = float(L - K / 2) / float(Fs)
 #            print "f =  " ,f , " Hz"
             if f > maxFreq:
@@ -507,9 +507,9 @@ class Approx:
         # beware of compatibility issues here
         ax = Axes3D(fig)
         # for atom, idx in zip(self.atoms, range(self.atom_number)):
-        ts = [atom.timePosition / float(self.fs)
+        ts = [atom.time_position / float(self.fs)
               for atom in self.atoms]
-        fs = [atom.reducedFrequency * self.
+        fs = [atom.reduced_frequency * self.
               fs for atom in self.atoms]
         zs = range(self.atom_number)
 # ss = [float(atom.length)/float(self.fs) for atom in
@@ -585,7 +585,7 @@ class Approx:
         ApproxNode.setAttribute(
             'Fs', str(self.original_signal.fs))
         # add dictionary node
-        ApproxNode.appendChild(self.dico.toXml(doc))
+        ApproxNode.appendChild(self.dico.to_xml(doc))
 
         # now add as many nodes as atoms
         AtomsNode = doc.createElement("Atoms")
@@ -593,7 +593,7 @@ class Approx:
         _Logger.info(
             "Getting Child info for " + str(self.atom_number) + " existing atoms")
         for atom in self.atoms:
-            AtomsNode.appendChild(atom.toXml(doc))
+            AtomsNode.appendChild(atom.to_xml(doc))
 
         ApproxNode.appendChild(AtomsNode)
         doc.appendChild(ApproxNode)
@@ -616,7 +616,7 @@ class Approx:
         for atom in self.atoms:
             block = [i for i in range(
                 len(self.dico.sizes)) if self.dico.sizes[i] == atom.length][0]
-            n = atom.timePosition + 1
+            n = atom.time_position + 1
             frame = math.floor(float(n) / float(atom.length / 2)) + 1
 # sparseArray[int(block*self.length +  frame*float(atom.length /2) +
 # atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) -
@@ -624,7 +624,7 @@ class Approx:
 # dico[int(block*self.length +  frame*float(atom.length /2) +
 # atom.frequencyBin)] = atom
             key = int(block * self.length + frame * float(atom.
-                                                          length / 2) + atom.frequencyBin)
+                                                          length / 2) + atom.freq_bin)
             if key in dico:
                 dico[key].append(atom)
             else:
@@ -642,13 +642,13 @@ class Approx:
 
         for atom in self.atoms:
             block = blockIndexes[atom.length]
-            n = atom.timePosition + 1
+            n = atom.time_position + 1
             frame = math.floor(float(n) / float(atom.length / 2)) + 1
 # sparseArray[int(block*self.length +  frame*float(atom.length /2) +
 # atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) -
 # atom.timePosition)
             sparseArray[int(block * self.length + frame * float(atom.length / 2)
-                            + atom.frequencyBin)] = (atom.mdct_value, atom.timePosition)
+                            + atom.freq_bin)] = (atom.mdct_value, atom.time_position)
         return sparseArray
 
 #    def toSparseMatrix(self):
@@ -682,11 +682,11 @@ class Approx:
 
         for atom in self.atoms:
             block = blockIndexes[atom.length]
-            n = atom.timePosition + 1
+            n = atom.time_position + 1
             frame = math.floor(float(n) / float(atom.length / 2)) + 1
             sparseArray[int(block * self.length + frame * float(
-                atom.length / 2) + atom.frequencyBin)] = atom.mdct_value
-            timeShifts[int(block * self.length + frame * float(atom.length / 2) + atom.frequencyBin)] = frame * float(atom.length / 2) - atom.timePosition - atom.length / 4
+                atom.length / 2) + atom.freq_bin)] = atom.mdct_value
+            timeShifts[int(block * self.length + frame * float(atom.length / 2) + atom.freq_bin)] = frame * float(atom.length / 2) - atom.time_position - atom.length / 4
         return sparseArray, timeShifts
 
 #    def __del__(self):
@@ -783,7 +783,7 @@ def fusion_approxs(approxCollection, unPad=True):
             offset -= (segIdx + 1) * dico.sizes[-1]
 
         for atom in currentApprox.atoms:
-            atom.timePosition += offset
+            atom.time_position += offset
             approx.atoms.append(atom)
 
     return approx

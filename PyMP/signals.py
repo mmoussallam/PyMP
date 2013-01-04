@@ -204,37 +204,37 @@ class Signal(object):
 #            print "Resynth"
             atom.synthesize()
         # Keep track of the energy to make
-        oldEnergy = (self.data[atom.timePosition: atom.
-                               timePosition + atom.length] ** 2).sum()
+        oldEnergy = (self.data[atom.time_position: atom.
+                               time_position + atom.length] ** 2).sum()
 
         # In high debugging levels, show the process using matplotlib
         if debug > 2:
             plt.figure()
-            plt.plot(self.data[atom.timePosition: atom.
-                               timePosition + atom.length])
+            plt.plot(self.data[atom.time_position: atom.
+                               time_position + atom.length])
             plt.plot(atom.waveform)
-            plt.plot(self.data[atom.timePosition: atom.
-                               timePosition + atom.length] - atom.waveform, ':')
+            plt.plot(self.data[atom.time_position: atom.
+                               time_position + atom.length] - atom.waveform, ':')
             plt.legend(('Signal', 'Atom substracted', 'residual'))
             plt.show()
 
         # actual subtraction
-        self.data[atom.timePosition: atom.timePosition + atom.
+        self.data[atom.time_position: atom.time_position + atom.
                   length] -= atom.waveform
 
-        newEnergy = (self.data[atom.timePosition: atom.
-                               timePosition + atom.length] ** 2).sum()
+        newEnergy = (self.data[atom.time_position: atom.
+                               time_position + atom.length] ** 2).sum()
 
         # Test
         if (newEnergy > oldEnergy) and preventEnergyIncrease:
             # do not substract the atom
-            self.data[atom.timePosition: atom.
-                      timePosition + atom.length] += atom.waveform
+            self.data[atom.time_position: atom.
+                      time_position + atom.length] += atom.waveform
             # get out of here
             _Logger.error('Warning : Substracted Atom created energy : at pos: '
-                          + str(atom.timePosition) + ' k: ' + ' Amp: ' + str(atom.getAmplitude()) +
-                          str(atom.frequencyBin) + ' timeShift :' +
-                          str(atom.timeShift) + ' scale : ' +
+                          + str(atom.time_position) + ' k: ' + ' Amp: ' + str(atom.get_value()) +
+                          str(atom.freq_bin) + ' timeShift :' +
+                          str(atom.time_shift) + ' scale : ' +
                           str(atom.length) + ' from ' + str(oldEnergy) + ' to ' + str(newEnergy))
             raise ValueError('see Logger')
 
@@ -263,19 +263,19 @@ class Signal(object):
             print "Resynthesizing"
             atom.synthesize()
 
-        localEnergy = np.sum(self.data[atom.timePosition: atom.
-                                       timePosition + atom.length] ** 2)
+        localEnergy = np.sum(self.data[atom.time_position: atom.
+                                       time_position + atom.length] ** 2)
 
         # do sum calculation
         try:
-            self.data[atom.timePosition: atom.
-                      timePosition + atom.length] += atom.waveform
+            self.data[atom.time_position: atom.
+                      time_position + atom.length] += atom.waveform
         except:
             _Logger.error('Mispositionned atom: ' + str(atom.
-                                                        timePosition) + ' and length ' + str(atom.length))
+                                                        time_position) + ' and length ' + str(atom.length))
 #        # update energy value
-        self.energy += np.sum(self.data[atom.timePosition: atom.
-                                        timePosition + atom.length] ** 2) - localEnergy
+        self.energy += np.sum(self.data[atom.time_position: atom.
+                                        time_position + atom.length] ** 2) - localEnergy
 
     # Pad edges with zeroes
     def pad(self, zero_pad):

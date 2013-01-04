@@ -67,7 +67,7 @@ class PyServer():
 
     def __init__(self , useC=True):
         """ The Server is global"""
-        self.useC = useC;
+        self.use_c_optim = useC;
 
     # twidlle coefficients
     def initialize(self , L):
@@ -91,7 +91,7 @@ class PyServer():
 
     def createWaveform(self, scale , binIndex):
         ''' By default, will use the C library to create the waveform'''
-        if self.useC:
+        if self.use_c_optim:
             return parallelProjections.get_atom(int(scale) , int(binIndex))
 
         else:
@@ -156,7 +156,7 @@ class PyGaborServer():
     # constructor is the same
     def __init__(self , useC=True):
         """ The Server is global"""
-        self.useC = useC;
+        self.use_c_optim = useC;
 
     # no twiddling coefficient
     def initialize(self , L):

@@ -41,9 +41,9 @@ class Test(unittest.TestCase):
         spreadBlock.update(pySig, 0, -1)
 
         maxClassicAtom1 = classicBlock.getMaxAtom();
-        print maxClassicAtom1.length , maxClassicAtom1.frame , maxClassicAtom1.frequencyBin , maxClassicAtom1.mdct_value
+        print maxClassicAtom1.length , maxClassicAtom1.frame , maxClassicAtom1.freq_bin , maxClassicAtom1.mdct_value
         maxSpreadcAtom1 = spreadBlock.getMaxAtom();
-        print maxSpreadcAtom1.length , maxSpreadcAtom1.frame , maxSpreadcAtom1.frequencyBin, maxSpreadcAtom1.mdct_value
+        print maxSpreadcAtom1.length , maxSpreadcAtom1.frame , maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.mdct_value
         # assert equality using the inner comparison method of MDCT atoms
         self.assertEqual(maxClassicAtom1 ,maxSpreadcAtom1 )
 
@@ -55,9 +55,9 @@ class Test(unittest.TestCase):
 
 #        plt.show()
         maxClassicAtom2 = classicBlock.getMaxAtom();
-        print maxClassicAtom2.length , maxClassicAtom2.frame , maxClassicAtom2.frequencyBin , maxClassicAtom2.mdct_value
+        print maxClassicAtom2.length , maxClassicAtom2.frame , maxClassicAtom2.freq_bin , maxClassicAtom2.mdct_value
         maxSpreadcAtom2 = spreadBlock.getMaxAtom();
-        print maxSpreadcAtom2.length , maxSpreadcAtom2.frame , maxSpreadcAtom2.frequencyBin, maxSpreadcAtom2.mdct_value
+        print maxSpreadcAtom2.length , maxSpreadcAtom2.frame , maxSpreadcAtom2.freq_bin, maxSpreadcAtom2.mdct_value
         self.assertNotEqual(maxClassicAtom2 ,maxSpreadcAtom2 )
 
     def dicos(self):

@@ -17,6 +17,7 @@ from PyMP.mdct import block as mdct_block
 from PyMP.mdct import dico as mdct_dico
 from PyMP.mdct.joint import block as joint_block
 from PyMP.mdct.joint import dico as joint_dico
+from PyMP.tests.test_mainTests import audioFilePath
 
 audioFilePath = '../../data/'
 
@@ -45,11 +46,12 @@ class Test(unittest.TestCase):
 
 class BlocksTest(unittest.TestCase):
     """ Testing the blocks """
-    def runTest(self):        
-        
-        pySig = signals.Signal(audioFilePath+'glocs.wav',mono=True, normalize=True)
+    def runTest(self):
 
-        pySig.crop(0, 5*8192)
+        pySig = signals.Signal(
+            audioFilePath + 'glocs.wav', mono=True, normalize=True)
+
+        pySig.crop(0, 5 * 8192)
         pySig.pad(2048)
 
         scale = 1024
@@ -60,10 +62,10 @@ class BlocksTest(unittest.TestCase):
         parallelProjections.initialize_plans(np.array([scale]), np.array([2]))
 
         classicBlock = mdct_block.Block(scale, pySig,
-                                                 debug_level=3)
+                                        debug_level=3)
 
         setBlock = joint_block.SetBlock(scale, [pySig],
-                                                    debug_level=3, useC=True)
+                                        debug_level=3, useC=True)
 
         # compute the projections, should be equivalent
         classicBlock.update(pySig)
@@ -71,7 +73,7 @@ class BlocksTest(unittest.TestCase):
 
         maxClassicAtom1 = classicBlock.getMaxAtom()
         print maxClassicAtom1.length, maxClassicAtom1.frame
-        print maxClassicAtom1.frequencyBin, maxClassicAtom1.mdct_value
+        print maxClassicAtom1.freq_bin, maxClassicAtom1.mdct_value
 
 #        plt.figure()
 #        plt.plot(classicBlock.projectionMatrix)
@@ -80,7 +82,7 @@ class BlocksTest(unittest.TestCase):
 
         maxSpreadcAtom1 = setBlock.getAdaptedBestAtoms(noAdapt=True)[0]
         print maxSpreadcAtom1.length, maxSpreadcAtom1.frame
-        print maxSpreadcAtom1.frequencyBin, maxSpreadcAtom1.mdct_value
+        print maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.mdct_value
 
         # assert equality using the inner comparison method of MDCT atoms
         self.assertEqual(maxClassicAtom1, maxSpreadcAtom1)
@@ -93,55 +95,55 @@ class BlocksTest(unittest.TestCase):
 
 #        plt.show()
         maxClassicAtom2 = classicBlock.getMaxAtom()
-        print maxClassicAtom2.length , maxClassicAtom2.frame , maxClassicAtom2.frequencyBin , maxClassicAtom2.mdct_value
+        print maxClassicAtom2.length, maxClassicAtom2.frame, maxClassicAtom2.freq_bin, maxClassicAtom2.mdct_value
         maxSpreadcAtom2 = setBlock.getAdaptedBestAtoms(noAdapt=True)[0]
-        print maxSpreadcAtom2.length , maxSpreadcAtom2.frame , maxSpreadcAtom2.frequencyBin, maxSpreadcAtom2.mdct_value
+        print maxSpreadcAtom2.length, maxSpreadcAtom2.frame, maxSpreadcAtom2.freq_bin, maxSpreadcAtom2.mdct_value
 
-        self.assertEqual(maxClassicAtom2 ,maxSpreadcAtom2 )
+        self.assertEqual(maxClassicAtom2, maxSpreadcAtom2)
 
-        parallelProjections.clean_plans(np.array([scale,]))
+        parallelProjections.clean_plans(np.array([scale, ]))
 
 
 class DicosTest(unittest.TestCase):
-    
+
     def runTest(self):
         # create a SpreadDico
-        pySig = signals.Signal(audioFilePath+'glocs.wav',mono=True)
+        pySig = signals.Signal(audioFilePath + 'glocs.wav', mono=True)
         pySig2 = pySig.copy()
-
 
         decalage = 50
 
-        pySig.crop(0, 5*pySig.fs)
-        pySig2.crop(decalage, decalage + 5*pySig.fs)
+        pySig.crop(0, 5 * pySig.fs)
+        pySig2.crop(decalage, decalage + 5 * pySig.fs)
 
         pySig.pad(2048)
         pySig2.pad(2048)
 
-        dico = [128,1024,8192]
-        tol = [2]*len(dico)
-        parallelProjections.initialize_plans(np.array(dico),np.array(tol))
+        dico = [128, 1024, 8192]
+        tol = [2] * len(dico)
+        parallelProjections.initialize_plans(np.array(dico), np.array(tol))
 
         classicDIco = mdct_dico.Dico(dico, useC=True)
         DicoSet = joint_dico.SetDico(dico, useC=True)
 
         classicDIco.initialize(pySig)
-        DicoSet.initialize((pySig,pySig2))
+        DicoSet.initialize((pySig, pySig2))
 
         classicDIco.update(pySig, 2)
-        DicoSet.update((pySig,pySig2), 2)
+        DicoSet.update((pySig, pySig2), 2)
 
         classicAtom1 = classicDIco.getBestAtom(0)
         JointAtoms = DicoSet.getBestAtom(0)
 
-
-
         print JointAtoms
 
         self.assertEqual(JointAtoms[0].length, JointAtoms[1].length)
-        self.assertEqual(JointAtoms[0].frequencyBin, JointAtoms[1].frequencyBin)
-        self.assertEqual(JointAtoms[0].timePosition, JointAtoms[1].timePosition + decalage)
-        self.assertEqual(JointAtoms[0].timeShift, JointAtoms[1].timeShift + decalage)
+        self.assertEqual(
+            JointAtoms[0].freq_bin, JointAtoms[1].freq_bin)
+        self.assertEqual(
+            JointAtoms[0].time_position, JointAtoms[1].time_position + decalage)
+        self.assertEqual(
+            JointAtoms[0].time_shift, JointAtoms[1].time_shift + decalage)
         self.assertEqual(JointAtoms[0].mdct_value, JointAtoms[1].mdct_value)
 
 #        pySig.subtract(classicAtom1)
@@ -152,39 +154,42 @@ class DicosTest(unittest.TestCase):
 #        spreadAtom2 = spreadDico.getBestAtom(0)
 #
 #        self.assertNotEqual(classicAtom2 ,spreadAtom2 )
-        
+
         parallelProjections.clean_plans(np.array(dico))
 
-    def realTest(self):
-        pySig = signals.InitFromFile('../../../data/glocs.wav',forceMono=True,doNormalize=True)
+
+class PursuitTest(unittest.TestCase):
+
+    def runTest(self):
+        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
         decalage = 500
 
-        pySig.crop(0, 4.5*pySig.fs)
-        pySig2.crop(decalage, decalage + 4.5*pySig.fs)
+        pySig.crop(0, 4.5 * pySig.fs)
+        pySig2.crop(decalage, decalage + 4.5 * pySig.fs)
 #        pySig3.crop(decalage, decalage + 4.5*pySig.samplingFrequency)
 
         pySig.pad(16384)
         pySig2.pad(16384)
 #        pySig3.pad(16384)
 
-        dico = [128,1024,8192]
-        tol = [2]*len(dico)
-        parallelProjections.initialize_plans(np.array(dico),np.array(tol))
+        dico = [128, 1024, 8192]
+        tol = [2] * len(dico)
+        parallelProjections.initialize_plans(np.array(dico), np.array(tol))
 
         classicDIco = mdct_dico.LODico(dico)
 
-        jointDico = joint_dico.SetDico(dico ,
-                                            selectNature='sum')
-
+        jointDico = joint_dico.SetDico(dico,
+                                       selectNature='sum')
 
         nbAtoms = 50
 
         print "%%%%%%%%%%%%%%% Testing mp with one signal %%%%%%%%%%%%%%%"
         print ""
-        approxClassic, decayClassic = mp.mp(pySig, classicDIco, 20, nbAtoms, padSignal=False, debug=0)
+        approxClassic, decayClassic = mp.mp(
+            pySig, classicDIco, 20, nbAtoms, pad=False, debug=0)
         print ""
 #        print "%%%%%%%%%%%%%%% Testing Joint mp with one signal %%%%%%%%%%%%%%%"
 #        print ""
@@ -193,11 +198,12 @@ class DicosTest(unittest.TestCase):
 
 #        plt.plot()
         print "%%%%%%%%%%%%%%% Testing Joint mp with two signal %%%%%%%%%%%%%%%"
-        approxCommon, approxSpecList, decayList, residualSignalList = mp.mp_joint((pySig,pySig2),
-                                                                                jointDico, 20,
-                                                                                nbAtoms, debug=2)
+        approxCommon, approxSpecList, decayList, residualSignalList = mp.mp_joint((pySig, pySig2),
+                                                                                  jointDico, 20,
+                                                                                  nbAtoms, debug=2)
 
-        print [abs(atom.getAmplitude()) for atom in approxSpecList[0].atoms]
+#        print [abs(atom.get_value()) for atom in approxSpecList[0].atoms]
+        print approxSpecList
 #        print approxSpecList
 #        print decayList
 
@@ -216,39 +222,41 @@ class DicosTest(unittest.TestCase):
 
         plt.figure()
         plt.plot(decayClassic)
-        plt.plot(decayList[0],'r')
-        plt.plot(decayList[1],'g')
+        plt.plot(decayList[0], 'r')
+        plt.plot(decayList[1], 'g')
 #        plt.plot(decayList[2],'k')
 
-        plt.figure(figsize=(16,8))
+        plt.figure(figsize=(16, 8))
         plt.subplot(121)
-        approxSpecList[0].plot_tf(ylim=[0,4000])
+        approxSpecList[0].plot_tf(ylim=[0, 4000])
         plt.title('Pattern 1')
         plt.subplot(122)
-        approxSpecList[1].plot_tf(ylim=[0,4000])
+        approxSpecList[1].plot_tf(ylim=[0, 4000])
         plt.title('Pattern 2 ')
+#        plt.show()
 #        plt.savefig('TestTFMasking.png')
-
-
 
         parallelProjections.clean_plans()
 
-    def symetryTest(self):
-        """ Youpi"""
-        pySig = signals.InitFromFile('../../../data/glocs.wav',forceMono=True,doNormalize=True)
-        pySig2 = signals.InitFromFile('../../../data/voicemale.wav',forceMono=True,doNormalize=True)
-        pySig3 = signals.InitFromFile('../../../data/voicefemale.wav',forceMono=True,doNormalize=True)
-        pySig4 = signals.InitFromFile('../../../data/orchestra.wav',forceMono=True,doNormalize=True)
+
+class SymetryTest(unittest.TestCase):
+    
+    def runTest(self):
+        
+        pySig = signals.Signal(audioFilePath + 'glocs.wav', mono=True, normalize=True)
+        pySig2 = signals.Signal(audioFilePath + 'voicemale.wav', mono=True, normalize=True)
+        pySig3 = signals.Signal(audioFilePath + 'voicefemale.wav', mono=True, normalize=True)
+        pySig4 = signals.Signal(audioFilePath + 'orchestra.wav', mono=True, normalize=True)
 
         decalage = 0
 
         Start = 1.0
         Stop = 1.5
 
-        pySig.crop(Start*pySig.fs, Stop*pySig.fs)
-        pySig2.crop(Start*pySig.fs, Stop*pySig.fs)
-        pySig3.crop(Start*pySig.fs, Stop*pySig.fs)
-        pySig4.crop(Start*pySig.fs, Stop*pySig.fs)
+        pySig.crop(Start * pySig.fs, Stop * pySig.fs)
+        pySig2.crop(Start * pySig.fs, Stop * pySig.fs)
+        pySig3.crop(Start * pySig.fs, Stop * pySig.fs)
+        pySig4.crop(Start * pySig.fs, Stop * pySig.fs)
 
         pySig2.data += pySig.data
         pySig3.data += pySig.data
@@ -259,30 +267,30 @@ class DicosTest(unittest.TestCase):
         pySig4.pad(8192)
 #        pySig3.pad(16384)
 
-        dico = [128,1024,8192]
+        dico = [128, 1024, 8192]
         nbAtoms = 1
 
-        jointDico = joint_dico.SetDico(dico ,
-                                                                  selectNature='sum',
-                                                                  tol=[2,2,2])
-        jointDicoNL = joint_dico.SetDico(dico , nonLinear = True,
-                                                                  selectNature='penalized',
-                                                                  tol=[2,2,2] , params=0)
+        jointDico = joint_dico.SetDico(dico,
+                                       selectNature='sum',
+                                       tol=[2, 2, 2])
+        jointDicoNL = joint_dico.SetDico(dico, nonLinear=True,
+                                         selectNature='penalized',
+                                         tol=[2, 2, 2], params=0)
 
-        jointDico.initialize((pySig2,pySig3,pySig4))
+        jointDico.initialize((pySig2, pySig3, pySig4))
 
-        parallelProjections.initialize_plans(np.array(jointDico.sizes), np.array(jointDico.tolerances))
-        jointDico.update((pySig2,pySig3,pySig4), 0, debug=2)
+        parallelProjections.initialize_plans(
+            np.array(jointDico.sizes), np.array(jointDico.tolerances))
+        jointDico.update((pySig2, pySig3, pySig4), 0, debug=2)
 
         plt.figure()
 #        plt.subplot(211)
 #        plt.plot([block.projectionMatrix for block in jointDico.blocks])
-        plt.plot(jointDico.blocks[2].bestScoreTree)
-        jointDico.update((pySig3,pySig2,pySig4), 0, debug=2)
+        plt.plot(jointDico.blocks[2].best_score_tree)
+        jointDico.update((pySig3, pySig2, pySig4), 0, debug=2)
 #        plt.subplot(212)
 #        plt.plot([block.projectionMatrix for block in jointDico.blocks])
-        plt.plot(jointDico.blocks[2].bestScoreTree,'r:')
-
+        plt.plot(jointDico.blocks[2].best_score_tree, 'r:')
 
         plt.show()
 
@@ -296,23 +304,26 @@ class DicosTest(unittest.TestCase):
 #        approxCommon2, approxSpecList2, decayList2, residualSignalList2 = mp.mp_joint((pySig3,pySig2,pySig4),
 #                                                                                jointDico, 20,
 #                                                                           nbAtoms, debug=0,
-#                                                                           padSignal=False)
-    def nonLinearTest(self):
-        """ Youpi"""
-        pySig = signals.InitFromFile('../../../data/glocs.wav',forceMono=True,doNormalize=True)
-        pySig2 = signals.InitFromFile('../../../data/voicemale.wav',forceMono=True,doNormalize=True)
-        pySig3 = signals.InitFromFile('../../../data/voicefemale.wav',forceMono=True,doNormalize=True)
-        pySig4 = signals.InitFromFile('../../../data/orchestra.wav',forceMono=True,doNormalize=True)
+# padSignal=False)
 
-        decalage = 0
+class nonLinearTest(unittest.TestCase):
+    
+    def runTest(self):
+        
+        pySig = signals.Signal(audioFilePath + 'glocs.wav', mono=True, normalize=True)
+        pySig2 = signals.Signal(audioFilePath + 'voicemale.wav', mono=True, normalize=True)
+        pySig3 = signals.Signal(audioFilePath + 'Bach_prelude_4s.wav', mono=True, normalize=True)
+        pySig4 = signals.Signal(audioFilePath + 'Bach_prelude_40s.wav', mono=True, normalize=True)
 
-        Start = 1.0
-        Stop = 1.5
+        decalage = 10
 
-        pySig.crop(Start*pySig.fs, Stop*pySig.fs)
-        pySig2.crop(Start*pySig.fs, Stop*pySig.fs)
-        pySig3.crop(Start*pySig.fs, Stop*pySig.fs)
-        pySig4.crop(Start*pySig.fs, Stop*pySig.fs)
+        start = 1.0
+        duration = 1.5
+
+        pySig.crop(start * pySig.fs, (start + duration) * pySig.fs)
+        pySig2.crop(start * pySig.fs, (start + duration) * pySig.fs)
+        pySig3.crop(start * pySig.fs, (start + duration) * pySig.fs)
+        pySig4.crop((start + decalage) * pySig.fs, (start + duration + decalage) * pySig.fs)
 
         pySig2.data += pySig.data
         pySig3.data += pySig.data
@@ -323,47 +334,47 @@ class DicosTest(unittest.TestCase):
         pySig4.pad(8192)
 #        pySig3.pad(16384)
 
-        dico = [128,1024,8192]
+        dico = [128, 1024, 8192]
         nbAtoms = 200
 
-        jointDico = joint_dico.SetDico(dico ,
-                                                                  selectNature='sum',
-                                                                  tol=[2,2,2])
-        jointDicoNL = joint_dico.SetDico(dico , nonLinear = True,
-                                                                  selectNature='weighted',
-                                                                  tol=[2,2,2] , params=1)
+        jointDico = joint_dico.SetDico(dico,
+                                       selectNature='sum',
+                                       tol=[2, 2, 2])
+        jointDicoNL = joint_dico.SetDico(dico, nonLinear=True,
+                                         selectNature='weighted',
+                                         tol=[2, 2, 2], params=1)
 
         # let us compare the two decomposition
-        approxCommon, approxSpecList, decayList, residualSignalList = mp.mp_joint((pySig2,pySig3,pySig4),
-                                                                                jointDico, 20,
-                                                                           nbAtoms, debug=0,
-                                                                           padSignal=False)
+        approxCommon, approxSpecList, decayList, residualSignalList = mp.mp_joint((pySig2, pySig3, pySig4),
+                                                                                  jointDico, 20,
+                                                                                  nbAtoms, debug=0,
+                                                                                  padSignal=False)
 
-        approxCommon2, approxSpecList2, decayList2, residualSignalList2 = mp.mp_joint((pySig3,pySig2,pySig4),
-                                                                                jointDico, 20,
-                                                                           nbAtoms, debug=0,
-                                                                           padSignal=False)
+        approxCommon2, approxSpecList2, decayList2, residualSignalList2 = mp.mp_joint((pySig3, pySig2, pySig4),
+                                                                                      jointDico, 20,
+                                                                                      nbAtoms, debug=0,
+                                                                                      padSignal=False)
 
-
-        approxCommonNL, approxSpecListNL, decayListNL, residualSignalListNL = mp.mp_joint((pySig2,pySig3,pySig4),
-                                                                                jointDicoNL, 20,
-                                                                                nbAtoms, debug=0,
-                                                                           padSignal=False)
+        approxCommonNL, approxSpecListNL, decayListNL, residualSignalListNL = mp.mp_joint((pySig2, pySig3, pySig4),
+                                                                                          jointDicoNL, 20,
+                                                                                          nbAtoms, debug=0,
+                                                                                          padSignal=False)
 
         # shifting the order of the signals just to see if it's the same
-        approxCommonNL2, approxSpecListNL2, decayListNL2, residualSignalListNL2 = mp.mp_joint((pySig3,pySig2,pySig4),
-                                                                                jointDicoNL, 20,
-                                                                                nbAtoms, debug=0,
-                                                                           padSignal=False)
+        approxCommonNL2, approxSpecListNL2, decayListNL2, residualSignalListNL2 = mp.mp_joint((pySig3, pySig2, pySig4),
+                                                                                              jointDicoNL, 20,
+                                                                                              nbAtoms, debug=0,
+                                                                                              padSignal=False)
 
 #        cProfile.runctx('mp.mp_joint((pySig2,pySig3), jointDico, 10, nbAtoms ,debug=0,doClean=False,padSignal=False)' , globals() , locals())
 #        cProfile.runctx('mp.mp_joint((pySig2,pySig3), jointDicoNL, 10, nbAtoms ,debug=0,doClean=False,padSignal=False)' , globals() , locals())
 #        print [block.sigNumber for block in jointDico.blocks]
 #        print [block.sigNumber for block in jointDicoNL.blocks]
-        print decayList[0][-1],decayList2[0][-1], decayListNL[0][-1], decayListNL2[1][-1]
-        print decayList[1][-1],decayList2[1][-1], decayListNL[1][-1], decayListNL2[0][-1]
-        print decayList[2][-1],decayList2[2][-1], decayListNL[2][-1], decayListNL2[2][-1]
-        A = np.concatenate(jointDicoNL.blocks[2].intermediateProjection, axis = 1)
+        print decayList[0][-1], decayList2[0][-1], decayListNL[0][-1], decayListNL2[1][-1]
+        print decayList[1][-1], decayList2[1][-1], decayListNL[1][-1], decayListNL2[0][-1]
+        print decayList[2][-1], decayList2[2][-1], decayListNL[2][-1], decayListNL2[2][-1]
+        A = np.concatenate(
+            jointDicoNL.blocks[2].intermediateProjection, axis=1)
 
 #        plt.figure()
 #        plt.imshow(np.sqrt(np.abs(A[12000:14000,:].T)), interpolation='nearest',aspect='auto',cmap=cm.get_cmap('bone'))
@@ -378,7 +389,7 @@ class DicosTest(unittest.TestCase):
 #        plt.plot(jointDico.blocks[2].projectionMatrix,'b')
 #        plt.plot(jointDicoNL.blocks[2].projectionMatrix,'r')
 #
-        print [atom.getAmplitude() for atom in approxCommonNL.atoms]
+        print [atom.get_value() for atom in approxCommonNL.atoms]
 #        plt.show()
         plt.figure()
         plt.subplot(211)
@@ -388,125 +399,121 @@ class DicosTest(unittest.TestCase):
         plt.show()
 
 
-
-
-    def perfTests(self):
+class perfTest(unittest.TestCase):
+    
+    def runTest(self):
         print " Starting Performances Tests"
-        pySig = signals.InitFromFile('../../../data/glocs.wav',forceMono=True,doNormalize=True)
+        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
         decalage = 500
 
-        pySig.crop(0, 4.5*pySig.fs)
-        pySig2.crop(decalage, decalage + 4.5*pySig.fs)
+        pySig.crop(0, 4.5 * pySig.fs)
+        pySig2.crop(decalage, decalage + 4.5 * pySig.fs)
 #        pySig3.crop(decalage, decalage + 4.5*pySig.samplingFrequency)
 
         pySig.pad(16384)
         pySig2.pad(16384)
 #        pySig3.pad(16384)
 
-        dico = [128,1024,8192]
+        dico = [128, 1024, 8192]
 
         classicDIco = mdct_dico.LODico(dico)
 
-        jointDico = joint_dico.SetDico(dico , selectNature='sum')
-        jointDicoTol = joint_dico.SetDico(dico ,
-                                               selectNature='sum',
-                                                                  tol=[2,2,2])
+        jointDico = joint_dico.SetDico(dico, selectNature='sum')
+        jointDicoTol = joint_dico.SetDico(dico,
+                                          selectNature='sum',
+                                          tol=[2, 2, 2])
 
-        cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDico, 10, 2000 ,debug=0,doClean=False)' , globals() , locals())
-        cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDicoTol, 10, 2000 ,debug=0)' , globals() , locals())
+        cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDico, 10, 2000 ,debug=0,doClean=False)', globals(), locals())
+        cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDicoTol, 10, 2000 ,debug=0)', globals(), locals())
 
-    def perfTestsNL(self):
+class perfTestsNL(unittest.TestCase):
+    
+    def runTest(self):
         print " Starting Performances Tests with NL techniques"
-        pySig = signals.InitFromFile('../../../data/glocs.wav',forceMono=True,doNormalize=True)
+        pySig = signals.InitFromFile(
+            '../../../data/glocs.wav', forceMono=True, doNormalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
         decalage = 500
 
-        pySig.crop(0, 4.5*pySig.fs)
-        pySig2.crop(decalage, decalage + 4.5*pySig.fs)
+        pySig.crop(0, 4.5 * pySig.fs)
+        pySig2.crop(decalage, decalage + 4.5 * pySig.fs)
 #        pySig3.crop(decalage, decalage + 4.5*pySig.samplingFrequency)
 
         pySig.pad(16384)
         pySig2.pad(16384)
 #        pySig3.pad(16384)
 
-        dico = [128,1024,8192]
+        dico = [128, 1024, 8192]
 
         classicDIco = mdct_dico.LODico(dico)
 
-#        cProfile.runctx('mp.mp(pySig, classicDIco, 30, 1500 ,debug=0)' , globals() , locals())
+# cProfile.runctx('mp.mp(pySig, classicDIco, 30, 1500 ,debug=0)' ,
+# globals() , locals())
 
         natures = ('penalized',)
         for nature in natures:
             print "Starting ", nature
-            jointDicoTol = joint_dico.SetDico(dico ,
-                                                                  selectNature=nature,
-                                                                  tol=[2,2,2],params=1)
-            cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDicoTol, 10, 1000,interval=500 ,debug=0)' , globals() , locals())
+            jointDicoTol = joint_dico.SetDico(dico,
+                                              selectNature=nature,
+                                              tol=[2, 2, 2], params=1)
+            cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDicoTol, 10, 1000,interval=500 ,debug=0)', globals(), locals())
 
-            cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDicoTol, 10, 1000,escape=True,interval=500 ,debug=0)' , globals() , locals())
-
-
-
+            cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDicoTol, 10, 1000,escape=True,interval=500 ,debug=0)', globals(), locals())
 
     def toleranceTests(self):
         print "%%%%%%%%%%%%%%% Testing Joint mp with increased Tolerance %%%%%%%%%%%%%%%"
-        pySig = signals.InitFromFile('../../../data/glocs.wav',forceMono=True,doNormalize=True)
+        pySig = signals.InitFromFile(
+            '../../../data/glocs.wav', forceMono=True, doNormalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
         decalage = 750
 
-        pySig.crop(0, 4*16384)
-        pySig2.crop(decalage, decalage + 4*16384)
+        pySig.crop(0, 4 * 16384)
+        pySig2.crop(decalage, decalage + 4 * 16384)
 #        pySig3.crop(decalage, decalage + 4.5*pySig.samplingFrequency)
 
         pySig.pad(16384)
         pySig2.pad(16384)
 #        pySig3.pad(16384)
 
-        dico = [128,1024]
-        tol = [16,2]
+        dico = [128, 1024]
+        tol = [16, 2]
 
-        jointDico = joint_dico.SetDico(dico ,
-                                                               selectNature='sum')
-        jointDicoTol = joint_dico.SetDico(dico ,
-                                                               selectNature='sum',
-                                                               tol = tol)
+        jointDico = joint_dico.SetDico(dico,
+                                       selectNature='sum')
+        jointDicoTol = joint_dico.SetDico(dico,
+                                          selectNature='sum',
+                                          tol=tol)
 
         print jointDico.tolerances
         nbatoms = 50
-        meanApprox, currentApproxList, resEnergyList , residualSignalList = mp.mp_joint((pySig,pySig2,pySig2),
-                                                                                       jointDico, 10, nbatoms ,debug=0)
+        meanApprox, currentApproxList, resEnergyList, residualSignalList = mp.mp_joint((pySig, pySig2, pySig2),
+                                                                                       jointDico, 10, nbatoms, debug=0)
 
         print jointDicoTol.tolerances
-        meanApproxTol, currentApproxListTol, resEnergyListTol , residualSignalListTol = mp.mp_joint((pySig,pySig2,pySig2),
-                                                                                       jointDicoTol, 10, nbatoms ,debug=0)
+        meanApproxTol, currentApproxListTol, resEnergyListTol, residualSignalListTol = mp.mp_joint((pySig, pySig2, pySig2),
+                                                                                                   jointDicoTol, 10, nbatoms, debug=0)
 
         for i in range(len(residualSignalList)):
-            print np.sum(residualSignalList[i].data **2),  np.sum(residualSignalListTol[i].data **2)
+            print np.sum(residualSignalList[i].data ** 2), np.sum(residualSignalListTol[i].data ** 2)
 
 if __name__ == "__main__":
-    #import syssys.argv = ['', 'Test.testName']
-    suite  = unittest.TestSuite()
+    # import syssys.argv = ['', 'Test.testName']
+    suite = unittest.TestSuite()
 
     suite.addTest(BlocksTest())
     suite.addTest(DicosTest())
+    suite.addTest(PursuitTest())
+    suite.addTest(PursuitTest())
+#    suite.addTest(nonLinearTest())
+    suite.addTest(perfTest())
+#    suite.addTest(SymetryTest())
     unittest.TextTestRunner(verbosity=2).run(suite)
+    
     plt.show()
-    
-    
-
-
-
-
-
-
-
-
-
-

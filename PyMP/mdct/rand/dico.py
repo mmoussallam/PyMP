@@ -78,9 +78,9 @@ class RandomDico(Dico):
 
     def initialize(self, residualSignal):
         self.blocks = []
-        self.bestCurrentBlock = None
-        self.startingTouchedIndex = 0
-        self.endingTouchedIndex = -1
+        self.best_current_block = None
+        self.starting_touched_index = 0
+        self.ending_touched_index = -1
 
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
@@ -92,18 +92,18 @@ class RandomDico(Dico):
         # the scores
         if (self.nbSim > 0):
             if ((self.iterationNumber + 1) % self.nbSim == 0):
-                self.startingTouchedIndex = 0
-                self.endingTouchedIndex = -1
+                self.starting_touched_index = 0
+                self.ending_touched_index = -1
             else:
-                self.startingTouchedIndex = previousBestAtom.timePosition - previousBestAtom.length / 2
-                self.endingTouchedIndex = self.startingTouchedIndex + 1.5 * previousBestAtom.length
+                self.starting_touched_index = previousBestAtom.time_position - previousBestAtom.length / 2
+                self.ending_touched_index = self.starting_touched_index + 1.5 * previousBestAtom.length
         else:
-            self.startingTouchedIndex = previousBestAtom.timePosition - previousBestAtom.length / 2
-            self.endingTouchedIndex = self.startingTouchedIndex + 1.5 * previousBestAtom.length
+            self.starting_touched_index = previousBestAtom.time_position - previousBestAtom.length / 2
+            self.ending_touched_index = self.starting_touched_index + 1.5 * previousBestAtom.length
 
     def update(self, residualSignal, iterationNumber=0, debug=0):
-        self.maxBlockScore = 0
-        self.bestCurrentBlock = None
+        self.max_block_score = 0
+        self.best_current_block = None
         self.iterationNumber = iterationNumber
         # BUGFIX STABILITY
 #        self.endingTouchedIndex = -1
@@ -111,10 +111,10 @@ class RandomDico(Dico):
 
         for block in self.blocks:
             startingTouchedFrame = int(
-                math.floor(self.startingTouchedIndex / (block.scale / 2)))
-            if self.endingTouchedIndex > 0:
+                math.floor(self.starting_touched_index / (block.scale / 2)))
+            if self.ending_touched_index > 0:
                 endingTouchedFrame = int(math.floor(self.
-                    endingTouchedIndex / (block.scale / 2))) + 1
+                    ending_touched_index / (block.scale / 2))) + 1
                 # TODO check this
             else:
                 endingTouchedFrame = -1
@@ -122,10 +122,10 @@ class RandomDico(Dico):
             block.update(residualSignal,
                  startingTouchedFrame, endingTouchedFrame, iterationNumber)
 
-            if abs(block.maxValue) > self.maxBlockScore:
+            if abs(block.max_value) > self.max_block_score:
 #                self.maxBlockScore = block.getMaximum()
-                self.maxBlockScore = abs(block.maxValue)
-                self.bestCurrentBlock = block
+                self.max_block_score = abs(block.max_value)
+                self.best_current_block = block
 
     def getSequences(self, length):
         sequences = []

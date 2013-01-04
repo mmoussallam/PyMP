@@ -279,7 +279,7 @@ def main(argv):
     # addon for matlab interface: outputs all the coeff
     if matpipe:
         for atom in approx.atoms:
-            print atom.length, atom.frequencyBin, atom.timePosition
+            print atom.length, atom.freq_bin, atom.time_position
     #sys.exit()
 
 

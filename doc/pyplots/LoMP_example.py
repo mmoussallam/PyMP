@@ -32,8 +32,8 @@ srr = 30;
 mpDico = dico.Dico(scales)
 lompDico = dico.LODico(scales)
 
-approxMP, decayMP = mp.mp(pySig,mpDico,srr,nbAtom,padSignal=True);
-approxLoMP, decayLoMP = mp.mp(pySig,lompDico,srr,nbAtom,padSignal=False);
+approxMP, decayMP = mp.mp(pySig,mpDico,srr,nbAtom,pad=True);
+approxLoMP, decayLoMP = mp.mp(pySig,lompDico,srr,nbAtom,pad=False);
 
 plt.figure()
 plt.subplot(211)

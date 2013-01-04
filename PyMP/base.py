@@ -34,7 +34,7 @@ class BaseAtom(object):
     # default values
     nature = 'Abstract'
     length = 0
-    timePosition = 0
+    time_position = 0
     waveform = None
     fs = 0
     amplitude = 0
@@ -43,10 +43,10 @@ class BaseAtom(object):
     def __init__(self):
         self.length = 0
         self.amplitude = 0
-        self.timePosition = 0
+        self.time_position = 0
 
     # mandatory functions
-    def getWaveform(self):
+    def get_waveform(self):
         # A function to retrieve the atom waveform
         return self.waveform
 
@@ -64,7 +64,7 @@ class BaseBlock(object):
             - getMaximum : retrieve the maximum absolute value of inner products
             - getMaxAtom : return a corresponding Atom instance'''
 
-    #members
+    # members
     scale = 0
     residualSignal = None
 

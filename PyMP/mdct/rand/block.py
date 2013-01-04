@@ -52,7 +52,7 @@ class RandomBlock(mdct_block.Block):
     currentTS = 0
     currentSubF = 0
     nbSim = 1
-    wLong = None
+    w_long = None
 
     # constructor - initialize residual signal and projection matrix
     def __init__(self, length=0, resSignal=None, frameLen=0, randomType='random', nbSim=1, windowType=None):
@@ -66,9 +66,9 @@ class RandomBlock(mdct_block.Block):
         if self.residualSignal == None:
             raise ValueError("no signal given")
 
-        self.enframedDataMatrix = self.residualSignal.data
-        self.frame_num = len(self.enframedDataMatrix) / self.frame_len
-        self.projectionMatrix = zeros(len(self.enframedDataMatrix))
+        self.framed_data_matrix = self.residualSignal.data
+        self.frame_num = len(self.framed_data_matrix) / self.frame_len
+        self.projs_matrix = zeros(len(self.framed_data_matrix))
 
         self.randomType = randomType
         if self.randomType == 'scale':
@@ -120,7 +120,7 @@ class RandomBlock(mdct_block.Block):
         L = self.scale
 
         # update residual signal
-        self.enframedDataMatrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
+        self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
         # TODO changes here
         self.computeTransform(startFrameIdx, stopFrameIdx)
@@ -130,7 +130,7 @@ class RandomBlock(mdct_block.Block):
 
     # inner product computation through MCLT with all possible time shifts
     def computeTransform(self,   startingFrame=1, endFrame=-1):
-        if self.wLong is None:
+        if self.w_long is None:
             self.initialize()
 
         if endFrame < 0:
@@ -144,10 +144,10 @@ class RandomBlock(mdct_block.Block):
         ############" changes  ##############
 #        T = K/2 + self.currentTS
         # new version with C calculus
-        parallelProjections.project(self.enframedDataMatrix, self.bestScoreTree,
-                                                 self.projectionMatrix,
+        parallelProjections.project(self.framed_data_matrix, self.best_score_tree,
+                                                 self.projs_matrix,
                                                  self.locCoeff,
-                                                 self.post_twidVec,
+                                                 self.post_twid_vec,
                                                  startingFrame,
                                                  endFrame,
                                                  self.scale,
@@ -187,20 +187,20 @@ class RandomBlock(mdct_block.Block):
 #            # store new max score in tree
 # self.bestScoreTree[i] = abs(self.projectionMatrix[i*K : (i+1)*K]).max()
     def getMaximum(self):
-        treeMaxIdx = self.bestScoreTree.argmax()
-        maxIdx = abs(self.projectionMatrix[treeMaxIdx * self.scale /
+        treeMaxIdx = self.best_score_tree.argmax()
+        maxIdx = abs(self.projs_matrix[treeMaxIdx * self.scale /
             2: (treeMaxIdx + 1) * self.scale / 2]).argmax()
 
         self.maxIdx = maxIdx + treeMaxIdx * self.scale / 2
-        self.maxValue = self.projectionMatrix[self.maxIdx]
+        self.max_value = self.projs_matrix[self.maxIdx]
 
     # construct the atom
     def getMaxAtom(self):
-        self.maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
-        self.maxBinIdx = self.maxIdx - self.maxFrameIdx * (0.5 * self.scale)
-        Atom = mdct_atom.Atom(self.scale, 1, max((self.maxFrameIdx * self.scale / 2) - self.scale / 4, 0), self.maxBinIdx, self.residualSignal.fs)
-        Atom.frame = self.maxFrameIdx
-        Atom.mdct_value = self.maxValue
+        self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
+        self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
+        Atom = mdct_atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
+        Atom.frame = self.max_frame_idx
+        Atom.mdct_value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesizeAtom()
@@ -208,7 +208,7 @@ class RandomBlock(mdct_block.Block):
         if self.windowType == 'half1':
             Atom.waveform[0:self.scale / 2] = 0
 
-        Atom.timeShift = self.currentTS
-        Atom.timePosition -= Atom.timeShift
+        Atom.time_shift = self.currentTS
+        Atom.time_position -= Atom.time_shift
 
         return Atom

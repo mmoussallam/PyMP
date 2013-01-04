@@ -42,13 +42,13 @@ class SetBlock(mdct_block.Block):
     frame_len = 0
     frame_num = 0
 
-    maxIndex = 0
-    maxValue = 0
-    maxBinIdx = 0
-    maxFrameIdx = 0
+    max_index = 0
+    max_value = 0
+    max_bin_idx = 0
+    max_frame_idx = 0
 
     # MDCT static window and twiddle parameters
-    wLong = None
+    w_long = None
     enframedDataMatrixList = []
 
     startingFrameList = None
@@ -97,9 +97,9 @@ class SetBlock(mdct_block.Block):
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
-        self.projectionMatrix = np.zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
+        self.projs_matrix = np.zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
 
-        self.useC = useC
+        self.use_c_optim = useC
 
         if nature == 'sum':
             self.nature = 0
@@ -125,20 +125,20 @@ class SetBlock(mdct_block.Block):
         #Windowing
         L = self.scale
 
-        self.wLong = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
+        self.w_long = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
 
         # twidlle coefficients
-        self.pre_twidVec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
-        self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twid_vec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
+        self.post_twid_vec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = np.zeros(self.frame_num)
+        self.best_score_tree = np.zeros(self.frame_num)
 
         # OPTIM -> do pre-twid directly in the windows
-        self.locCoeff = self.wLong * self.pre_twidVec
+        self.locCoeff = self.w_long * self.pre_twid_vec
 
     def computeTransform(self, startingFrameList=None , endFrameList = None):
-        if self.wLong is None:
+        if self.w_long is None:
             self.initialize()
 
         # due to later time-shift optimizations , need to ensure nothing is selected too close to the borders!!
@@ -159,25 +159,25 @@ class SetBlock(mdct_block.Block):
 
         # ALL SIGNALS PROJECTED AND WE KEEP ALL PROJECTIONS, NO OPTIMIZATIONS !!
         for sigIdx in range(0,self.sigNumber):
-            localProj = np.array(self.projectionMatrix[:,sigIdx])
+            localProj = np.array(self.projs_matrix[:,sigIdx])
 #            print localProj.shape
-            localProj = localProj.reshape((self.projectionMatrix.shape[0],))
+            localProj = localProj.reshape((self.projs_matrix.shape[0],))
             parallelProjections.project(self.enframedDataMatrixList[sigIdx],
-                                                 self.bestScoreTree,
+                                                 self.best_score_tree,
                                                  localProj,
                                                  self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.post_twid_vec ,
                                                  startingFrameList[sigIdx],
                                                  endFrameList[sigIdx],
                                                  self.scale,0)
 
         # WE NEED TO RECOMPUTE THE GLOBAL SUM SCORE NOW
-            self.projectionMatrix[:,sigIdx] = np.array(localProj.copy())
+            self.projs_matrix[:,sigIdx] = np.array(localProj.copy())
 #        print self.scale , startingFrameList[sigIdx] , endFrameList[sigIdx] ,self.frameNumber * self.scale/2
         if self.nature == 0:
-            sumOfProjections = np.sum(self.projectionMatrix**2,1)
+            sumOfProjections = np.sum(self.projs_matrix**2,1)
         elif self.nature == 1:
-            sumOfProjections = np.median(self.projectionMatrix**2,1)
+            sumOfProjections = np.median(self.projs_matrix**2,1)
 #        plt.figure()
 #        plt.plot(self.projectionMatrix[:,sigIdx])
 #        plt.show()
@@ -224,12 +224,12 @@ class SetBlock(mdct_block.Block):
 #        maxIdx = abs(self.projectionMatrix[treeMaxIdx*self.scale/2 : (treeMaxIdx+1)*self.scale/2]).argmax()
 
 #        self.maxIdx = maxIdx + treeMaxIdx*self.scale/2
-        self.maxValue = sum(self.projectionMatrix[self.maxIdx,:]**2)
+        self.max_value = np.sum(self.projs_matrix[self.maxIdx,:]**2)
 
 #        self.maxFrameIdx = treeMaxIdx
-        self.maxFrameIdx = self.maxIdx / (self.scale/2)
+        self.max_frame_idx = self.maxIdx / (self.scale/2)
 
-        self.maxBinIdx = self.maxIdx - (self.maxFrameIdx * self.scale/2)
+        self.max_bin_idx = self.maxIdx - (self.max_frame_idx * self.scale/2)
 
 #        print "ppBlock : line 1796, index, frame , value , bin ",self.maxIdx ,self.maxFrameIdx , self.maxValue , self.maxBinIdx
 
@@ -239,9 +239,9 @@ class SetBlock(mdct_block.Block):
         global _PyServer
 #        print len(_PyServer.Waveforms)
         if  value is None:
-            return self.maxValue * _PyServer.getWaveForm(self.scale , self.maxBinIdx)
+            return self.max_value * _PyServer.getWaveForm(self.scale , self.max_bin_idx)
         else:
-            return value * _PyServer.getWaveForm(self.scale , self.maxBinIdx)
+            return value * _PyServer.getWaveForm(self.scale , self.max_bin_idx)
 
     def getAdaptedBestAtoms(self,debug=0,noAdapt=True):
         _Logger.warning("No adaptation is allowed in this mode")
@@ -252,14 +252,14 @@ class SetBlock(mdct_block.Block):
         AtomList = []
         for sigIdx in range(self.sigNumber):
             offset = self.scale/4
-            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
-            Atom.frame = self.maxFrameIdx
-            Atom.synthesizeIFFT(1)
+            Atom = mdct_atom.Atom(self.scale , 1 , max((self.max_frame_idx  * self.scale/2) - offset , 0)  , self.max_bin_idx , self.residualSignalList[0].fs)
+            Atom.frame = self.max_frame_idx
+            Atom.synthesize_ifft(1)
 #            Atom.waveform /= sum(Atom.waveform**2)
 
-            Atom.projectionScore = self.projectionMatrix[self.maxIdx,sigIdx]
-            Atom.mdct_value = Atom.projectionScore
-            Atom.waveform *= Atom.projectionScore
+            Atom.proj_score = self.projs_matrix[self.maxIdx,sigIdx]
+            Atom.mdct_value = Atom.proj_score
+            Atom.waveform *= Atom.proj_score
 #            print Atom.projectionScore
 
             AtomList.append(Atom)
@@ -280,13 +280,13 @@ class SetLOBlock(mdct_block.Block):
     frame_len = 0
     frame_num = 0
 
-    maxIndex = 0
-    maxValue = 0
-    maxBinIdx = 0
-    maxFrameIdx = 0
+    max_index = 0
+    max_value = 0
+    max_bin_idx = 0
+    max_frame_idx = 0
 
     # MDCT static window and twiddle parameters
-    wLong = None
+    w_long = None
     enframedDataMatrixList = []
 
     startingFrameList = None
@@ -335,9 +335,9 @@ class SetLOBlock(mdct_block.Block):
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
-        self.projectionMatrix = np.zeros(len(self.enframedDataMatrixList[0]) ,float)
+        self.projs_matrix = np.zeros(len(self.enframedDataMatrixList[0]) ,float)
 
-        self.useC = useC
+        self.use_c_optim = useC
 
         if nature == 'sum':
             self.nature = 0
@@ -363,20 +363,20 @@ class SetLOBlock(mdct_block.Block):
         #Windowing
         L = self.scale
 
-        self.wLong = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
+        self.w_long = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
 
         # twidlle coefficients
-        self.pre_twidVec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
-        self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twid_vec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
+        self.post_twid_vec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = np.zeros(self.frame_num)
+        self.best_score_tree = np.zeros(self.frame_num)
 
         # OPTIM -> do pre-twid directly in the windows
-        self.locCoeff = self.wLong * self.pre_twidVec
+        self.locCoeff = self.w_long * self.pre_twid_vec
 
     def computeTransform(self, startingFrameList=None , endFrameList = None):
-        if self.wLong is None:
+        if self.w_long is None:
             self.initialize()
 
         # due to later time-shift optimizations , need to ensure nothing is selected too close to the borders!!
@@ -398,10 +398,10 @@ class SetLOBlock(mdct_block.Block):
         # first signal:
 #        print "Update projection 1"
 #        print "block update called : " , startingFrameList[0]  , endFrameList[0] , " type : " , self.scale
-        parallelProjections.project_mclt(self.enframedDataMatrixList[0], self.bestScoreTree,
-                                                 self.projectionMatrix ,
+        parallelProjections.project_mclt(self.enframedDataMatrixList[0], self.best_score_tree,
+                                                 self.projs_matrix ,
                                                  self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.post_twid_vec ,
                                                  startingFrameList[0],
                                                  endFrameList[0],
                                                  self.scale)
@@ -412,17 +412,17 @@ class SetLOBlock(mdct_block.Block):
 #        plt.plot(self.bestScoreTree)
 #        plt.show()
         # WORKAROUND DEBUG
-        self.projectionMatrix[startingFrameList[0]*self.frame_len : endFrameList[0]*self.frame_len] = abs(self.projectionMatrix[startingFrameList[0]*self.frame_len : endFrameList[0]*self.frame_len])
+        self.projs_matrix[startingFrameList[0]*self.frame_len : endFrameList[0]*self.frame_len] = abs(self.projs_matrix[startingFrameList[0]*self.frame_len : endFrameList[0]*self.frame_len])
 
         # next signals: update depend on strategies!
         for sigIdx in range(1,self.sigNumber):
 #            print "Update projection "+str(sigIdx+1)
 #            print startingFrameList[sigIdx] , endFrameList[sigIdx]
             parallelProjections.project_mclt_set(self.enframedDataMatrixList[sigIdx],
-                                                 self.bestScoreTree,
-                                                 self.projectionMatrix,
+                                                 self.best_score_tree,
+                                                 self.projs_matrix,
                                                  self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.post_twid_vec ,
                                                  startingFrameList[sigIdx],
                                                  endFrameList[sigIdx],
                                                  self.scale,
@@ -460,15 +460,15 @@ class SetLOBlock(mdct_block.Block):
         self.getMaximum()
 
     def getMaximum(self):
-        treeMaxIdx = self.bestScoreTree.argmax()
+        treeMaxIdx = self.best_score_tree.argmax()
 #        print "Tree max Idx :",treeMaxIdx
-        maxIdx = abs(self.projectionMatrix[treeMaxIdx*self.scale/2 : (treeMaxIdx+1)*self.scale/2]).argmax()
+        maxIdx = abs(self.projs_matrix[treeMaxIdx*self.scale/2 : (treeMaxIdx+1)*self.scale/2]).argmax()
 
         self.maxIdx = maxIdx + treeMaxIdx*self.scale/2
-        self.maxValue = self.projectionMatrix[self.maxIdx]
+        self.max_value = self.projs_matrix[self.maxIdx]
 
-        self.maxFrameIdx = treeMaxIdx
-        self.maxBinIdx = maxIdx
+        self.max_frame_idx = treeMaxIdx
+        self.max_bin_idx = maxIdx
 #        print treeMaxIdx , maxIdx , (self.maxValue)
 
     # TODO use subclass : MDCTAtom but later
@@ -477,9 +477,9 @@ class SetLOBlock(mdct_block.Block):
         global _PyServer
 #        print len(_PyServer.Waveforms)
         if  value is None:
-            return self.maxValue * _PyServer.getWaveForm(self.scale , self.maxBinIdx)
+            return self.max_value * _PyServer.getWaveForm(self.scale , self.max_bin_idx)
         else:
-            return value * _PyServer.getWaveForm(self.scale , self.maxBinIdx)
+            return value * _PyServer.getWaveForm(self.scale , self.max_bin_idx)
 
     def getAdaptedBestAtoms(self , debug = 0 , noAdapt=False):
         """ Here the index of the best atom is chosen one level up in the dictionary set
@@ -512,14 +512,14 @@ class SetLOBlock(mdct_block.Block):
         # so that we can find the maximum correlation and best adapt the time-shift
         # Construct prototype atom
 
-        Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
-        Atom.frame = self.maxFrameIdx
+        Atom = mdct_atom.Atom(self.scale , 1 , max((self.max_frame_idx  * self.scale/2) - self.scale/4 , 0)  , self.max_bin_idx , self.residualSignalList[0].fs)
+        Atom.frame = self.max_frame_idx
 
         Atom.mdct_value = 1.0
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesizeAtom(value=1)
-        Atom.timeShift = 0
-        Atom.projectionScore = 0.0
+        Atom.time_shift = 0
+        Atom.proj_score = 0.0
 
         # width of tolerance : equals to the width of the area scanned on left and right to find optimal position
         HalfWidth = (self.tolerance -1) * self.scale / 2
@@ -527,8 +527,8 @@ class SetLOBlock(mdct_block.Block):
 
         # do not forget to compensate for the quarter window offsetted
         offset = self.scale/4
-        startSample = ((self.maxFrameIdx) * self.scale/2) - HalfWidth - offset
-        stopSample = ((self.maxFrameIdx+2) * self.scale/2) + HalfWidth - offset
+        startSample = ((self.max_frame_idx) * self.scale/2) - HalfWidth - offset
+        stopSample = ((self.max_frame_idx+2) * self.scale/2) + HalfWidth - offset
 
 #        startSample = ((self.maxFrameIdx -1.5) * self.scale/2)
 #        stopSample = ((self.maxFrameIdx +2.5) * self.scale/2)
@@ -547,7 +547,7 @@ class SetLOBlock(mdct_block.Block):
 
             # retrieve newly projected waveform
 #            print input1 , input1.shape
-            Atom.projectionScore = (sum([Atom.waveform[i] * input1[i] for i in range(self.scale)]))
+            Atom.proj_score = (np.sum(np.array([Atom.waveform[i] * input1[i] for i in range(self.scale)])))
 
 #            if Atom.projectionScore < 0.000000000001:
 #                _Logger.debug("neglecting score")
@@ -562,25 +562,25 @@ class SetLOBlock(mdct_block.Block):
 #            Atom.projectionScore = self.maxValue
 #            print Atom.projectionScore , self.maxValue
 #            print sum(Atom.waveform**2) , sum(input1**2)
-            _Logger.debug( "new score found of : " +str(Atom.projectionScore))
-            Atom.mdct_value = Atom.projectionScore
-            Atom.waveform *= Atom.projectionScore
+            _Logger.debug( "new score found of : " +str(Atom.proj_score))
+            Atom.mdct_value = Atom.proj_score
+            Atom.waveform *= Atom.proj_score
             return Atom
 
         if len(input1) != len(input2):
-            print self.maxFrameIdx , self.maxIdx , self.frame_num
+            print self.max_frame_idx , self.maxIdx , self.frame_num
             print len(input1) , len(input2)
             if debug>0:
                 print "atom in the borders , no timeShift calculated"
             return Atom
 
         # retrieve optimal timeShift
-        if self.useC:
+        if self.use_c_optim:
             scoreVec = np.array([0.0])
 #            Atom.timeShift = computeMCLT.project_atom(input1,input2 , scoreVec )
 #            print "Is it here?"
             #Atom.timeShift = parallelProjections.project_atom(input1,input2 , scoreVec , self.scale)
-            Atom.timeShift = parallelProjections.project_atom_set(input1, input2, fftVec , scoreVec , self.scale, sigIdx)
+            Atom.time_shift = parallelProjections.project_atom_set(input1, input2, fftVec , scoreVec , self.scale, sigIdx)
 
 #            print "Found " ,Atom.timeShift
 #            if abs(Atom.timeShift) > ((self.tolerance-1) * Atom.length)/2:
@@ -588,13 +588,13 @@ class SetLOBlock(mdct_block.Block):
 #                Atom.timeShift = 0
 #                return Atom
 
-            self.maxTimeShift = Atom.timeShift
-            Atom.timePosition += Atom.timeShift
+            self.maxTimeShift = Atom.time_shift
+            Atom.time_position += Atom.time_shift
 
             # retrieve newly projected waveform
-            Atom.projectionScore = scoreVec[0]
-            Atom.mdct_value = Atom.projectionScore
-            Atom.waveform *= Atom.projectionScore
+            Atom.proj_score = scoreVec[0]
+            Atom.mdct_value = Atom.proj_score
+            Atom.waveform *= Atom.proj_score
 
         else:
             print "Block 1345 : Not Implemented !"
@@ -608,19 +608,19 @@ class SetLOBlock(mdct_block.Block):
         AtomList = []
         for sigIdx in range(self.sigNumber):
             offset = self.scale/4
-            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
-            Atom.frame = self.maxFrameIdx
-            Atom.synthesizeIFFT(1)
+            Atom = mdct_atom.Atom(self.scale , 1 , max((self.max_frame_idx  * self.scale/2) - offset , 0)  , self.max_bin_idx , self.residualSignalList[0].fs)
+            Atom.frame = self.max_frame_idx
+            Atom.synthesize_ifft(1)
             Atom.waveform /= np.sum(Atom.waveform**2)
 
-            startSample = ((self.maxFrameIdx) * self.scale/2)  - offset
-            stopSample = ((self.maxFrameIdx+2) * self.scale/2) - offset
+            startSample = ((self.max_frame_idx) * self.scale/2)  - offset
+            stopSample = ((self.max_frame_idx+2) * self.scale/2) - offset
 
             locsig = (self.enframedDataMatrixList[sigIdx][startSample : stopSample])
 
-            Atom.projectionScore = np.sum( np.multiply(Atom.waveform,locsig ))
-            Atom.mdct_value = Atom.projectionScore
-            Atom.waveform *= Atom.projectionScore
+            Atom.proj_score = np.sum( np.multiply(Atom.waveform,locsig ))
+            Atom.mdct_value = Atom.proj_score
+            Atom.waveform *= Atom.proj_score
 #            print Atom.projectionScore
 
             AtomList.append(Atom)
@@ -642,13 +642,13 @@ class RandomSetBlock(SetBlock):
     frame_len = 0
     frame_num = 0
 
-    maxIndex = 0
-    maxValue = 0
-    maxBinIdx = 0
-    maxFrameIdx = 0
+    max_index = 0
+    max_value = 0
+    max_bin_idx = 0
+    max_frame_idx = 0
 
     # MDCT static window and twiddle parameters
-    wLong = None
+    w_long = None
     enframedDataMatrixList = []
 
     startingFrameList = None
@@ -697,9 +697,9 @@ class RandomSetBlock(SetBlock):
 
         # The projection matrix is unidimensionnal since only one atom will be chosen eventually
 #        self.projectionMatrix = zeros(len(self.enframedDataMatrixList[0]) ,complex)
-        self.projectionMatrix = np.zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
+        self.projs_matrix = np.zeros((len(self.enframedDataMatrixList[0]) ,self.sigNumber)  ,float)
 
-        self.useC = useC
+        self.use_c_optim = useC
 
         if nature == 'sum':
             self.nature = 0
@@ -723,17 +723,17 @@ class RandomSetBlock(SetBlock):
         #Windowing
         L = self.scale
 
-        self.wLong = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
+        self.w_long = np.array([ np.sin(float(l + 0.5) *(np.pi/L)) for l in range(L)] )
 
         # twidlle coefficients
-        self.pre_twidVec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
-        self.post_twidVec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
+        self.pre_twid_vec = np.array([np.exp(n*(-1j)*np.pi/L) for n in range(L)])
+        self.post_twid_vec = np.array([np.exp((float(n) + 0.5) * -1j*np.pi*(L/2 +1)/L) for n in range(L/2)])
 
         # score tree - first version simplified
-        self.bestScoreTree = np.zeros(self.frame_num)
+        self.best_score_tree = np.zeros(self.frame_num)
 
         # OPTIM -> do pre-twid directly in the windows
-        self.locCoeff = self.wLong * self.pre_twidVec
+        self.locCoeff = self.w_long * self.pre_twid_vec
 
     def update(self , newResidualList , startFrameList=None , stopFrameList=None,iterationNumber=0):
 #        print "block update called : " , self.scale  , self.frameNumber , " type : " , self.nature
@@ -762,7 +762,7 @@ class RandomSetBlock(SetBlock):
 
         self.getMaximum()
     def computeTransform(self, startingFrameList=None , endFrameList = None):
-        if self.wLong is None:
+        if self.w_long is None:
             self.initialize()
 
 
@@ -785,14 +785,14 @@ class RandomSetBlock(SetBlock):
 
         # ALL SIGNALS PROJECTED AND WE KEEP ALL PROJECTIONS, NO OPTIMIZATIONS !!
         for sigIdx in range(0,self.sigNumber):
-            localProj = np.array(self.projectionMatrix[:,sigIdx])
+            localProj = np.array(self.projs_matrix[:,sigIdx])
 #            print localProj.shape
-            localProj = localProj.reshape((self.projectionMatrix.shape[0],))
+            localProj = localProj.reshape((self.projs_matrix.shape[0],))
             parallelProjections.project(self.enframedDataMatrixList[sigIdx],
-                                                 self.bestScoreTree,
+                                                 self.best_score_tree,
                                                  localProj,
                                                  self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.post_twid_vec ,
                                                  startingFrameList[sigIdx],
                                                  endFrameList[sigIdx],
                                                  self.scale,
@@ -800,14 +800,14 @@ class RandomSetBlock(SetBlock):
 
         # WE NEED TO RECOMPUTE THE GLOBAL SUM SCORE NOW
 
-            self.projectionMatrix[:,sigIdx] = np.array(localProj.copy())
+            self.projs_matrix[:,sigIdx] = np.array(localProj.copy())
 
 
 #        print self.scale , startingFrameList[sigIdx] , endFrameList[sigIdx] ,self.frameNumber * self.scale/2
         if self.nature == 0:
-            sumOfProjections = np.sum(self.projectionMatrix**2,1)
+            sumOfProjections = np.sum(self.projs_matrix**2,1)
         elif self.nature == 1:
-            sumOfProjections = np.median(self.projectionMatrix**2,1)
+            sumOfProjections = np.median(self.projs_matrix**2,1)
         self.maxIdx = sumOfProjections.argmax()
 
 
@@ -816,18 +816,18 @@ class RandomSetBlock(SetBlock):
         AtomList = []
         for sigIdx in range(self.sigNumber):
             offset = self.scale/4
-            Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - offset , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
-            Atom.frame = self.maxFrameIdx
-            Atom.synthesizeIFFT(1)
+            Atom = mdct_atom.Atom(self.scale , 1 , max((self.max_frame_idx  * self.scale/2) - offset , 0)  , self.max_bin_idx , self.residualSignalList[0].fs)
+            Atom.frame = self.max_frame_idx
+            Atom.synthesize_ifft(1)
 #            Atom.waveform /= sum(Atom.waveform**2)
 
-            Atom.projectionScore = self.projectionMatrix[self.maxIdx,sigIdx]
-            Atom.mdct_value = Atom.projectionScore
-            Atom.waveform *= Atom.projectionScore
+            Atom.proj_score = self.projs_matrix[self.maxIdx,sigIdx]
+            Atom.mdct_value = Atom.proj_score
+            Atom.waveform *= Atom.proj_score
 #            print Atom.projectionScore
 
-            Atom.timeShift = self.currentTS
-            Atom.timePosition -= Atom.timeShift
+            Atom.time_shift = self.currentTS
+            Atom.time_position -= Atom.time_shift
 
             AtomList.append(Atom)
 
@@ -866,7 +866,7 @@ class SetNLLOBlock(SetLOBlock):
 #        for i in range(self.sigNumber):
 #            self.enframedDataMatrixList.append(zeros( (self.length, 1)))
 #
-        self.enframedDataMatrix = np.zeros((self.sigNumber ,self.length), float)
+        self.framed_data_matrix = np.zeros((self.sigNumber ,self.length), float)
 
         for sigIdx in range(self.sigNumber):
             # Important point : assert that all signals have same length!
@@ -883,10 +883,10 @@ class SetNLLOBlock(SetLOBlock):
 #                self.residualSignalList[sigIdx].length += pad
 
 #            self.enframedDataMatrixList[sigIdx] = self.residualSignalList[sigIdx].dataVec
-            self.enframedDataMatrix[sigIdx,:] = self.residualSignalList[sigIdx].data
+            self.framed_data_matrix[sigIdx,:] = self.residualSignalList[sigIdx].data
 
 #        self.frameNumber = len(self.enframedDataMatrixList[0]) / self.frameLength
-        self.frame_num = self.enframedDataMatrix.shape[1] / self.frame_len
+        self.frame_num = self.framed_data_matrix.shape[1] / self.frame_len
         # The projection matrix is Multidimensional: we need to compute all projections before selecting the right atom
 #        self.intermediateProjectionList = []
 ##
@@ -899,10 +899,10 @@ class SetNLLOBlock(SetLOBlock):
 #        print self.intermediateProjectionList
 
         # At the end of the computation the scores should be stored in this matrix
-        self.projectionMatrix = np.zeros((self.length,1),float)
+        self.projs_matrix = np.zeros((self.length,1),float)
 
 
-        self.useC = useC
+        self.use_c_optim = useC
 
         if nature == 'median':
             self.nature = 0 # the final score
@@ -946,7 +946,7 @@ class SetNLLOBlock(SetLOBlock):
             else:
                 stopFrameList[sigIdx] = min((stopFrameList[sigIdx] , self.frame_num - 2))
 #            print "block update called : " , startFrameList[sigIdx]  , stopFrameList[sigIdx] , " type : " , self.scale
-            self.enframedDataMatrix[sigIdx,startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frame_len : stopFrameList[sigIdx]*self.frame_len + 2*self.frame_len]
+            self.framed_data_matrix[sigIdx,startFrameList[sigIdx]*L/2 : stopFrameList[sigIdx]*L/2 + L] = self.residualSignalList[sigIdx].data[startFrameList[sigIdx]*self.frame_len : stopFrameList[sigIdx]*self.frame_len + 2*self.frame_len]
 
         self.computeTransform(startFrameList , stopFrameList)
 
@@ -957,48 +957,48 @@ class SetNLLOBlock(SetLOBlock):
         # so that we can find the maximum correlation and best adapt the time-shift
         # Construct prototype atom
 
-        Atom = mdct_atom.Atom(self.scale , 1 , max((self.maxFrameIdx  * self.scale/2) - self.scale/4 , 0)  , self.maxBinIdx , self.residualSignalList[0].fs)
-        Atom.frame = self.maxFrameIdx
+        Atom = mdct_atom.Atom(self.scale , 1 , max((self.max_frame_idx  * self.scale/2) - self.scale/4 , 0)  , self.max_bin_idx , self.residualSignalList[0].fs)
+        Atom.frame = self.max_frame_idx
 
         Atom.mdct_value = 1.0
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesizeAtom(value=1)
-        Atom.timeShift = 0
-        Atom.projectionScore = 0.0
+        Atom.time_shift = 0
+        Atom.proj_score = 0.0
 
         # width of tolerance : equals to the width of the area scanned on left and right to find optimal position
         HalfWidth = (self.tolerance -1) * self.scale / 2
 
         # do not forget to compensate for the quarter window offsetted
         offset = self.scale/4
-        startSample = ((self.maxFrameIdx) * self.scale/2) - HalfWidth - offset
-        stopSample = ((self.maxFrameIdx+2) * self.scale/2) + HalfWidth - offset
+        startSample = ((self.max_frame_idx) * self.scale/2) - HalfWidth - offset
+        stopSample = ((self.max_frame_idx+2) * self.scale/2) + HalfWidth - offset
 
 #        startSample = ((self.maxFrameIdx -1.5) * self.scale/2)
 #        stopSample = ((self.maxFrameIdx +2.5) * self.scale/2)
 
 #        print "BLOCK line 1302" ,HalfWidth , startSample , stopSample , stopSample - startSample
         # retrieve the corresponding data
-        input1 = self.enframedDataMatrix[sigIdx,startSample : stopSample]
+        input1 = self.framed_data_matrix[sigIdx,startSample : stopSample]
 
         # surround the canonical atom waveform by zeroes
         input2 = np.concatenate( (np.concatenate((np.zeros(HalfWidth) , Atom.waveform) ) , np.zeros(HalfWidth) ) )
 
 
         if len(input1) != len(input2):
-            print self.maxFrameIdx , self.maxIdx , self.frame_num
+            print self.max_frame_idx , self.maxIdx , self.frame_num
             print len(input1) , len(input2)
             #if debug>0:
             print "atom in the borders , no timeShift calculated"
             return Atom
 
         # retrieve optimal timeShift
-        if self.useC:
+        if self.use_c_optim:
             scoreVec = np.array([0.0])
 #            Atom.timeShift = computeMCLT.project_atom(input1,input2 , scoreVec )
 #            print "Is it here?"
             #Atom.timeShift = parallelProjections.project_atom(input1,input2 , scoreVec , self.scale)
-            Atom.timeShift = parallelProjections.project_atom_set(input1, input2, fftVec , scoreVec , self.scale, sigIdx)
+            Atom.time_shift = parallelProjections.project_atom_set(input1, input2, fftVec , scoreVec , self.scale, sigIdx)
 
 #            print "Found " ,Atom.timeShift
 #            if abs(Atom.timeShift) > ((self.tolerance-1) * Atom.length)/2:
@@ -1006,13 +1006,13 @@ class SetNLLOBlock(SetLOBlock):
 #                Atom.timeShift = 0
 #                return Atom
 
-            self.maxTimeShift = Atom.timeShift
-            Atom.timePosition += Atom.timeShift
+            self.maxTimeShift = Atom.time_shift
+            Atom.time_position += Atom.time_shift
 
             # retrieve newly projected waveform
-            Atom.projectionScore = scoreVec[0]
-            Atom.mdct_value = Atom.projectionScore
-            Atom.waveform *= Atom.projectionScore
+            Atom.proj_score = scoreVec[0]
+            Atom.mdct_value = Atom.proj_score
+            Atom.waveform *= Atom.proj_score
 
         else:
             print "Block 1722 : Not Implemented !"
@@ -1023,7 +1023,7 @@ class SetNLLOBlock(SetLOBlock):
 
 
     def computeTransform(self, startingFrameList=None , endFrameList = None):
-        if self.wLong is None:
+        if self.w_long is None:
             self.initialize()
 
         # due to later time-shift optimizations , need to ensure nothing is selected too close to the borders!!
@@ -1045,12 +1045,12 @@ class SetNLLOBlock(SetLOBlock):
         endFrame = max(endFrameList)
 #        for sigIdx in range(self.sigNumber):
         # Refactored : everything is handled in C code now
-        parallelProjections.project_mclt_NLset(self.enframedDataMatrix,
-                                                 self.bestScoreTree,
+        parallelProjections.project_mclt_NLset(self.framed_data_matrix,
+                                                 self.best_score_tree,
                                                  self.intermediateProjection,
-                                                 self.projectionMatrix,
+                                                 self.projs_matrix,
                                                  self.locCoeff ,
-                                                 self.post_twidVec ,
+                                                 self.post_twid_vec ,
                                                  startFrame,
                                                  endFrame,
                                                  self.scale,

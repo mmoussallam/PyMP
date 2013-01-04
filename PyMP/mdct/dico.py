@@ -68,12 +68,14 @@ class Dico(BaseDico):
     tolerances = []
     nature = 'MDCT'
     blocks = None
-    maxBlockScore = 0
-    bestCurrentBlock = None
-    startingTouchedIndex = 0
-    endingTouchedIndex = -1
+    max_block_score = 0
+    best_current_block = None
+    starting_touched_index = 0
+    ending_touched_index = -1
+
+    # DEPRECATED
     forceHF = False
-    useC = True
+    use_c_optim = True
 
     def __init__(self, sizes=[], useC=True, forceHF=False, parallel=False, debug_level=None):
         if debug_level is not None:
@@ -81,7 +83,7 @@ class Dico(BaseDico):
 
         self.sizes = sizes
         self.tolerances = [2 for i in self.sizes]
-        self.useC = useC
+        self.use_c_optim = useC
         self.forceHF = forceHF
         self._pp = parallel
         _Logger.info('New dictionary created with sizes : ' + str(self.sizes))
@@ -96,17 +98,17 @@ class Dico(BaseDico):
     def initialize(self, residualSignal):
         ''' Create the collection of blocks specified by the MDCT sizes '''
         self.blocks = []
-        self.bestCurrentBlock = None
-        self.startingTouchedIndex = 0
-        self.endingTouchedIndex = -1
+        self.best_current_block = None
+        self.starting_touched_index = 0
+        self.ending_touched_index = -1
         for mdctSize in self.sizes:
             self.blocks.append(block.Block(mdctSize,
-                 residualSignal, useC=self.useC, forceHF=self.forceHF))
+                                           residualSignal, useC=self.use_c_optim, forceHF=self.forceHF))
 
     def initProjMatrix(self, itNumbers):
         """ method used for monitoring the projection along iterations
             ONLY for DEV purposes"""
-        projShape = self.blocks[0].projectionMatrix.shape
+        projShape = self.blocks[0].projs_matrix.shape
         # Here all blocks have same number of projections
         return zeros((projShape[0] * len(self.sizes), itNumbers))
 
@@ -114,19 +116,19 @@ class Dico(BaseDico):
         """ method used for monitoring the projection along iterations
             ONLY for DEV purposes"""
 
-        Lproj = self.blocks[0].projectionMatrix.shape[0]
+        Lproj = self.blocks[0].projs_matrix.shape[0]
         for blockIdx in range(len(self.blocks)):
 #            if normedProj:
 # normCoeff = sqrt(sum(self.blocks[blockIdx].projectionMatrix**2))
 #            else:
 #            normCoeff = 1
             projMatrix[blockIdx * Lproj:(blockIdx + 1) * Lproj, iterationNumber] = self.blocks[
-                blockIdx].projectionMatrix  # /normCoeff
+                blockIdx].projs_matrix  # /normCoeff
 
     def update(self, residualSignal, iteratioNumber=0, debug=0):
         ''' Update the projections in each block, only where it needs to be done as specified '''
-        self.maxBlockScore = 0
-        self.bestCurrentBlock = None
+        self.max_block_score = 0
+        self.best_current_block = None
 
         if self.forceHF:
             self.maxHFBlockScore = 0
@@ -134,37 +136,38 @@ class Dico(BaseDico):
 
         for block in self.blocks:
             startingTouchedFrame = int(
-                math.floor(self.startingTouchedIndex / (block.scale / 2)))
-            if self.endingTouchedIndex > 0:
-                endingTouchedFrame = int(math.floor(self.endingTouchedIndex /
-                     (block.scale / 2))) + 1  # TODO check this
+                math.floor(self.starting_touched_index / (block.scale / 2)))
+            if self.ending_touched_index > 0:
+                endingTouchedFrame = int(math.floor(self.ending_touched_index /
+                                        (block.scale / 2))) + 1  # TODO check this
             else:
                 endingTouchedFrame = -1
             _Logger.info("block: " + str(block.scale) + " : " +
-                 str(startingTouchedFrame) + " " + str(endingTouchedFrame))
+                         str(startingTouchedFrame) + " " + str(endingTouchedFrame))
 
             block.update(
                 residualSignal, startingTouchedFrame, endingTouchedFrame)
 
-            if abs(block.maxValue) > self.maxBlockScore:
-                self.maxBlockScore = abs(block.maxValue)
-                self.bestCurrentBlock = block
+            if abs(block.max_value) > self.max_block_score:
+                self.max_block_score = abs(block.max_value)
+                self.best_current_block = block
 
     def getBestAtom(self, debug):
-        if self.bestCurrentBlock == None:
+        if self.best_current_block == None:
             raise ValueError("no best block constructed, make sure inner product have been updated")
 
         if debug > 2:
-            self.bestCurrentBlock.plotScores()
+            self.best_current_block.plotScores()
 
-        return self.bestCurrentBlock.getMaxAtom()
+        return self.best_current_block.getMaxAtom()
 
     def computeTouchZone(self, previousBestAtom):
         ''' update zone computed from the previously selected atom '''
-        self.startingTouchedIndex = previousBestAtom.timePosition  # - previousBestAtom.length/2
-        self.endingTouchedIndex = self.startingTouchedIndex + 1.5 * previousBestAtom.length
+        self.starting_touched_index = previousBestAtom.time_position  # - previousBestAtom.length/2
+        self.ending_touched_index = self.starting_touched_index + \
+            1.5 * previousBestAtom.length
 
-    def toXml(self, doc):
+    def to_xml(self, doc):
         ''' A routine to convert the dictionary to an XML node '''
         if not isinstance(doc, Document):
             raise TypeError('Xml document not provided')
@@ -189,9 +192,9 @@ class Dico(BaseDico):
 
         block = [i for i in range(
             len(self.sizes)) if self.sizes[i] == atom.length][0]
-        n = atom.timePosition + 1
+        n = atom.time_position + 1
         frame = math.floor(float(n) / float(atom.length / 2)) + 1
-        return int(block * sigLength + frame * float(atom.length / 2) + atom.frequencyBin)
+        return int(block * sigLength + frame * float(atom.length / 2) + atom.freq_bin)
 
     #
     def getProjections(self, indexes, sigLength):
@@ -204,7 +207,7 @@ class Dico(BaseDico):
             block = int(math.floor(index / sigLength))
 # frame = math.floor( (index - block*sigLength)   /  (self.sizes[block]  /2))
             projections.append(self.blocks[block].
-                projectionMatrix[int(index - block * sigLength)])
+                               projs_matrix[int(index - block * sigLength)])
 
         return projections
 
@@ -225,7 +228,7 @@ class LODico(Dico):
             _Logger.setLevel(debug_level)
 
         self.sizes = sizes
-        self.useC = useC
+        self.use_c_optim = useC
         if hrsizes is not None:
             self.HRsizes = hrsizes
         else:
@@ -233,17 +236,17 @@ class LODico(Dico):
 
     def initialize(self, residualSignal):
         self.blocks = []
-        self.bestCurrentBlock = None
-        self.startingTouchedIndex = 0
-        self.endingTouchedIndex = -1
+        self.best_current_block = None
+        self.starting_touched_index = 0
+        self.ending_touched_index = -1
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
             if mdctSize in self.HRsizes:
                 self.blocks.append(block.LOBlock(mdctSize,
-                     residualSignal, useC=self.useC))
+                                                 residualSignal, useC=self.use_c_optim))
             else:
                 self.blocks.append(
-                    block.Block(mdctSize, residualSignal, useC=self.useC))
+                    block.Block(mdctSize, residualSignal, useC=self.use_c_optim))
 
     def getProjections(self, indexes, sigLength):
         """ additional method provided for Gradient Pursuits
@@ -254,7 +257,7 @@ class LODico(Dico):
         for index in indexes:
             block = int(math.floor(index / sigLength))
 # frame = math.floor( (index - block*sigLength)   /  (self.sizes[block]  /2))
-            value = self.blocks[block].projectionMatrix[int(
+            value = self.blocks[block].projs_matrix[int(
                 index - block * sigLength)]
             if value.real < 0:
                 projections.append(-abs(value))
@@ -276,9 +279,9 @@ class FullDico(Dico):
 
     def initialize(self, residualSignal):
         self.blocks = []
-        self.bestCurrentBlock = None
-        self.startingTouchedIndex = 0
-        self.endingTouchedIndex = -1
+        self.best_current_block = None
+        self.starting_touched_index = 0
+        self.ending_touched_index = -1
         for mdctSize in self.sizes:
             self.blocks.append(block.FullBlock(mdctSize, residualSignal))
 
@@ -287,8 +290,8 @@ class FullDico(Dico):
         projShape = zeros(len(self.sizes))
         nbprojs = zeros(len(self.sizes))
         for bI in range(len(self.sizes)):
-            projShape[bI] = (self.blocks[bI].projectionMatrix[0].shape[0])
-            nbprojs[bI] = (len(self.blocks[bI].projectionMatrix))
+            projShape[bI] = (self.blocks[bI].projs_matrix[0].shape[0])
+            nbprojs[bI] = (len(self.blocks[bI].projs_matrix))
             print bI, projShape[bI], nbprojs[bI]
 
         return zeros((sum(projShape * nbprojs), itNumbers))
@@ -298,7 +301,7 @@ class FullDico(Dico):
         ide = 0
         for blockIdx in range(len(self.blocks)):
             projMat = array(
-                self.blocks[blockIdx].projectionMatrix.values()).flatten()
+                self.blocks[blockIdx].projs_matrix.values()).flatten()
 #            if normedProj:
 #                normCoeff = sqrt(sum(projMat**2))
 #            else:
@@ -306,7 +309,7 @@ class FullDico(Dico):
 # print projMat.shape , projMatrix[id:id+projMat.shape[0],
 # iterationNumber].shape
             projMatrix[ide:ide + projMat.shape[0],
-                 iterationNumber] = projMat  # /normCoeff
+                       iterationNumber] = projMat  # /normCoeff
             ide += projMat.shape[0]
 
 '''class pymp_SpreadDico(py_pursuit_MDCTDico):
@@ -332,9 +335,9 @@ class FullDico(Dico):
         """ Initialize As many blocks as number of signals x number of window sizes
         """
         self.blocks = []
-        self.bestCurrentBlock = None
-        self.startingTouchedIndex = 0
-        self.endingTouchedIndex = -1
+        self.best_current_block = None
+        self.starting_touched_index = 0
+        self.ending_touched_index = -1
         for mdctSize in self.sizes:
             if mdctSize in self.spreadScales:
                 self.blocks.append(Block.py_pursuit_SpreadBlock(

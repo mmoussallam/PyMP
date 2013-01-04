@@ -33,21 +33,19 @@ A Simple mp algorithm using the pymp objects
 --------------------------------------------
 
 '''
-
-
-#from MatchingPursuit import py_pursuit_Atom as Atom
-import approx as Approx
-from base import BaseDico as Dico
-import signals as Signal
-import log
-import win_server
 import math
-#from numpy import math
 import numpy as np
 
 # these imports are for debugging purposes
 import matplotlib.pyplot as plt
 import os.path
+
+# PyMP object imports
+import approx as Approx
+from base import BaseDico as Dico
+import signals as Signal
+import log
+import win_server
 
 # this import is needed for using the fast projection written in C extension
 # module
@@ -55,35 +53,35 @@ try:
     import parallelProjections
 except ImportError:
     print ''' Failed to load the parallelProjections extension module'''
-#from MatchingPursuit.TwoD.py_pursuit_2DApprox import py_pursuit_2DApprox
+# from MatchingPursuit.TwoD.py_pursuit_2DApprox import py_pursuit_2DApprox
 # declare gloabl waveform server
 global _PyServer, _Logger
 _PyServer = win_server.PyServer()
 _Logger = log.Log('mp', noContext=True)
 
 
-def mp(originalSignal,
+def mp(orig_signal,
         dictionary,
-        targetSRR,
-        maxIteratioNumber,
+        target_srr,
+        max_it_num,
         debug=0,
-        padSignal=True,
-        itClean=False,
-         silentFail=False,
-         plot=False,
-         debugSpecific=-1,
-         cutBorders=False):
+        pad=True,
+        clean=False,
+        silent_fail=False,
+        plot=False,
+        debug_iteration=-1,
+        unpad=False):
     """Common Matching Pursuit Loop Options are detailed below:
 
     Args:
 
-         `originalSignal`:    the original signal (as a :class:`.Signal` object) :math:`x` to decompose
+         `orig_signal`:    the original signal (as a :class:`.Signal` object) :math:`x` to decompose
 
          `dictionary`:        the dictionary (as a :class:`.Dico` object) :math:`\Phi` on which to decompose :math:x
 
-         `targetSRR`:         a target Signal to Residual Ratio
+         `target_srr`:         a target Signal to Residual Ratio
 
-         `maxIteratioNumber`: maximum number of iteration allowed
+         `max_it_num`: maximum number of iteration allowed
 
     Returns:
 
@@ -105,9 +103,9 @@ def mp(originalSignal,
         _Logger.setLevel(debug)
 
     # optional add zeroes to the edge
-    if padSignal:
-        originalSignal.pad(dictionary.getN())
-    residualSignal = originalSignal.copy()
+    if pad:
+        orig_signal.pad(dictionary.getN())
+    res_signal = orig_signal.copy()
 
     # FFTW Optimization for C code: initialize module global variables
     try:
@@ -118,123 +116,124 @@ def mp(originalSignal,
         _Logger.error("Initialization step failed")
         raise
     # initialize blocks
-    dictionary.initialize(residualSignal)
+    dictionary.initialize(res_signal)
 
     # initialize approximant
-    currentApprox = Approx.Approx(
-        dictionary, [], originalSignal, debug_level=debug)
+    current_approx = Approx.Approx(
+        dictionary, [], orig_signal, debug_level=debug)
 
     # residualEnergy
-    resEnergy = []
+    res_energy = []
 
-    iterationNumber = 0
-    approxSRR = currentApprox.compute_srr()
+    it_number = 0
+    current_srr = current_approx.compute_srr()
 
     # check if signal has null energy
-    if residualSignal.energy == 0:
+    if res_signal.energy == 0:
         _Logger.info(" Null signal energy ")
-        return currentApprox, resEnergy
-    resEnergy.append(residualSignal.energy)
+        return current_approx, res_energy
+    res_energy.append(res_signal.energy)
 
     if plot:
         plt.ion()
-        fig = plt.figure()
+        plt.figure()
         ax1 = plt.subplot(211)
         ax2 = plt.subplot(212)
 
     # Decomposition loop: stopping criteria is either SNR or iteration number
-    while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
-        maxBlockScore = 0
-        bestBlock = None
+    while (current_srr < target_srr) & (it_number < max_it_num):
 
-        if (iterationNumber == debugSpecific):
+        if (it_number == debug_iteration):
             debug = 3
             _Logger.setLevel(3)
 
         # Compute inner products and selects the best atom
-        dictionary.update(residualSignal, iterationNumber)
+        dictionary.update(res_signal, it_number)
 
         # retrieve the best correlated atom
-        bestAtom = dictionary.getBestAtom(debug)
+        best_atom = dictionary.getBestAtom(debug)
 
-        if bestAtom is None:
+        if best_atom is None:
             print 'No atom selected anymore'
-            return currentApprox, resEnergy
+            return current_approx, res_energy
 
         if debug > 0:
             # TODO reformulate for both 1D and 2D
-            _Logger.debug("It: " + str(iterationNumber) + " Selected atom " + str(dictionary.bestCurrentBlock.maxIdx) + " of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.frequencyBin)
-                                            + " at " + str(
-                                                bestAtom.timePosition)
-                                            + " value : " + str(
-                                                bestAtom.getAmplitude())
-                                            + " time shift : " + str(
-                                                bestAtom.timeShift)
-                                            + " Frame : " + str(bestAtom.frame))
-# + " K = " + str(np.sqrt(bestAtom.mdct_value**2 / residualSignal.energy)))
-            if bestAtom.phase is not None:
-                _Logger.debug('    phase of : ' + str(bestAtom.phase))
+            _Logger.debug("It: " + str(it_number) + " Selected atom "
+                          + str(dictionary.best_current_block.maxIdx)
+                          + " of scale " + str(best_atom.length)
+                          + " frequency bin " + str(best_atom.freq_bin)
+                          + " at " + str(
+                          best_atom.time_position)
+                          + " value : " + str(
+                          best_atom.get_value())
+                          + " time shift : " + str(
+                          best_atom.time_shift)
+                          + " Frame : " + str(best_atom.frame))
+
+            if best_atom.phase is not None:
+                _Logger.debug('    phase of : ' + str(best_atom.phase))
 
         try:
-            residualSignal.subtract(bestAtom, debug)
-            dictionary.computeTouchZone(bestAtom)
+            res_signal.subtract(best_atom, debug)
+            dictionary.computeTouchZone(best_atom)
         except ValueError:
-            if not silentFail:
+            if not silent_fail:
                 _Logger.error("Something wrong happened at iteration " +
-                     str(iterationNumber) + " atom substraction abandonned")
+                              str(it_number) + " atom substraction abandonned")
                 # TODO refactoring
-                print "Atom scale : ", bestAtom.length, " , frequency Bin: ", bestAtom.frequencyBin, " , location : ", bestAtom.timePosition, " , Time Shift : ", bestAtom.timeShift, " , value : ", bestAtom.getAmplitude()
+                print "Atom scale : ", best_atom.length, " , frequency Bin: ", best_atom.freq_bin, " , location : ", best_atom.time_position, " , Time Shift : ", best_atom.time_shift, " , value : ", best_atom.get_value()
             if debug > 1:
                 plt.figure()
-                plt.plot(residualSignal.data[bestAtom.
-                    timePosition: bestAtom.timePosition + bestAtom.length])
-                plt.plot(bestAtom.waveform)
-                plt.plot(residualSignal.data[bestAtom.timePosition: bestAtom.timePosition +
-                     bestAtom.length] - bestAtom.waveform, ':')
+                plt.plot(res_signal.data[best_atom.
+                                             time_position: best_atom.time_position + best_atom.length])
+                plt.plot(best_atom.waveform)
+                plt.plot(res_signal.data[best_atom.time_position: best_atom.time_position +
+                                             best_atom.length] - best_atom.waveform, ':')
                 plt.legend(('Signal', 'Atom substracted', 'residual'))
-                plt.title('Iteration ' + str(iterationNumber))
+                plt.title('Iteration ' + str(it_number))
 
-                dictionary.bestCurrentBlock.plotScores()
+                dictionary.best_current_block.plotScores()
                 plt.show()
-            return currentApprox, resEnergy
+            return current_approx, res_energy
 
         if debug > 1:
             _Logger.debug("new residual energy of " + str(sum(
-                residualSignal.data ** 2)))
+                res_signal.data ** 2)))
 
-        if not cutBorders:
-            resEnergy.append(residualSignal.energy)
+        if not unpad:
+            res_energy.append(res_signal.energy)
         else:
             # only compute the energy without the padded borders wher
             # eventually energy has been created
             padd = 256
             # assume padding is max dictionaty size
-            resEnergy.append(np.sum(residualSignal.data[padd:-padd] ** 2))
+            res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))
 
         # add atom to dictionary
-        currentApprox.add(bestAtom)
+        current_approx.add(best_atom)
 
         # compute new SRR and increment iteration Number
-        approxSRR = currentApprox.compute_srr(residualSignal)
+        current_srr = current_approx.compute_srr(res_signal)
 
         if plot:
             ax1.clear()
 #            plt.subplot(121)
-            plt.title('Iteration : ' + str(iterationNumber) +
-                 ' , SRR : ' + str(approxSRR))
-            ax1.plot(currentApprox.recomposed_signal.data)
+            plt.title('Iteration : ' + str(it_number) +
+                      ' , SRR : ' + str(current_srr))
+            ax1.plot(current_approx.recomposed_signal.data)
             ax2.clear()
 
             plt.draw()
 
-        _Logger.debug("SRR reached of " + str(approxSRR) +
-             " at iteration " + str(iterationNumber))
+        _Logger.debug("SRR reached of " + str(current_srr) +
+                      " at iteration " + str(it_number))
 
-        iterationNumber += 1
+        it_number += 1
 
         # cleaning
-        if itClean:
-            del bestAtom.waveform
+        if clean:
+            del best_atom.waveform
 
     # VERY IMPORTANT CLEANING STAGE!
     if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
@@ -244,27 +243,33 @@ def mp(originalSignal,
     if plot:
         plt.ioff()
 
-    return currentApprox, resEnergy
+    return current_approx, res_energy
 
 
-def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxIteratioNumber, debug=0, padSignal=True):
+def mp_continue(current_approx,
+                orig_signal,
+                dictionary,
+                target_srr,
+                max_it_num,
+                debug=0,
+                pad=True):
     """ routine that restarts a decomposition from an existing, incomplete approximation """
 
-    if not isinstance(currentApprox, Approx.Approx):
+    if not isinstance(current_approx, Approx.Approx):
         raise TypeError("provided object is not a py_pursuit_Approx")
 
     # optional add zeroes to the edge
-    if padSignal:
-        originalSignal.pad(dictionary.getN())
+    if pad:
+        orig_signal.pad(dictionary.getN())
 
-    residualSignal = originalSignal.copy()
+    residualSignal = orig_signal.copy()
 
     # retrieve approximation from residual
-    if currentApprox.recomposed_signal is not None:
-        residualSignal.data -= currentApprox.recomposed_signal.data
+    if current_approx.recomposed_signal is not None:
+        residualSignal.data -= current_approx.recomposed_signal.data
         residualSignal.energy = sum(residualSignal.data ** 2)
     else:
-        for atom in currentApprox.atoms:
+        for atom in current_approx.atoms:
             residualSignal.subtract(atom, debug)
 
     try:
@@ -282,9 +287,9 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
     resEnergy = [residualSignal.energy]
 
     iterationNumber = 0
-    approxSRR = currentApprox.compute_srr()
+    approxSRR = current_approx.compute_srr()
 
-    while (approxSRR < targetSRR) & (iterationNumber < maxIteratioNumber):
+    while (approxSRR < target_srr) & (iterationNumber < max_it_num):
         maxBlockScore = 0
         bestBlock = None
         # Compute inner products and selects the best atom
@@ -297,15 +302,15 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
 
         if bestAtom is None:
             print 'No atom selected anymore'
-            return currentApprox, resEnergy
+            return current_approx, resEnergy
 
         if debug > 0:
-            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.frequencyBin)
-                                            + " at " + str(
-                                                bestAtom.timePosition)
-                                            + " value : " + str(
-                                                bestAtom.mdct_value)
-                                            + " time shift : " + str(bestAtom.timeShift))
+            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.freq_bin)
+                    + " at " + str(
+                    bestAtom.time_position)
+                    + " value : " + str(
+                    bestAtom.mdct_value)
+                    + " time shift : " + str(bestAtom.time_shift))
             print strO
 
         try:
@@ -316,25 +321,25 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
             if debug > 1:
                 plt.figure()
                 plt.plot(residualSignal.data[bestAtom.
-                    timePosition: bestAtom.timePosition + bestAtom.length])
+                                             time_position: bestAtom.time_position + bestAtom.length])
                 plt.plot(bestAtom.waveform)
-                plt.plot(residualSignal.data[bestAtom.timePosition: bestAtom.timePosition +
-                     bestAtom.length] - bestAtom.waveform, ':')
+                plt.plot(residualSignal.data[bestAtom.time_position: bestAtom.time_position +
+                                             bestAtom.length] - bestAtom.waveform, ':')
                 plt.legend(('Signal', 'Atom substracted', 'residual'))
                 plt.show()
             approxPath = "currentApprox_failed_iteration_" + str(
                 iterationNumber) + ".xml"
             signalPath = "currentApproxRecomposedSignal_failed_iteration_" + str(
                 iterationNumber) + ".wav"
-            currentApprox.write_to_xml(approxPath)
-            currentApprox.recomposed_signal.write(signalPath)
+            current_approx.write_to_xml(approxPath)
+            current_approx.recomposed_signal.write(signalPath)
             print " approx saved to ", approxPath
             print " recomposed signal saved to ", signalPath
-            return currentApprox, resEnergy
+            return current_approx, resEnergy
 
         if debug > 1:
             plt.figure()
-            plt.plot(originalSignal.data)
+            plt.plot(orig_signal.data)
             plt.plot(residualSignal.data, '--')
             plt.legend(
                 ("original", "residual at iteration " + str(iterationNumber)))
@@ -348,11 +353,11 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
 #        resEnergy.append(sum(residualSignal.dataVec **2))
 
         # add atom to dictionary
-        currentApprox.add(bestAtom, dictionary.bestCurrentBlock.wLong)
+        current_approx.add(bestAtom, dictionary.best_current_block.w_long)
 
         # compute new SRR and increment iteration Number
-#        approxSRR = currentApprox.compute_srr(residualSignal);
-        approxSRR = currentApprox.compute_srr()
+#        approxSRR = current_approx.compute_srr(residualSignal);
+        approxSRR = current_approx.compute_srr()
         iterationNumber += 1
 
         if debug > 0:
@@ -365,7 +370,7 @@ def mp_continue(currentApprox, originalSignal, dictionary,  targetSRR,  maxItera
     if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
         raise ValueError("Something failed during FFTW cleaning stage ")
 
-    return currentApprox, resEnergy
+    return current_approx, resEnergy
 
 
 def mp_long(originalLongSignal, dictionary, targetSRR=10, maxIteratioNumber=100, debug=False, padSignal=True, outputDir='', doWrite=False):
@@ -399,23 +404,23 @@ def mp_long(originalLongSignal, dictionary, targetSRR=10, maxIteratioNumber=100,
 # subSignal = originalLongSignal.getSubSignal( segIdx , 1 ,forceMono=True,
 # doNormalize=False , padSignal = (dictionary.getN())/2)
         subSignal = originalLongSignal.getSubSignal(
-             segIdx, 1, True, False, 0, 0)
+            segIdx, 1, True, False, 0, 0)
         approx, decay = mp(subSignal, dictionary, targetSRR,
-             maxIteratioNumber, debug=debug, padSignal=padSignal)
+                           maxIteratioNumber, debug=debug, pad=padSignal)
         approximants.append(approx)
         decays.append(decay)
 
         # save the output in xml formatting
         if doWrite:
             approximants[segIdx].write_to_xml('Srr' + str(targetSRR) +
-                 '_Seg' + str(segIdx) + '_Over_' + str(Nsegments) + '.xml', outputDir)
+                                              '_Seg' + str(segIdx) + '_Over_' + str(Nsegments) + '.xml', outputDir)
 
     return approximants, decays
 
 # Experimental
 
 
-#def GP(originalSignal,
+# def GP(originalSignal,
 #        dictionary,
 #        targetSRR,
 #        maxIteratioNumber,
@@ -586,12 +591,12 @@ def mp_long(originalLongSignal, dictionary, targetSRR=10, maxIteratioNumber=100,
 #
 #    return currentApprox, resEnergy
 
-#def substract(residualSignal , alpha , c):
+# def substract(residualSignal , alpha , c):
 #    residualSignal.dataVec -= alpha*c;
 #    return residualSignal
 
 
-#def OMP(originalSignal,
+# def OMP(originalSignal,
 #        dictionary,
 #        targetSRR,
 #        maxIteratioNumber,
@@ -721,21 +726,21 @@ def mp_long(originalLongSignal, dictionary, targetSRR=10, maxIteratioNumber=100,
 
 
 def mp_joint(originalSignalList,
-        dictionary,
-        targetSRR,
-        maxIteratioNumber,
-        debug=0,
-        padSignal=True,
-        escape=False,
-        Threshold=0.4,
-        ThresholdMap=None,
-        doEval=False,
-        sources=None,
-        interval=100,
-        doClean=True,
-        waitbar=True,
-        noAdapt=False,
-        silentFail=False):
+             dictionary,
+             targetSRR,
+             maxIteratioNumber,
+             debug=0,
+             padSignal=True,
+             escape=False,
+             Threshold=0.4,
+             ThresholdMap=None,
+             doEval=False,
+             sources=None,
+             interval=100,
+             doClean=True,
+             waitbar=True,
+             noAdapt=False,
+             silentFail=False):
     """ Joint Matching Pursuit : Takes a bunch of signals in entry and decomposes the common part out of them
         Gives The common model and the sparse residual for each signal in return """
 
@@ -770,7 +775,7 @@ def mp_joint(originalSignalList,
 
     # create a mean approx of the background
     meanApprox = Approx.Approx(
-        dictionary, [], originalSignalList[0],  debugLevel=debug)
+        dictionary, [], originalSignalList[0], debug_level=debug)
     k = 1
     for originalSignal in originalSignalList:
 
@@ -782,11 +787,11 @@ def mp_joint(originalSignalList,
 
         # initialize approximant
         currentApproxList.append(
-            Approx.Approx(dictionary, [], originalSignal, debugLevel=debug))
+            Approx.Approx(dictionary, [], originalSignal, debug_level=debug))
 
         if escape:
             escapeApproxList.append(Approx.Approx(dictionary, [
-                ], originalSignal, debugLevel=debug))
+            ], originalSignal, debugLevel=debug))
             escItList.append([])
         # residualEnergy
         resEnergyList.append([])
@@ -819,16 +824,16 @@ def mp_joint(originalSignalList,
         dictionary.update(residualSignalList, iterationNumber)
 
         if debug > 0:
-            maxScale = dictionary.bestCurrentBlock.scale
+            maxScale = dictionary.best_current_block.scale
             maxFrameIdx = math.floor(
-                dictionary.bestCurrentBlock.maxIdx / (0.5 * maxScale))
-            maxBinIdx = dictionary.bestCurrentBlock.maxIdx - maxFrameIdx * (
+                dictionary.best_current_block.maxIdx / (0.5 * maxScale))
+            maxBinIdx = dictionary.best_current_block.maxIdx - maxFrameIdx * (
                 0.5 * maxScale)
 
-            _Logger.debug("It: " + str(iterationNumber) + " Selected atom " + str(dictionary.bestCurrentBlock.maxIdx) + " of scale " + str(maxScale) + " frequency bin " + str(maxBinIdx)
-                                            + " value : " + str(
-                                                dictionary.maxBlockScore)
-                                            + " Frame : " + str(maxFrameIdx))
+            _Logger.debug("It: " + str(iterationNumber) + " Selected atom " + str(dictionary.best_current_block.maxIdx) + " of scale " + str(maxScale) + " frequency bin " + str(maxBinIdx)
+                          + " value : " + str(
+                          dictionary.max_block_score)
+                          + " Frame : " + str(maxFrameIdx))
 
         # retrieve the best correlated atoms, locally adapted to the signal
         bestAtomList = dictionary.getBestAtom(debug, noAdapt=noAdapt)
@@ -842,10 +847,10 @@ def mp_joint(originalSignalList,
         if escape:
             # Escape mechanism : if variance of amplitudes is too big : assign
             # it to the biggest only
-            mean = np.mean([abs(atom.getAmplitude()) for atom in bestAtomList])
-            std = np.std([abs(atom.getAmplitude()) for atom in bestAtomList])
+            mean = np.mean([abs(atom.get_value()) for atom in bestAtomList])
+            std = np.std([abs(atom.get_value()) for atom in bestAtomList])
             maxValue = np.max(
-                [abs(atom.getAmplitude()) for atom in bestAtomList])
+                [abs(atom.get_value()) for atom in bestAtomList])
             _Logger.debug("Mean : " + str(mean) + " - STD : " + str(std))
 
             criterions.append(std / mean)
@@ -876,7 +881,7 @@ def mp_joint(originalSignalList,
             else:
                 # Add this atom to the escape approx only if this signal is a
                 # maxima
-                if abs(bestAtomList[sigIdx].getAmplitude()) == maxValue:
+                if abs(bestAtomList[sigIdx].get_value()) == maxValue:
 #                if True:
 #                    print "Added Atom to signal " + str(sigIdx)
                     escapeApproxList[sigIdx].add(bestAtomList[sigIdx])
@@ -901,9 +906,9 @@ def mp_joint(originalSignalList,
                     sigIdx].compute_srr(residualSignalList[sigIdx])
 
                 _Logger.debug("Local adaptation of atom " + str(sigIdx) +
-                              " - Position : " + str(bestAtomList[sigIdx].timePosition) +
-                              " Amplitude : " + str(bestAtomList[sigIdx].projectionScore) +
-                              " TimeShift : " + str(bestAtomList[sigIdx].timeShift))
+                              " - Position : " + str(bestAtomList[sigIdx].time_position) +
+                              " Amplitude : " + str(bestAtomList[sigIdx].proj_score) +
+                              " TimeShift : " + str(bestAtomList[sigIdx].time_shift))
 #            if doClean and sigIdx>0:
 #                del bestAtomList[sigIdx].waveform;
 
@@ -924,7 +929,7 @@ def mp_joint(originalSignalList,
 #        approxSRR = currentApprox.compute_srr();
 
         _Logger.debug("SRRs reached of " + str(approxSRRList) +
-             " at iteration " + str(iterationNumber))
+                      " at iteration " + str(iterationNumber))
 
 #        if doEval and ( (iterationNumber+1) % interval ==0):
 #            estimSources = np.zeros(sources.shape)

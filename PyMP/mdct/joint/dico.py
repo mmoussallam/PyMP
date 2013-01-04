@@ -23,18 +23,18 @@ class SetDico(mdct_dico.Dico):
     tolerances = []
 #    blocksList = []
     blocks = []
-    bestCurrentBlock = None
+    best_current_block = None
     maxBlockScores = []
     nature = None # this parameter controls the atom selection function: sum sums scores across signals
                     # prod : multiply them
                     # maximin : selects
 
-    startingTouchedIndex = []
-    endingTouchedIndex = []
+    starting_touched_index = []
+    ending_touched_index = []
 
     def __init__(self, sizes, useC = True , selectNature = 'sum' , tol =None , nonLinear=False, params=None):
         " Create an set of dictionaries, with blocks and everything."
-        self.useC = useC
+        self.use_c_optim = useC
         self.sizes = sizes
         self.type = type
         self.projections = None
@@ -54,7 +54,7 @@ class SetDico(mdct_dico.Dico):
 
     def initialize(self , residualSignalList):
         self.blocks = []
-        self.bestCurrentBlock = None
+        self.best_current_block = None
 
 
         ######### Optimized version : 1 block to handle all projections with same window size########
@@ -65,13 +65,13 @@ class SetDico(mdct_dico.Dico):
                 if not self.isNL:
                     self.blocks.append(joint_block.SetLOBlock(mdctSize ,
                                                                residualSignalList,
-                                                                useC=self.useC ,
+                                                                useC=self.use_c_optim ,
                                                                 nature= self.nature,
                                                                 tolerance = tolerance ))
                 else:
                     self.blocks.append(joint_block.SetNLLOBlock(mdctSize ,
                                                                residualSignalList,
-                                                                useC=self.useC ,
+                                                                useC=self.use_c_optim ,
                                                                 nature= self.nature,
                                                                 tolerance = tolerance ,
                                                                 lambd = self.params))
@@ -79,18 +79,18 @@ class SetDico(mdct_dico.Dico):
 #                print "Tolerance too weak to allow atom optimization: No adaptation assumed"
                 self.blocks.append(joint_block.SetBlock(mdctSize,
                                                              residualSignalList,
-                                                             useC=self.useC ,
+                                                             useC=self.use_c_optim ,
                                                              nature= self.nature,
                                                              tolerance = tolerance))
 
 
-        self.startingTouchedIndex = [0]*len(residualSignalList)
-        self.endingTouchedIndex = [-1]*len(residualSignalList)
+        self.starting_touched_index = [0]*len(residualSignalList)
+        self.ending_touched_index = [-1]*len(residualSignalList)
 
     def update(self , residualSignalList , iteratioNumber=0 , debug=0):
         # Update all the blocks : Size by Size: so we can add the projections and have find the maximum
-        self.maxBlockScore = 0
-        self.bestCurrentBlock = None
+        self.max_block_score = 0
+        self.best_current_block = None
 
         startingTouchedFrameList = [0]*len(residualSignalList)
         endingTouchedFrameList = [-1]*len(residualSignalList)
@@ -103,37 +103,37 @@ class SetDico(mdct_dico.Dico):
 #                startingTouchedFrameList[sigIdx] = 0
 #                endingTouchedFrameList[sigIdx] = -1
 #                print "DEBUG : recomputing all"
-                startingTouchedFrameList[sigIdx] = int(math.floor(self.startingTouchedIndex[sigIdx] / (block.scale/2)))
+                startingTouchedFrameList[sigIdx] = int(math.floor(self.starting_touched_index[sigIdx] / (block.scale/2)))
 
-                if self.endingTouchedIndex[sigIdx] > 0:
-                    endingTouchedFrameList[sigIdx] = int(math.floor(self.endingTouchedIndex[sigIdx] / (block.scale/2) )) + 1 # TODO check this
+                if self.ending_touched_index[sigIdx] > 0:
+                    endingTouchedFrameList[sigIdx] = int(math.floor(self.ending_touched_index[sigIdx] / (block.scale/2) )) + 1 # TODO check this
                 else:
                     endingTouchedFrameList[sigIdx] = -1
 
 #            print "block: " , block.scale , " : " , startingTouchedFrame , endingTouchedFrame
             block.update(residualSignalList , startingTouchedFrameList , endingTouchedFrameList )
 
-            if abs(block.maxValue) > self.maxBlockScore:
-                self.maxBlockScore = abs(block.maxValue)
-                self.bestCurrentBlock = block
+            if abs(block.max_value) > self.max_block_score:
+                self.max_block_score = abs(block.max_value)
+                self.best_current_block = block
 
 
     def getBestAtom(self , debug , noAdapt=False):
-        if self.bestCurrentBlock is None:
+        if self.best_current_block is None:
             score = 0
             for block in self.blocks:
-                maxValue = max(block.bestScoreTree)
+                maxValue = max(block.best_score_tree)
                 if abs(maxValue) > score:
-                    self.maxBlockScore = abs(maxValue)
-                    self.bestCurrentBlock = block
+                    self.max_block_score = abs(maxValue)
+                    self.best_current_block = block
 
-        if self.bestCurrentBlock is None:
+        if self.best_current_block is None:
             raise ValueError("no best block constructed, make sure inner product have been updated")
 
 #        print 'Best Size is ', self.sizes[self.bestSize] , ' with score ' , self.bestScore , ' for atom ', self.maxAtomIdx
 
         # call on the best block to return a list of atoms that are adapted to each of the signals
-        self.bestAtoms = self.bestCurrentBlock.getAdaptedBestAtoms(debug ,  noAdapt=False)
+        self.bestAtoms = self.best_current_block.getAdaptedBestAtoms(debug ,  noAdapt=False)
 #        for sigIdx in range(len(self.blocksList)):
 #            self.bestAtoms.append(self.blocksList[sigIdx][self.bestSize].getAdaptedMaxAtom(self.maxAtomIdx))
 
@@ -156,13 +156,13 @@ class SetDico(mdct_dico.Dico):
 #        for atom in self.bestAtoms:
 ##            value += sqrt(abs(atom.getAmplitude()))
 #            timePos += atom.timePosition
-        value = np.mean([abs(at.projectionScore) for at in self.bestAtoms])
-        timePos = np.median([at.timePosition for at in self.bestAtoms])
+        value = np.mean([abs(at.proj_score) for at in self.bestAtoms])
+        timePos = np.median([at.time_position for at in self.bestAtoms])
 
 #        self.meanAtom.timePosition = int(timePos)#/len(self.bestAtoms)
         self.meanAtom.mdct_value = float(value)
 
-        self.meanAtom.waveform /= np.sqrt(sum(self.meanAtom.waveform**2))
+        self.meanAtom.waveform /= np.sqrt(np.sum(self.meanAtom.waveform**2))
         self.meanAtom.waveform *= float(value)#/float(len(self.bestAtoms))
 
 #        print "Mean Value of ",float(value)#/float(len(self.bestAtoms))
@@ -172,11 +172,11 @@ class SetDico(mdct_dico.Dico):
         #print "Updating : " ,blockIdx
         # Each block need be recomputed on a different fraction of the signal
         if atom is not None:
-            self.startingTouchedIndex[sigIdx] = atom.timePosition - atom.length/2
-            self.endingTouchedIndex[sigIdx] = atom.timePosition + 1.5*atom.length
+            self.starting_touched_index[sigIdx] = atom.time_position - atom.length/2
+            self.ending_touched_index[sigIdx] = atom.time_position + 1.5*atom.length
         # if the atom is not selected , then no update is necessary
         else:
-            self.endingTouchedIndex[sigIdx] = self.startingTouchedIndex[sigIdx]
+            self.ending_touched_index[sigIdx] = self.starting_touched_index[sigIdx]
 
 class RandomSetDico(SetDico,random_dico.RandomDico):
     """ This class handles multiple dictionaries the best atom is selected when best explaining all the signals
@@ -196,19 +196,19 @@ class RandomSetDico(SetDico,random_dico.RandomDico):
     tolerances = []
 #    blocksList = []
     blocks = []
-    bestCurrentBlock = None
+    best_current_block = None
     maxBlockScores = []
     nature = None # this parameter controls the atom selection function: sum sums scores across signals
                     # prod : multiply them
                     # maximin : selects
 
-    startingTouchedIndex = []
-    endingTouchedIndex = []
+    starting_touched_index = []
+    ending_touched_index = []
     TsSequence = None
 
     def __init__(self, sizes, useC = True , selectNature = 'sum' , tol =None , nonLinear=False, params=None):
         " Create an set of dictionaries, with blocks and everything."
-        self.useC = useC
+        self.use_c_optim = useC
         self.sizes = sizes
         self.type = type
         self.projections = None
@@ -228,7 +228,7 @@ class RandomSetDico(SetDico,random_dico.RandomDico):
 
     def initialize(self , residualSignalList):
         self.blocks = []
-        self.bestCurrentBlock = None
+        self.best_current_block = None
 
 
         ######### Optimized version : 1 block to handle all projections with same window size########
@@ -252,19 +252,19 @@ class RandomSetDico(SetDico,random_dico.RandomDico):
 #                print "Tolerance too weak to allow atom optimization: No adaptation assumed"
             self.blocks.append(joint_block.RandomSetBlock(mdctSize,
                                                                  residualSignalList,
-                                                                 useC=self.useC ,
+                                                                 useC=self.use_c_optim ,
                                                                  nature= self.nature,
                                                                  tolerance = tolerance))
 
 
-        self.startingTouchedIndex = [0]*len(residualSignalList)
-        self.endingTouchedIndex = [-1]*len(residualSignalList)
+        self.starting_touched_index = [0]*len(residualSignalList)
+        self.ending_touched_index = [-1]*len(residualSignalList)
 
 
     def update(self , residualSignalList , iteratioNumber=0 , debug=0):
         # Update all the blocks : Size by Size: so we can add the projections and have find the maximum
-        self.maxBlockScore = 0
-        self.bestCurrentBlock = None
+        self.max_block_score = 0
+        self.best_current_block = None
 
         startingTouchedFrameList = [0]*len(residualSignalList)
         endingTouchedFrameList = [-1]*len(residualSignalList)
@@ -287,6 +287,6 @@ class RandomSetDico(SetDico,random_dico.RandomDico):
 #            print "block: " , block.scale , " : " , startingTouchedFrame , endingTouchedFrame
             block.update(residualSignalList , startingTouchedFrameList , endingTouchedFrameList ,iteratioNumber)
 
-            if abs(block.maxValue) > self.maxBlockScore:
-                self.maxBlockScore = abs(block.maxValue)
-                self.bestCurrentBlock = block
+            if abs(block.max_value) > self.max_block_score:
+                self.max_block_score = abs(block.max_value)
+                self.best_current_block = block

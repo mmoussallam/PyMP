@@ -27,7 +27,7 @@ from PyMP.mdct import atom as mdct_atom
 from PyMP.mdct import dico as mdct_dico
 from PyMP.mdct import block as mdct_block
 from PyMP.base import BaseAtom, BaseDico
-from PyMP.mdct.random import dico as random_dico
+from PyMP.mdct.rand import dico as random_dico
 from PyMP import approx
 from PyMP import signals
 from PyMP import log
@@ -59,14 +59,14 @@ class AtomTest(unittest.TestCase):
         self.assertEqual(pyAtom2.mdct_value, 0.57)
         self.assertEqual(pyAtom2.fs, 44100)
         self.assertEqual(
-            pyAtom2.reducedFrequency, float(128 + 0.5) / float(1024))
-        self.assertEqual(pyAtom2.timePosition, 12432)
+            pyAtom2.reduced_frequency, float(128 + 0.5) / float(1024))
+        self.assertEqual(pyAtom2.time_position, 12432)
         self.assertEqual(pyAtom2.nature, 'MDCT')
         
         print pyAtom2
 #        synthesizedAtom2 = pyAtom2.synthesize()
 
-        synthAtom3 = pyAtom2.synthesizeIFFT()
+        synthAtom3 = pyAtom2.synthesize_ifft()
 
 #        energy1 = sum(synthesizedAtom2.waveform**2)
         energy2 = sum(synthAtom3.real ** 2)
@@ -82,11 +82,11 @@ class AtomTest(unittest.TestCase):
         timeShift = 144
         projectionScore = -0.59
         pyAtomLOmp = mdct_atom.Atom(1024, 1, 12432, 128, 44100, 0.57)
-        pyAtomLOmp.timeShift = timeShift
-        pyAtomLOmp.projectionScore = projectionScore
+        pyAtomLOmp.time_shift = timeShift
+        pyAtomLOmp.proj_score = projectionScore
 
         # test 1 synthesis
-        pyAtomLOmp.synthesizeIFFT()
+        pyAtomLOmp.synthesize_ifft()
         wf1 = pyAtomLOmp.waveform.copy()
 
         wf2 = -(math.sqrt(abs(projectionScore) / sum(wf1 ** 2))) * wf1
@@ -258,11 +258,11 @@ class BlockTest(unittest.TestCase):
 #            return
         block.update(pySigOriginal)
 
-        plt.plot(block.projectionMatrix.flatten(1))
+        plt.plot(block.projs_matrix.flatten(1))
         plt.plot(mdct.mdct(pySigOriginal.data, block.scale))
 #        plt.show()
 
-        self.assertAlmostEqual(sum((block.projectionMatrix - mdct.
+        self.assertAlmostEqual(sum((block.projs_matrix - mdct.
             mdct(pySigOriginal.data, block.scale)) ** 2), 0)
 
         parallelProjections.clean_plans(np.array([1024,]))
@@ -336,9 +336,9 @@ class py_mpTest(unittest.TestCase):
         pyDico1 = mdct_dico.Dico([16384])
         # profiling test
         print "Plain"
-        cProfile.runctx('mp.mp(pySigOriginal, pyDico1, 20, 1000 ,debug=0 , itClean=True)', globals(), locals())
+        cProfile.runctx('mp.mp(pySigOriginal, pyDico1, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
 
-        cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 1000 ,debug=0 , itClean=True)', globals(), locals())
+        cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
 
 #        print "Parallel"
 # cProfile.runctx('mp.mp(pySigOriginal, pyDico_parallel, 40, 100 ,debug=0)' ,
@@ -988,15 +988,15 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-#    suite.addTest(py_mpTest3())
-#    suite.addTest(py_mpTest())
-#    suite.addTest(py_mpTest2())
-#    suite.addTest(ApproxTest())
+    suite.addTest(py_mpTest3())
+    suite.addTest(py_mpTest())
+    suite.addTest(py_mpTest2())
+    suite.addTest(ApproxTest())
     suite.addTest(AtomTest())
-#    suite.addTest(DicoTest())
-#    suite.addTest(BlockTest())
-#    suite.addTest(Signaltest())
-##
+    suite.addTest(DicoTest())
+    suite.addTest(BlockTest())
+    suite.addTest(Signaltest())
+#
     unittest.TextTestRunner(verbosity=2).run(suite)
 
     plt.show()
