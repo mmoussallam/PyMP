@@ -10,13 +10,14 @@ PyMP's documentation!
 		\makeindex 
 		
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
 
    doc
    example
    example_coder
-   MP.rst
-		
+   example_objects
+   
+   MP.rst		
    classes.rst
 		
    Mdct.rst

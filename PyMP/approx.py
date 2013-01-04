@@ -202,7 +202,7 @@ class Approx:
         return output_approx
 
     def __repr__(self):        
-        return 'Approx Object: %d atoms, SRR of %2.2f dB)' % (self.atom_number, self.srr)
+        return 'Approx Object: %d atoms, SRR of %2.2f dB' % (self.atom_number, self.srr)
 
     # Filter the atom list by the given criterion
     def filter_atoms(self, mdctSize=0, posInterv=None, freqInterv=None):

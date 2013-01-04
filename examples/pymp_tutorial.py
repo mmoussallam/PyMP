@@ -17,6 +17,8 @@ print 'Before cropping Length of ', myPympSignal.length
 myPympSignal.crop(0, 2048)
 print 'After cropping Length of ', myPympSignal.length
 
+subSig = myPympSignal[0:2048]
+print subSig
 
 newSig = signals.Signal(np.ones((8,)), 1)
 newSig.data
@@ -36,3 +38,5 @@ pyApprox = approx.Approx(pyDico, [], myPympSignal)
 pyApprox.add(atom.Atom(256, 1, 256, 10, 8000, 1))
 
 pyApprox.compute_srr()
+print pyApprox
+

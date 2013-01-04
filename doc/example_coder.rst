@@ -1,4 +1,4 @@
-PyMP Tutorial 2. Audio compression 
+PyMP Tutorial 2. Audio compression
 ==================================
 
 We now assume you're familiar with PyMP and the different Pursuit types that can be performed
@@ -49,18 +49,18 @@ Encoding of standard MP decompositions
 
 Let us perform a MP decomposition of a 1 second audio exceprt of Glockenspiel using a 3xMDCT dictionary::
 
->>> from math import floor 
 >>> from PyMP.mdct import dico
->>> from PyMP import mp , mp_coder, signals
->>> myPympSignal =  signals.Signal('data/ClocheB.wav',mono=True) # Load Signal
->>> myPympSignal.crop(0, 4.0*myPympSignal.fs)     # Keep only 4 seconds
+>>> from PyMP.mdct.rand import dico as random_dico
+>>> from PyMP import mp, mp_coder, signals
+>>> myPympSignal = signals.Signal('../data/ClocheB.wav', mono=True)  # Load Signal
+>>> myPympSignal.crop(0, 4.0 * myPympSignal.fs)     # Keep only 4 seconds
 >>> # atom of scales 8, 64 and 512 ms
->>> scales = [(s * myPympSignal.fs / 1000) for s in (8,64,512)] 
+>>> scales = [(s * myPympSignal.fs / 1000) for s in (8, 64, 512)]
 >>> myPympSignal.pad(scales[-1])
 >>> # Dictionary for Standard MP
->>> pyDico = dico.Dico(scales);                
+>>> pyDico = dico.Dico(scales)
 >>> # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
->>> mpApprox , mpDecay = mp.mp(myPympSignal, pyDico, 20, 2000,padSignal=False) 
+>>> mpApprox, mpDecay = mp.mp(myPympSignal, pyDico, 20, 2000, pad=False)
 
 This should be relatively fast, the algorithm stops when it reaches 20 dB of SRR and a number of atoms determined by:
 
