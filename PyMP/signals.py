@@ -48,7 +48,7 @@ import log
 
 global _Logger
 _Logger = log.Log('Signal', imode=False)
-#from operator import add, mul
+# from operator import add, mul
 
 
 class Signal(object):
@@ -99,7 +99,7 @@ class Signal(object):
     """
 
     # att
-    data = []    
+    data = []
     channel_num = 0
     length = 0
     fs = 0
@@ -111,23 +111,24 @@ class Signal(object):
     # Constructor
     def __init__(self, data=[], Fs=0, normalize=False, mono=False, debug_level=None):
         ''' Simple constructor from a numpy array (data) or a string '''
-        
+
         if isinstance(data, str):
-            self.location = data        
-            Sf = SoundFile.SoundFile(data)            
+            self.location = data
+            Sf = SoundFile.SoundFile(data)
             self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
             self.sample_width = Sf.sample_width
             if mono:
                 self.data = self.data[:, 0]
-    
-            Fs = Sf.sampleRate;
+
+            Fs = Sf.sampleRate
         else:
             self.data = np.array(data)
-        
+
         if debug_level is not None:
             _Logger.setLevel(debug_level)
-        
-        self.length = len(data)
+
+        _Logger.info('Signal created with dimensions: ' + str(self.data.shape))
+        self.length = self.data.shape[0]
         self.fs = Fs
 
         if len(self.data.shape) > 1:
@@ -145,14 +146,12 @@ class Signal(object):
             self.energy = sum(self.data ** 2)
             _Logger.info('Signal created with energy: ' + str(self.energy))
 
-
-    def __getitem__(self,item):
-        if isinstance(item, slice):            
+    def __getitem__(self, item):
+        if isinstance(item, slice):
             return Signal(self.data[item], self.fs, normalize=False)
         else:
-            raise TypeError("Argumrnt not recongnized as a slice")
-        
-        
+            raise TypeError("Argument not recognized as a slice")
+
     def normalize(self):
         ''' makes sure all values of the array are between -1 and 1 '''
         _Logger.info('Normalizing Signal')
@@ -206,37 +205,37 @@ class Signal(object):
             atom.synthesize()
         # Keep track of the energy to make
         oldEnergy = (self.data[atom.timePosition: atom.
-            timePosition + atom.length] ** 2).sum()
+                               timePosition + atom.length] ** 2).sum()
 
         # In high debugging levels, show the process using matplotlib
         if debug > 2:
             plt.figure()
             plt.plot(self.data[atom.timePosition: atom.
-                timePosition + atom.length])
+                               timePosition + atom.length])
             plt.plot(atom.waveform)
             plt.plot(self.data[atom.timePosition: atom.
-                timePosition + atom.length] - atom.waveform, ':')
+                               timePosition + atom.length] - atom.waveform, ':')
             plt.legend(('Signal', 'Atom substracted', 'residual'))
             plt.show()
 
         # actual subtraction
         self.data[atom.timePosition: atom.timePosition + atom.
-            length] -= atom.waveform
+                  length] -= atom.waveform
 
         newEnergy = (self.data[atom.timePosition: atom.
-            timePosition + atom.length] ** 2).sum()
+                               timePosition + atom.length] ** 2).sum()
 
         # Test
         if (newEnergy > oldEnergy) and preventEnergyIncrease:
             # do not substract the atom
             self.data[atom.timePosition: atom.
-                timePosition + atom.length] += atom.waveform
+                      timePosition + atom.length] += atom.waveform
             # get out of here
             _Logger.error('Warning : Substracted Atom created energy : at pos: '
-                             + str(atom.timePosition) + ' k: ' + ' Amp: ' + str(atom.getAmplitude()) +
-                             str(atom.frequencyBin) + ' timeShift :' +
-                             str(atom.timeShift) + ' scale : ' +
-                             str(atom.length) + ' from ' + str(oldEnergy) + ' to ' + str(newEnergy))
+                          + str(atom.timePosition) + ' k: ' + ' Amp: ' + str(atom.getAmplitude()) +
+                          str(atom.frequencyBin) + ' timeShift :' +
+                          str(atom.timeShift) + ' scale : ' +
+                          str(atom.length) + ' from ' + str(oldEnergy) + ' to ' + str(newEnergy))
             raise ValueError('see Logger')
 
         self.energy = self.energy - oldEnergy + newEnergy
@@ -265,18 +264,18 @@ class Signal(object):
             atom.synthesize()
 
         localEnergy = np.sum(self.data[atom.timePosition: atom.
-            timePosition + atom.length] ** 2)
+                                       timePosition + atom.length] ** 2)
 
         # do sum calculation
         try:
             self.data[atom.timePosition: atom.
-                timePosition + atom.length] += atom.waveform
+                      timePosition + atom.length] += atom.waveform
         except:
             _Logger.error('Mispositionned atom: ' + str(atom.
-                timePosition) + ' and length ' + str(atom.length))
+                                                        timePosition) + ' and length ' + str(atom.length))
 #        # update energy value
         self.energy += np.sum(self.data[atom.timePosition: atom.
-            timePosition + atom.length] ** 2) - localEnergy
+                                        timePosition + atom.length] ** 2) - localEnergy
 
     # Pad edges with zeroes
     def pad(self, zero_pad):
@@ -381,7 +380,8 @@ class Signal(object):
         A = np.dot(1j * x, X / 2)
         EX1 = ifft(np.dot(fft(Ex), np.ones((1, N))) * np.exp(A))
         #%   +ve shift
-        EX2 = ifft(np.dot(fft(Ex), np.ones((1, N))) * np.exp(np.dot(-1j * x, X / 2)))
+        EX2 = ifft(
+            np.dot(fft(Ex), np.ones((1, N))) * np.exp(np.dot(-1j * x, X / 2)))
         #%   -ve shift
 
         tmp0 = EX1 * np.conj(EX2)
@@ -398,7 +398,7 @@ class Signal(object):
         return W
 
 
-#def InitFromFile(filepath, forceMono=False, doNormalize=False, debugLevel=None):
+# def InitFromFile(filepath, forceMono=False, doNormalize=False, debugLevel=None):
 #    ''' Static method to create a Signal from a wav file on the disk
 #        This is based on the wave Python library through the use of the Tools.SoundFile class
 #        '''
@@ -490,7 +490,7 @@ class LongSignal(Signal):
         _Logger.info('Loaded ' + filepath + ' , ' + str(
             self.nframes) + ' frames of ' + str(self.sample_width) + ' bytes')
         _Logger.info('Type is ' + self.filetype + ' , ' + str(self.
-            channel_num) + ' channels at ' + str(self.fs))
+                                                              channel_num) + ' channels at ' + str(self.fs))
         _Logger.info('Separated in ' + str(self.segmentNumber) + ' segments of size ' + str(self.segmentSize) + ' samples overlap of ' + str(self.overlap * self.segmentSize))
         self.length = self.segmentNumber * frameSize
         file.close()

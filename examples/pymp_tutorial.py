@@ -5,7 +5,7 @@ import numpy as np
 from PyMP.mdct import dico , atom
 from PyMP import signals, approx
 
-myPympSignal =  signals.Signal('../data/glocs.wav',debug_level=3)
+myPympSignal = signals.Signal('../data/glocs.wav',debug_level=3)
 print myPympSignal
 print myPympSignal.data
 

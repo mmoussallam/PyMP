@@ -108,8 +108,10 @@ class Approx:
     recomposed_signal = None
     fs = 0
 
-    def __init__(self, dico=None, atoms=[], originalSignal=None, length=0, Fs=0, debug_level=None):
-        """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm """
+    def __init__(self, dico=None, atoms=[], originalSignal=None, length=0,
+                 Fs=0, debug_level=None):
+        """ The approx class encapsulate the approximation that is iteratively
+             being constructed by a greed algorithm """
         if debug_level is not None:
             _Logger.setLevel(debug_level)
 
@@ -132,8 +134,6 @@ class Approx:
         self.recomposed_signal = signals.Signal(
             np.zeros(self.length), self.fs)
         self.recomposed_signal.is_normalized = isNormalized
-
-    
 
     def synthesize(self, method=0, forceReSynthesis=True):
         """ function that will synthesise the approximant using the list of atoms
@@ -158,10 +158,10 @@ class Approx:
                             # bugFIx
                             n = atom.timePosition + 1
                             frame = math.floor(
-                                 float(n) / float(atom.length / 2)) + 1
+                                float(n) / float(atom.length / 2)) + 1
 # mdctVec[frame*float(atom.length /2) + atom.frequencyBin] += atom.amplitude
                             mdctVec[frame * float(atom.length /
-                                2) + atom.frequencyBin] += atom.mdct_value
+                                                  2) + atom.frequencyBin] += atom.mdct_value
                     synthesizedSignal += imdct(mdctVec, mdctSize)
 # synthesizedSignal += concatenate((zeros(mdctSize/4) , imdct(mdctVec ,
 # mdctSize)) )[1:-mdctSize/4+1]
@@ -171,7 +171,7 @@ class Approx:
                 for atom in self.atoms:
                     atom.synthesizeIFFT()
                     synthesizedSignal[atom.timePosition:
-                         atom.timePosition + atom.length] += atom.waveform
+                                      atom.timePosition + atom.length] += atom.waveform
 
             # HACK here to resynthesize using LOMP atoms
             elif method == 2:
@@ -180,50 +180,53 @@ class Approx:
                     if (atom.projectionScore is not None):
                         if (atom.projectionScore < 0):
                             atom.waveform = (-math.sqrt(-atom.projectionScore /
-                                sum(atom.waveform ** 2))) * atom.waveform
+                                                        sum(atom.waveform ** 2))) * atom.waveform
                         else:
                             atom.waveform = (math.sqrt(atom.projectionScore /
-                                sum(atom.waveform ** 2))) * atom.waveform
+                                                       sum(atom.waveform ** 2))) * atom.waveform
 
                     synthesizedSignal[atom.timePosition:
-                         atom.timePosition + atom.length] += atom.waveform
+                                      atom.timePosition + atom.length] += atom.waveform
 
             self.recomposed_signal = signals.Signal(synthesizedSignal, self.fs)
-            #return self.recomposed_signal
+            # return self.recomposed_signal
         # other case: we just give the existing synthesized Signal.
         return self.recomposed_signal
 
-
     def __getitem__(self, item):
-        ''' Get the waveform built by only the subAtomNumber first atoms 
+        ''' Get the waveform built by only the subAtomNumber first atoms
             Outputs:
-            
+
                 *  a py_pursuit_Signal array '''
         if isinstance(item, slice):
-            start, stop, step = item.start, item.stop , item.step
+            start, stop, step = item.start, item.stop, item.step
         elif isinstance(item, int):
             start = item
             stop = item
-            
+
         else:
             raise TypeError("not recognized")
-    
+
         if step is None:
-            step=1
-        output_approx = Approx(self.dico, [], self.original_signal, self.length, self.fs)
+            step = 1
+        output_approx = Approx(
+            self.dico, [], self.original_signal, self.length, self.fs)
         if stop > self.atom_number:
             raise ValueError('Dude you asked fore more than I can give you..')
-        
-        for atomIdx in range(start,stop,step):
+
+        for atomIdx in range(start, stop, step):
             output_approx.add(self.atoms[atomIdx])
-        
+
         return output_approx
+
+    def __repr__(self):        
+        return 'Approx Object("%d" atoms , length of "%d", SRR of "%2.2f")' % (self.atom_number, self.length, self.srr)
 
     # Filter the atom list by the given criterion
     def filter_atoms(self, mdctSize=0, posInterv=None, freqInterv=None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
         filteredApprox = Approx(self.dico, [], self.original_signal,
-             self.length, self.fs)
+                                self.length, self.fs)
         doAppend = True
         for atom in self.atoms:
 #            if atom.length == mdctSize:
@@ -274,8 +277,7 @@ class Approx:
                 del newAtom.waveform
 
     #
-    
-    
+
     def remove(self, atom):
         ''' We need a routine to remove an atom , by default the last atom is removed '''
         if not isinstance(atom, BaseAtom):
@@ -303,9 +305,9 @@ class Approx:
         if recomposedEnergy <= 0:
             return np.NINF
 
-        if residual is None:            
-            resEnergy = sum((self.original_signal.data - 
-                 self.recomposed_signal.data) ** 2)
+        if residual is None:
+            resEnergy = sum((self.original_signal.data -
+                             self.recomposed_signal.data) ** 2)
         else:
             resEnergy = residual.energy
 # resEnergy = sum((self.original_signal.dataVec -
@@ -313,12 +315,14 @@ class Approx:
         if resEnergy == 0:
             return np.PINF
 
-        return 10 * math.log10(recomposedEnergy / resEnergy)
+        self.srr = 10 * math.log10(recomposedEnergy / resEnergy)
+        return self.srr
 
     # ploting routine 2d in a time-frequency plane
-    def plot_tf(self, labelX=True, labelY=True, fontsize=12, ylim=None, patchColor=None, labelColor=None,
-               multicolor=False, axes=None, maxAtoms=None, recenter=None, keepValues=False,
-               french=False, Alpha=False, logF=False):
+    def plot_tf(
+        self, labelX=True, labelY=True, fontsize=12, ylim=None, patchColor=None, labelColor=None,
+        multicolor=False, axes=None, maxAtoms=None, recenter=None, keepValues=False,
+            french=False, Alpha=False, logF=False):
         """ A time Frequency plot routine using Matplotlib
 
             each atom of the approx is plotted in a time-frequency plane with a gray scale for amplitudes
@@ -443,7 +447,7 @@ class Approx:
             else:
                 if patchColor is None:
                     patchtuplecolor = (1 - math.sqrt(colorvalue),
-                         1 - math.sqrt(colorvalue), 1 - math.sqrt(colorvalue))
+                                       1 - math.sqrt(colorvalue), 1 - math.sqrt(colorvalue))
                     colors.append(colorvalue)
                 else:
                     patchtuplecolor = patchColor
@@ -452,8 +456,9 @@ class Approx:
 # patch = mpatches.Rectangle(xy, width, height, facecolor=patchtuplecolor,
 # edgecolor=patchtuplecolor , zorder=colorvalue )
 #            xy = p + L/2 , f-bw,
-            patch = mpatches.Ellipse(xy, width, height, facecolor=patchtuplecolor,
-                 edgecolor=patchtuplecolor, zorder=colorvalue)
+            patch = mpatches.Ellipse(
+                xy, width, height, facecolor=patchtuplecolor,
+                edgecolor=patchtuplecolor, zorder=colorvalue)
             if keepValues:
                 patches.append(patch)
             else:
@@ -501,11 +506,11 @@ class Approx:
 
         # beware of compatibility issues here
         ax = Axes3D(fig)
-        #for atom, idx in zip(self.atoms, range(self.atom_number)):
+        # for atom, idx in zip(self.atoms, range(self.atom_number)):
         ts = [atom.timePosition / float(self.fs)
-             for atom in self.atoms]
+              for atom in self.atoms]
         fs = [atom.reducedFrequency * self.
-            fs for atom in self.atoms]
+              fs for atom in self.atoms]
         zs = range(self.atom_number)
 # ss = [float(atom.length)/float(self.fs) for atom in
 # self.atoms]
@@ -564,7 +569,7 @@ class Approx:
     def write_to_xml(self, fname, output_path="./"):
         """ Write the atoms using an XML formalism to the designated output file """
 
-        #from xml.dom.minidom import Document
+        # from xml.dom.minidom import Document
         import xml.dom
                 # creates the xml document
         doc = xml.dom.minidom.Document()
@@ -619,7 +624,7 @@ class Approx:
 # dico[int(block*self.length +  frame*float(atom.length /2) +
 # atom.frequencyBin)] = atom
             key = int(block * self.length + frame * float(atom.
-                length / 2) + atom.frequencyBin)
+                                                          length / 2) + atom.frequencyBin)
             if key in dico:
                 dico[key].append(atom)
             else:
@@ -643,7 +648,7 @@ class Approx:
 # atom.frequencyBin)] = (atom.mdct_value , frame*float(atom.length /2) -
 # atom.timePosition)
             sparseArray[int(block * self.length + frame * float(atom.length / 2)
-                 + atom.frequencyBin)] = (atom.mdct_value, atom.timePosition)
+                            + atom.frequencyBin)] = (atom.mdct_value, atom.timePosition)
         return sparseArray
 
 #    def toSparseMatrix(self):
@@ -721,7 +726,7 @@ def read_from_xml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
     AtomsNode = xmlDoc.getElementsByTagName('Atoms')[0]
     atoms = []
     approx = Approx(Dico, atoms, None, int(ApproxNode.getAttribute('length')),
-                                   int(ApproxNode.getAttribute('Fs')))
+                    int(ApproxNode.getAttribute('Fs')))
     for node in AtomsNode.childNodes:
         if node.localName == 'Atom':
             if buildSignal:
@@ -753,7 +758,7 @@ def read_from_mat_struct(matl_struct):
     # So far we only read the parameters
 
     approx = Approx(None, [], None, appObject.length[0, 0], appObject.
-        fs[0, 0])
+                    fs[0, 0])
     return approx
 
 

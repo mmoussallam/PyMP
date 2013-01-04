@@ -81,6 +81,7 @@ class Atom(BaseAtom):
     frequencyBin = 0
     frame = 0
     reducedFrequency = 0
+    mdct_value = 0.0
 
     # for time-shift invariant atoms
     timeShift = None
@@ -130,6 +131,27 @@ class Atom(BaseAtom):
         if not isinstance(other, BaseAtom):
             return False
         return ((self.length == other.length) & (self.timePosition == other.timePosition) & (self.frequencyBin == other.frequencyBin))
+
+    def __repr__(self):
+        if self.timeShift is None:
+            ts_str = 'No local adaptation'
+        else:
+            ts_str = str(self.timeShift)
+        return '''
+    MDCT Atom :
+        length = %d
+        frame = %d
+        time Position = %d
+        time shift = %s
+        frequency Bin = %d
+        Frequency = %2.2f Hz
+        value = %2.2f ''' % (self.length,
+                             self.frame,
+                             self.timePosition,
+                             ts_str,
+                             self.frequencyBin,
+                             self.reducedFrequency * self.fs,
+                             self.mdct_value)
 
     def toXml(self, xmlDoc):
         ''' Useful routine to output the object as an XML node '''

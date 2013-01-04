@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 from ... import log
-from ..mdct import dico as mdct_dico
+from ...mdct import dico as mdct_dico
 from ..random import dico as random_dico
 from . import block as joint_block
 

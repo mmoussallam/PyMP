@@ -233,7 +233,7 @@ int projectMDCT(double * cin_data ,
 		}*/
 	}
 	if (size <0) {
-		if(DEBUG)printf("ERROR : size %d not recognized in pre-built dictionary \n %d sizes availables : parallelFFT.c line 260", L , size_number);
+		printf("ERROR : size %d not recognized in pre-built dictionary \n %d sizes availables : parallelFFT.c line 260", L , size_number);
 		return(-1);
 	}
 

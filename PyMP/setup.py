@@ -12,10 +12,11 @@ library_dirs = ['/usr/lib/openmpi/lib/openmpi/', "/usr/local/lib"]
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
     import platform
-    if platform.architecture()[0]:
+    print platform.architecture()[0]
+    if (platform.architecture()[0] == '32bit'):
         plt_str = '-DX=1'
     else:
-        plt_str =''
+        plt_str = '-DX=2'
 
     config = Configuration('PyMP', parent_package, top_path)
 

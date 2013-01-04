@@ -15,7 +15,7 @@ sys.path.append(mainClassesPath)
 import unittest
 from PyMP.tools import mdct
 import matplotlib.pyplot as plt
-from numpy import random, zeros
+import numpy as np
 import time
 
 import cProfile
@@ -32,6 +32,7 @@ from PyMP import approx
 from PyMP import signals
 from PyMP import log
 from PyMP import mp
+from PyMP import parallelProjections
 
 audioFilePath = '../../data/'
 
@@ -47,6 +48,8 @@ class AtomTest(unittest.TestCase):
         self.assertEqual(pyAtom.amplitude, 0)
         self.assertEqual(pyAtom.nature, 'Abstract')
 
+       
+
         del pyAtom
 
         # full creation
@@ -59,7 +62,8 @@ class AtomTest(unittest.TestCase):
             pyAtom2.reducedFrequency, float(128 + 0.5) / float(1024))
         self.assertEqual(pyAtom2.timePosition, 12432)
         self.assertEqual(pyAtom2.nature, 'MDCT')
-
+        
+        print pyAtom2
 #        synthesizedAtom2 = pyAtom2.synthesize()
 
         synthAtom3 = pyAtom2.synthesizeIFFT()
@@ -87,7 +91,7 @@ class AtomTest(unittest.TestCase):
 
         wf2 = -(math.sqrt(abs(projectionScore) / sum(wf1 ** 2))) * wf1
 
-        mdctVec = zeros(3 * 1024)
+        mdctVec = np.zeros(3 * 1024)
         mdctVec[1024 + 128] = projectionScore
         wf3 = mdct.imdct(mdctVec, 1024)[0.75 * 1024: 1.75 * 1024]
 
@@ -245,13 +249,13 @@ class BlockTest(unittest.TestCase):
         self.assertEqual(block.frame_len, 512)
         print block.frame_num
 #        import parallelProjections
-#        parallelProjections.initialize_plans(array([1024,]))
+        parallelProjections.initialize_plans(np.array([1024,]), np.array([2,]))
 
         try:
             import fftw3
         except ImportError:
             print " FFTW3 python wrapper not installed, abandonning test"
-            return
+#            return
         block.update(pySigOriginal)
 
         plt.plot(block.projectionMatrix.flatten(1))
@@ -261,7 +265,8 @@ class BlockTest(unittest.TestCase):
         self.assertAlmostEqual(sum((block.projectionMatrix - mdct.
             mdct(pySigOriginal.data, block.scale)) ** 2), 0)
 
-#        parallelProjections.clean_plans(array([1024,]))
+        parallelProjections.clean_plans(np.array([1024,]))
+        print "Cleaning done"
         del pySigOriginal
 
 
@@ -274,7 +279,7 @@ class py_mpTest(unittest.TestCase):
             audioFilePath + "ClocheB.wav", normalize=True, mono=True)
         pySigOriginal.crop(0, 5 * 16384)
 
-        pySigOriginal.data += 0.01 * random.random(5 * 16384)
+        pySigOriginal.data += 0.01 * np.random.random(5 * 16384)
 
 #        pySigOriginal.plot()
 
@@ -406,6 +411,7 @@ class ApproxTest(unittest.TestCase):
         self.assertEqual(pyApprox.srr, 0)
         self.assertEqual(pyApprox.atoms, [])
 
+        print pyApprox
         del pyApprox
 
         pyDico = mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
@@ -460,8 +466,13 @@ class ApproxTest(unittest.TestCase):
         #testing the write_to_xml and read_from_xml methods
         pyCCDico = mdct_dico.LODico([256, 2048, 8192])
         approx_LOmp = mp.mp(pySigOriginal, pyCCDico, 10, 100, False)[0]
+
         sliceApprox = approx_LOmp[:10]
         
+        print approx_LOmp
+        print sliceApprox
+        sliceApprox.compute_srr()
+        print sliceApprox
         plt.figure()
         plt.subplot(121)
         approx_LOmp.plot_tf()
@@ -558,7 +569,7 @@ class py_mpTest2(unittest.TestCase):
         # through time shift calculation
         pyAtom = mdct_atom.Atom(2048, 1, 8192 - 512, 128, 8000, 0.57)
         pyAtom.synthesize()
-        pySignal_oneAtom = signals.Signal(0.0001 * random.random(
+        pySignal_oneAtom = signals.Signal(0.0001 * np.random.random(
             pySigOriginal.length), pySigOriginal.fs, False)
         pySignal_oneAtom.add(pyAtom)
 
@@ -587,7 +598,7 @@ class py_mpTest2(unittest.TestCase):
         print "Testing one Non-Aligned Atom with mp - should not be perfect"
         pyAtom = mdct_atom.Atom(2048, 1, 7500, 128, 8000, 0.57)
         pyAtom.synthesize()
-        pySignal_oneAtom = signals.Signal(0.0001 * random.random(
+        pySignal_oneAtom = signals.Signal(0.0001 * np.random.random(
             pySigOriginal.length), pySigOriginal.fs, False)
         pySignal_oneAtom.add(pyAtom)
 
@@ -610,7 +621,7 @@ class py_mpTest2(unittest.TestCase):
         print "Testing one Non-Aligned Atom with LOmp - should be almost perfect"
         pyAtom = mdct_atom.Atom(2048, 1, 7500, 128, 8000, 0.57)
         pyAtom.synthesize()
-        pySignal_oneAtom = signals.Signal(0.0001 * random.random(
+        pySignal_oneAtom = signals.Signal(0.0001 * np.random.random(
             pySigOriginal.length), pySigOriginal.fs, False)
         pySignal_oneAtom.add(pyAtom)
 
@@ -700,7 +711,7 @@ class py_mpTest2(unittest.TestCase):
         del pySigOriginal
         print "comparing results and processing times for long decompositions of white gaussian noise"
         pyNoiseSignal = signals.Signal(
-            0.5 * random.random(5 * 16384), 44100, False)
+            0.5 * np.random.random(5 * 16384), 44100, False)
         pyNoiseSignal.pad(16384)
         t0 = time.clock()
         approx1 = mp.mp(pyNoiseSignal, pyDico, 10, 500, False, True)[0]
@@ -747,7 +758,7 @@ class py_mpTest2Bis(unittest.TestCase):
         # through time shift calculation
         pyAtom = mdct_atom.Atom(2048, 1, 8192 - 512, 128, 8000, 0.57)
         pyAtom.synthesize()
-        pySignal_oneAtom = signals.Signal(0.0001 * random.random(
+        pySignal_oneAtom = signals.Signal(0.0001 * np.random.random(
             pySigOriginal.length), pySigOriginal.fs, False)
         pySignal_oneAtom.add(pyAtom)
 
@@ -777,7 +788,7 @@ class py_mpTest2Bis(unittest.TestCase):
         print "Testing one Non-Aligned Atom with mp - should not be perfect"
         pyAtom = mdct_atom.Atom(2048, 1, 7500, 128, 8000, 0.57)
         pyAtom.synthesize()
-        pySignal_oneAtom = signals.Signal(0.0001 * random.random(
+        pySignal_oneAtom = signals.Signal(0.0001 * np.random.random(
             pySigOriginal.length), pySigOriginal.fs, False)
         pySignal_oneAtom.add(pyAtom)
 
@@ -801,7 +812,7 @@ class py_mpTest2Bis(unittest.TestCase):
         print "Testing one Non-Aligned Atom with Random"
         pyAtom = mdct_atom.Atom(2048, 1, 7500, 128, 8000, 0.57)
         pyAtom.synthesize()
-        pySignal_oneAtom = signals.Signal(0.0001 * random.random(
+        pySignal_oneAtom = signals.Signal(0.0001 * np.random.random(
             pySigOriginal.length), pySigOriginal.fs, False)
         pySignal_oneAtom.add(pyAtom)
 
@@ -852,8 +863,9 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(pySigOriginal.data[4096:-4096] - approximant.
             recomposed_signal.data[4096:-4096])
         plt.legend(("original", "approximant", "resisual"))
-        plt.title("Bell signals with LOmp : SRR of " + str(int(approximant.compute_srr(
-            ))) + " dB in " + str(approximant.atom_number) + " iteration")
+        plt.title("Bell signals with LOmp : SRR of " +
+                  str(int(approximant.compute_srr())) +
+                   " dB in " + str(approximant.atom_number) + " iteration")
         plt.xlabel("samples")
 #        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_nbIt10"+ext)
         print " Approx Reached : ", approximant.compute_srr(
@@ -892,7 +904,7 @@ class py_mpTest2Bis(unittest.TestCase):
         del pySigOriginal
         print "comparing results and processing times for long decompositions of white gaussian noise"
         pyNoiseSignal = signals.Signal(
-            0.5 * random.random(5 * 16384), 44100, False)
+            0.5 * np.random.random(5 * 16384), 44100, False)
         pyNoiseSignal.pad(16384)
         t0 = time.clock()
         approx1, decay = mp.mp(pyNoiseSignal, pyDico, 10, 500, False, True)
@@ -979,8 +991,8 @@ if __name__ == '__main__':
 #    suite.addTest(py_mpTest3())
 #    suite.addTest(py_mpTest())
 #    suite.addTest(py_mpTest2())
-    suite.addTest(ApproxTest())
-#    suite.addTest(AtomTest())
+#    suite.addTest(ApproxTest())
+    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
 #    suite.addTest(Signaltest())

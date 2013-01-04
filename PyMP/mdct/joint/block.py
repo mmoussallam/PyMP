@@ -23,8 +23,8 @@ from math import  floor
 
 from ... import win_server, log
 from ... import  parallelProjections
-from ..mdct import block as mdct_block
-from ..mdct import atom as mdct_atom
+from ...mdct import block as mdct_block
+from ...mdct import atom as mdct_atom
 
 # declare global win_server shared by all MDCT blocks instances
 global _PyServer , _Logger
