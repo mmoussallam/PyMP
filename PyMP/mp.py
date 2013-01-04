@@ -6,24 +6,7 @@
 #                                                                            */
 # M. Moussallam                                             Mon Aug 16 2010  */
 # -------------------------------------------------------------------------- */
-#                                                                            */
-#                                                                            */
-#  This program is free software; you can redistribute it and/or             */
-#  modify it under the terms of the GNU General Public License               */
-#  as published by the Free Software Foundation; either version 2            */
-#  of the License, or (at your option) any later version.                    */
-#                                                                            */
-#  This program is distributed in the hope that it will be useful,           */
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-#  GNU General Public License for more details.                              */
-#                                                                            */
-#  You should have received a copy of the GNU General Public License         */
-#  along with this program; if not, write to the Free Software               */
-#  Foundation, Inc., 59 Temple Place - Suite 330,                            */
-#  Boston, MA  02111-1307, USA.                                              */
-#                                                                            */
-#******************************************************************************
+
 
 '''
 Module mp
@@ -99,7 +82,7 @@ def mp(orig_signal,
 
     # back compatibility - use debug levels now
     if debug is not None:
-        _Logger.setLevel(debug)
+        _Logger.set_level(debug)
 
     # optional add zeroes to the edge
     if pad:
@@ -138,7 +121,7 @@ def mp(orig_signal,
 
         if (it_number == debug_iteration):
             debug = 3
-            _Logger.setLevel(3)
+            _Logger.set_level(3)
 
         # Compute inner products and selects the best atom
         dictionary.update(res_signal, it_number)
@@ -380,9 +363,9 @@ def mp_long(orig_longsignal,
         if debug > 0:
             print 'Starting work on segment ' + str(
                 segIdx) + ' over ' + str(Nsegments)
-# subSignal = orig_longsignal.getSubSignal( segIdx , 1 ,forceMono=True,
+# subSignal = orig_longsignal.get_sub_signal( segIdx , 1 ,forceMono=True,
 # doNormalize=False , pad = (dictionary.get_pad())/2)
-        subSignal = orig_longsignal.getSubSignal(
+        subSignal = orig_longsignal.get_sub_signal(
             segIdx, 1, True, False, 0, 0)
         approx, decay = mp(subSignal, dictionary, target_srr,
                            max_it_num, debug=debug, pad=pad)
@@ -725,7 +708,7 @@ def mp_joint(orig_sig_list,
 
     # back compatibility - use debug levels now
     if debug is not None:
-        _Logger.setLevel(debug)
+        _Logger.set_level(debug)
     _Logger.info("Call to mp.mp_joint")
     # We now work on a list of signals: we have a list of approx and residuals
     res_sig_list = []
@@ -817,7 +800,7 @@ def mp_joint(orig_sig_list,
                           + " Frame : " + str(maxFrameIdx))
 
         # retrieve the best correlated atoms, locally adapted to the signal
-        best_atom_list = dictionary.get_best_atom(debug, no_adapt=no_adapt)
+        best_atom_list = dictionary.get_best_atom(debug, noAdapt=no_adapt)
 
         if best_atom_list is None:
             print 'No atom selected anymore'

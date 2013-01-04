@@ -37,7 +37,17 @@ class SequenceBlock(mdct_block.Block):
 
     Attributes:
 
-        `sequence_type`: The type of time-shift sequence, available choices are *scale* , *random* , *gaussian* , *binom* , *dicho* , *jump* , *binary* default is *random* which use a uniform pseudo-random generator
+        `sequence_type`: The type of time-shift sequence, available choices are 
+
+                *scale*
+                *random*
+                *gaussian*
+                *binom*
+                *dicho*
+                *jump*
+                *binary*
+
+            default is *random* which use a uniform pseudo-random generator
 
         `shift_list`: The actual sequence of subdictionary time-shifts
 

@@ -61,7 +61,7 @@ class SetBlock(mdct_block.Block):
         self, length=0, resSignalList=None, frameLen=0, useC=True,
             debug_level=None, nature='sum', tolerance=None):
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
@@ -259,9 +259,9 @@ class SetBlock(mdct_block.Block):
         global _PyServer
 #        print len(_PyServer.Waveforms)
         if value is None:
-            return self.max_value * _PyServer.getWaveForm(self.scale, self.max_bin_idx)
+            return self.max_value * _PyServer.get_waveform(self.scale, self.max_bin_idx)
         else:
-            return value * _PyServer.getWaveForm(self.scale, self.max_bin_idx)
+            return value * _PyServer.get_waveform(self.scale, self.max_bin_idx)
 
     def get_optimized_best_atoms(self, debug=0, noAdapt=True):
         _Logger.warning("No adaptation is allowed in this mode")
@@ -318,7 +318,7 @@ class SetLOBlock(mdct_block.Block):
         self, length=0, resSignalList=None, frameLen=0, useC=True,
             debug_level=None, nature='sum', tolerance=None):
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
@@ -517,9 +517,9 @@ class SetLOBlock(mdct_block.Block):
         global _PyServer
 #        print len(_PyServer.Waveforms)
         if value is None:
-            return self.max_value * _PyServer.getWaveForm(self.scale, self.max_bin_idx)
+            return self.max_value * _PyServer.get_waveform(self.scale, self.max_bin_idx)
         else:
-            return value * _PyServer.getWaveForm(self.scale, self.max_bin_idx)
+            return value * _PyServer.get_waveform(self.scale, self.max_bin_idx)
 
     def get_optimized_best_atoms(self, debug=0, noAdapt=False):
         """ Here the index of the best atom is chosen one level up in the dictionary set
@@ -705,7 +705,7 @@ class RandomSetBlock(SetBlock):
         self, length=0, resSignalList=None, frameLen=0, useC=True,
             debug_level=None, nature='sum', tolerance=None):
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
@@ -905,7 +905,7 @@ class SetNLLOBlock(SetLOBlock):
         self, length=0, resSignalList=None, frameLen=0, useC=True,
             debug_level=None, nature='median', tolerance=None, lambd=1):
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList

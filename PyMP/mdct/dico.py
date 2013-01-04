@@ -79,7 +79,7 @@ class Dico(BaseDico):
 
     def __init__(self, sizes=[], useC=True, forceHF=False, parallel=False, debug_level=None):
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.sizes = sizes
         self.tolerances = [2 for i in self.sizes]
@@ -225,7 +225,7 @@ class LODico(Dico):
         ''' Basic contructor. By default all the block will have the locally optimized behvior but you
         can specify only a subset with the hrsizes variable '''
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.sizes = sizes
         self.use_c_optim = useC
@@ -317,7 +317,7 @@ class FullDico(Dico):
     def __init__(self , sizes=[] ,type = 'SpreadMDCT' ,debugLevel=None , useC = True,
                  allBases = True , Spreadbases = [],penalty=0.5, maskSize = 2):
         if debugLevel is not None:
-            _Logger.setLevel(debugLevel)
+            _Logger.set_level(debugLevel)
 
         self.useC = useC
         self.sizes = sizes

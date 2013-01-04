@@ -55,8 +55,8 @@ print (quantizedApprox.atom_number, quantizedApproxLO.atom_number,
 # plt.show()
 
 
-print " now at a much larger level : a SNR of nearly 50 dB and around 64 Kbps"
-mpApprox, mpDecay = mp.mp(myPympSignal, pyDico, 50, 20000, pad=False)
+print " now at a much larger level : a SNR of nearly 30 dB and around 20 Kbps"
+mpApprox, mpDecay = mp.mp(myPympSignal, pyDico, 30, 20000, pad=False)
 SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(
     mpApprox, 64000, Q=16)
 print (SNR, bitrate)
@@ -64,7 +64,7 @@ print (SNR, bitrate)
 del mpApprox, pyDico
 
 lompApprox, lompDecay = mp.mp(
-    myPympSignal, pyLODico, 50, 20000, pad=False)
+    myPympSignal, pyLODico, 30, 20000, pad=False)
 SNRlo, bitratelo, quantizedApproxLO = mp_coder.simple_mdct_encoding(
     lompApprox, 64000, Q=16, TsPenalty=True)
 print (SNRlo, bitratelo)
@@ -72,7 +72,7 @@ print (SNRlo, bitratelo)
 del lompApprox, pyLODico
 
 rssApprox, rssDecay = mp.mp(
-    myPympSignal, pyRSSDico, 50, 20000, pad=False)
+    myPympSignal, pyRSSDico, 30, 20000, pad=False)
 SNRrss, bitraterss, quantizedApproxRSS = mp_coder.simple_mdct_encoding(
     rssApprox, 64000, Q=16)
 print (SNRrss, bitraterss)

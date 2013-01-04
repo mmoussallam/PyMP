@@ -110,10 +110,10 @@ class Atom(BaseAtom):
         global _PyServer
         binIndex = np.math.floor(self.reduced_frequency * self.length)
         if value is None:
-            self.waveform = self.mdct_value * _PyServer.getWaveForm(
+            self.waveform = self.mdct_value * _PyServer.get_waveform(
                 self.length, binIndex)
         else:
-            self.waveform = value * _PyServer.getWaveForm(
+            self.waveform = value * _PyServer.get_waveform(
                 self.length, binIndex)
 
     def synthesize_ifft(self, newValue=None):

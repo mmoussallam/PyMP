@@ -1,36 +1,21 @@
 #
 #                                                                            */
-#                           Signal.py                                   */
+#                               signals.py                                   */
 #                                                                            */
 #                        Matching Pursuit Library                            */
 #                                                                            */
 # M. Moussallam                                             Mon Aug 16 2010  */
 # -------------------------------------------------------------------------- */
-#                                                                            */
-#                                                                            */
-#  This program is free software; you can redistribute it and/or             */
-#  modify it under the terms of the GNU General Public License               */
-#  as published by the Free Software Foundation; either version 2            */
-#  of the License, or (at your option) any later version.                    */
-#                                                                            */
-#  This program is distributed in the hope that it will be useful,           */
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-#  GNU General Public License for more details.                              */
-#                                                                            */
-#  You should have received a copy of the GNU General Public License         */
-#  along with this program; if not, write to the Free Software               */
-#  Foundation, Inc., 59 Temple Place - Suite 330,                            */
-#  Boston, MA  02111-1307, USA.                                              */
 #
 '''
 Module signals
-==================
+==============
 
-The main class is :class:`Signal`, it can be instantiated from a numpy array using
-the main constructor (mutlichannel is allowed).
+The main class is :class:`Signal`, it can be instantiated from a numpy array
+using the main constructor (multichannel is allowed).
 
-It can also be created from a wav file using the :func:`InitFromFile` static routine
+It can also be created from a file on the disk using the path as argument
+in the constructor
 
 Longer Signals are handled with :class:`LongSignal` objects.
 
@@ -125,14 +110,13 @@ class Signal(object):
             self.data = np.array(data)
 
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
-        _Logger.info('Signal created with dimensions: ' + str(self.data.shape))
         self.length = self.data.shape[0]
         self.fs = Fs
 
         if len(self.data.shape) > 1:
-            self.channel_num = min(self.data.shape)
+            self.channel_num = self.data.shape[1]
         else:
             self.channel_num = 1
 
@@ -143,14 +127,23 @@ class Signal(object):
             self.is_normalized = True
 
         if len(data) > 0:
-            self.energy = sum(self.data ** 2)
-            _Logger.info('Signal created with energy: ' + str(self.energy))
+            self.energy = np.sum(self.data ** 2)
+
+        _Logger.info('Signal created ' + str(self))
 
     def __getitem__(self, item):
         if isinstance(item, slice):
             return Signal(self.data[item], self.fs, normalize=False)
         else:
             raise TypeError("Argument not recognized as a slice")
+
+    def __repr__(self):
+        return '''Signal object located in %s
+        length: %d
+        energy of %2.3f
+        sampling frequency %d
+        number of channels %d
+        ''' % (self.location, self.length, self.energy, self.fs, self.channel_num)
 
     def normalize(self):
         ''' makes sure all values of the array are between -1 and 1 '''
@@ -160,9 +153,9 @@ class Signal(object):
         self.energy = sum(self.data ** 2)
         self.is_normalized = True
 
-    def plot(self, legend=None):
+    def plot(self, pltStr='b-', legend=None):
         ''' DEPRECATED plot the array using matplotlib '''
-        plt.plot(self.data)
+        plt.plot(self.data,pltStr)
         if legend != None:
             plt.legend((legend))
         plt.show()
@@ -403,7 +396,7 @@ class Signal(object):
 #        This is based on the wave Python library through the use of the Tools.SoundFile class
 #        '''
 #    if debugLevel is not None:
-#        _Logger.setLevel(debugLevel)
+#        _Logger.set_level(debugLevel)
 #    Sf = SoundFile.SoundFile(filepath)
 #    #print Sf.GetAsMatrix().shape
 #    reshapedData = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
@@ -442,7 +435,7 @@ class LongSignal(Signal):
 
     Standard methods to manipulate the signal are:
 
-        :func:`getSubSignal` : Loads a subSignal
+        :func:`get_sub_signal` : Loads a subSignal
 
     """
 
@@ -502,7 +495,7 @@ class LongSignal(Signal):
 #        self.data = fromstring(str_bytestream,'h')
 #        file.close()
 
-    def getSubSignal(self, startSegment, segmentNumber, forceMono=False, doNormalize=False, channel=0, padSignal=0):
+    def get_sub_signal(self, startSegment, segmentNumber, mono=False, normalize=False, channel=0, padSignal=0):
         """ Routine to actually read from the buffer and return a smaller signal instance
 
         :Returns:
@@ -512,7 +505,7 @@ class LongSignal(Signal):
         :Example:
 
             longSig = LongSignal(**myLongSigFilePath**, frameDuration=5) # Initialize long signal
-            subSig = longSig.getSubSignal(
+            subSig = longSig.get_sub_signal(
                 0,10) # Loads the first 50 seconds of data
 
         """
@@ -530,13 +523,13 @@ class LongSignal(Signal):
             reshapedData = data.reshape(nFrames, self.channel_num)
         else:
             reshapedData = data.reshape(nFrames, )
-        if forceMono:
+        if mono:
             if len(reshapedData.shape) > 1:
                 reshapedData = reshapedData[:, channel]
 
             reshapedData = reshapedData.reshape(nFrames, )
 
-        SubSignal = Signal(reshapedData, self.fs, doNormalize)
+        SubSignal = Signal(reshapedData, self.fs, normalize)
         SubSignal.location = self.location
 
         if padSignal != 0:

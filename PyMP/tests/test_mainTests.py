@@ -156,8 +156,7 @@ class Signaltest(unittest.TestCase):
         pySig.add(pyAtom)
 
         data2 = pySig.data.copy()
-        
-     
+
         self.assertNotEqual(sum((data1 - data2) ** 2), 0)
         pySig.subtract(pyAtom)
 
@@ -176,7 +175,7 @@ class Signaltest(unittest.TestCase):
         # frame 5  to 12
         startSeg = 2
         segNumber = 3
-        shortSignal = longSignal.getSubSignal(startSeg, segNumber, False)
+        shortSignal = longSignal.get_sub_signal(startSeg, segNumber, normalize=True)
 
         # witness signals
         witSignal = signals.Signal(
@@ -186,10 +185,8 @@ class Signaltest(unittest.TestCase):
 #        witSignal.plot()
         plt.figure()
         plt.plot(shortSignal.data)
-        plt.plot(
-            witSignal.data[startSeg * L:startSeg * L + segNumber * L], ':')
+        witSignal[startSeg * L: (startSeg + segNumber) * L].plot(pltStr='r:')
 
-#        plt.show()
 
         # test writing signals
         outputPath = 'subsignal.wav'
@@ -205,7 +202,7 @@ class Signaltest(unittest.TestCase):
         # frame 5  to 12
         startSeg = 2
         segNumber = 3
-        shortSignal = longSignal.getSubSignal(startSeg, segNumber, False)
+        shortSignal = longSignal.get_sub_signal(startSeg, segNumber, False)
 
         # witness signals
         witSignal = signals.Signal(
@@ -215,8 +212,7 @@ class Signaltest(unittest.TestCase):
 #        witSignal.plot()
         plt.figure()
         plt.plot(shortSignal.data)
-        plt.plot(
-            witSignal.data[startSeg * L / 2:startSeg * L / 2 + segNumber * L], ':')
+        witSignal[startSeg * L / 2:startSeg * L / 2 + segNumber * L].plot()
 
         # Testing the downsampliong utility
         plt.figure()
@@ -262,7 +258,7 @@ class BlockTest(unittest.TestCase):
         plt.plot(mdct.mdct(pySigOriginal.data, block.scale))
 #        plt.show()
 
-        self.assertAlmostEqual(sum((block.projs_matrix - mdct.
+        self.assertAlmostEqual(np.sum((block.projs_matrix - mdct.
             mdct(pySigOriginal.data, block.scale)) ** 2), 0)
 
         parallelProjections.clean_plans(np.array([1024,]))
@@ -303,6 +299,21 @@ class py_mpTest(unittest.TestCase):
         cProfile.runctx('mp.mp(pySigOriginal, pyDico1, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
 
         cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
+
+
+class SequenceDicoTest(unittest.TestCase):
+
+    def runTest(self):
+# pyDico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
+
+        pyDico = random_dico.SequenceDico([256, 2048, 8192],seq_type='random')
+        pySigOriginal = signals.Signal(
+            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySigOriginal.crop(0, 5 * 16384)
+
+        pySigOriginal.data += 0.01 * np.random.random(5 * 16384)
+
+        cProfile.runctx('mp.mp(pySigOriginal, pyDico, 20, 20 ,debug=1 , clean=True)', globals(), locals())
 
 
 class ApproxTest(unittest.TestCase):
@@ -856,29 +867,22 @@ class py_mpTest3(unittest.TestCase):
         originalSignal = signals.LongSignal(filePath, frameSize, True)
 
         # dictionaries
-        pyCCDico = mdct_dico.LODico(mdctDico)
-        pyDico = mdct_dico.Dico(mdctDico)
+        pyCCDico = mdct_dico.LODico(mdctDico)        
 
         # Let's feed the proto 3 with these:
         # we should get a collection of approximants (one for each frame) in
         # return
         xmlOutPutDir = '../../Approxs/Bach_prelude/LOmp/'
-        approximants, decays = mp.mp_long(
-            originalSignal, pyCCDico, 10, 100, False, True, xmlOutPutDir)
-
-#        del approximants
-#        xmlOutPutDir = '../Approxs/Bach_prelude/mp/'
-# approximants , decays = mp.mp_LongSignal(originalSignal, pyDico, 5, 100,
-# False, True, xmlOutPutDir)
-#
-        # concatenate all segments to retrieve the global approximation
-#        recomposedData = zeros(8192)
-#        for segIdx in range(len(approximants)) :
-#            recomposedData = concatenate()
+        approximants = mp.mp_long(
+            originalSignal, pyCCDico, 10, 100, False, True, xmlOutPutDir)[0]
 
         self.assertEqual(len(approximants), originalSignal.segmentNumber)
 
         fusionnedApprox = approx.fusion_approxs(approximants)
+
+        print fusionnedApprox
+        print approximants
+
         self.assertEqual(fusionnedApprox.fs,
              originalSignal.fs)
 #        self.assertEqual(fusionnedApprox.length, originalSignal.length )
@@ -895,13 +899,13 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-    suite.addTest(py_mpTest3())
-    suite.addTest(py_mpTest())
-    suite.addTest(py_mpTest2())
-    suite.addTest(ApproxTest())
-    suite.addTest(AtomTest())
-    suite.addTest(DicoTest())
-    suite.addTest(BlockTest())
+#    suite.addTest(py_mpTest3())
+#    suite.addTest(py_mpTest())
+#    suite.addTest(py_mpTest2())
+#    suite.addTest(ApproxTest())
+#    suite.addTest(AtomTest())
+#    suite.addTest(DicoTest())
+#    suite.addTest(BlockTest())
     suite.addTest(Signaltest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)

@@ -138,7 +138,8 @@ class DicosTest(unittest.TestCase):
 class PursuitTest(unittest.TestCase):
 
     def runTest(self):
-        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
+        pySig = signals.Signal(
+            audioFilePath + 'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
@@ -217,13 +218,17 @@ class PursuitTest(unittest.TestCase):
 
 
 class SymetryTest(unittest.TestCase):
-    
-    def runTest(self):
-        
-        pySig = signals.Signal(audioFilePath + 'glocs.wav', mono=True, normalize=True)
-        pySig2 = signals.Signal(audioFilePath + 'voicemale.wav', mono=True, normalize=True)
-        pySig3 = signals.Signal(audioFilePath + 'voicefemale.wav', mono=True, normalize=True)
-        pySig4 = signals.Signal(audioFilePath + 'orchestra.wav', mono=True, normalize=True)
+
+    def runTest_notCompleted(self):
+
+        pySig = signals.Signal(
+            audioFilePath + 'glocs.wav', mono=True, normalize=True)
+        pySig2 = signals.Signal(
+            audioFilePath + 'voicemale.wav', mono=True, normalize=True)
+        pySig3 = signals.Signal(
+            audioFilePath + 'voicefemale.wav', mono=True, normalize=True)
+        pySig4 = signals.Signal(
+            audioFilePath + 'orchestra.wav', mono=True, normalize=True)
 
         decalage = 0
 
@@ -244,34 +249,31 @@ class SymetryTest(unittest.TestCase):
         pySig4.pad(8192)
 #        pySig3.pad(16384)
 
-        dico = [128, 1024, 8192]
-        nbAtoms = 1
-
-        jointDico = joint_dico.SetDico(dico,
-                                       selectNature='sum',
-                                       tol=[2, 2, 2])
-        jointDicoNL = joint_dico.SetDico(dico, nonLinear=True,
-                                         selectNature='penalized',
-                                         tol=[2, 2, 2], params=0)
-
-        jointDico.initialize((pySig2, pySig3, pySig4))
-
-        parallelProjections.initialize_plans(
-            np.array(jointDico.sizes), np.array(jointDico.tolerances))
-        jointDico.update((pySig2, pySig3, pySig4), 0, debug=2)
-
-        plt.figure()
-#        plt.subplot(211)
-#        plt.plot([block.projectionMatrix for block in jointDico.blocks])
-        plt.plot(jointDico.blocks[2].best_score_tree)
-        jointDico.update((pySig3, pySig2, pySig4), 0, debug=2)
-#        plt.subplot(212)
-#        plt.plot([block.projectionMatrix for block in jointDico.blocks])
-        plt.plot(jointDico.blocks[2].best_score_tree, 'r:')
-
-        plt.show()
-
-        parallelProjections.clean_plans(np.array(jointDico.sizes))
+#                dico = [128, 1024, 8192]
+#                nbAtoms = 1
+#        
+#                jointDico = joint_dico.SetDico(dico,
+#                                               selectNature='sum',
+#                                               tol=[2, 2, 2])
+#                jointDicoNL = joint_dico.SetDico(dico, nonLinear=True,
+#                                                 selectNature='penalized',
+#                                                 tol=[2, 2, 2], params=0)        
+#        
+#                parallelProjections.initialize_plans(
+#                    np.array(jointDico.sizes), np.array(jointDico.tolerances))
+#                
+#                jointDico.update((pySig2, pySig3, pySig4), 0, debug=2)
+#        
+#                plt.figure()
+#        #        plt.subplot(211)
+#        #        plt.plot([block.projectionMatrix for block in jointDico.blocks])
+#                plt.plot(jointDico.blocks[2].best_score_tree)
+#                jointDico.update((pySig3, pySig2, pySig4), 0, debug=2)
+#        #        plt.subplot(212)
+#        #        plt.plot([block.projectionMatrix for block in jointDico.blocks])
+#                plt.plot(jointDico.blocks[2].best_score_tree, 'r:')
+#        
+#                parallelProjections.clean_plans()
 #        # let us compare the two decomposition
 #        approxCommon, approxSpecList, decayList, residualSignalList = mp.mp_joint((pySig2,pySig3,pySig4),
 #                                                                                jointDico, 20,
@@ -283,14 +285,19 @@ class SymetryTest(unittest.TestCase):
 #                                                                           nbAtoms, debug=0,
 # padSignal=False)
 
+
 class nonLinearTest(unittest.TestCase):
-    
+
     def runTest(self):
-        
-        pySig = signals.Signal(audioFilePath + 'glocs.wav', mono=True, normalize=True)
-        pySig2 = signals.Signal(audioFilePath + 'voicemale.wav', mono=True, normalize=True)
-        pySig3 = signals.Signal(audioFilePath + 'Bach_prelude_4s.wav', mono=True, normalize=True)
-        pySig4 = signals.Signal(audioFilePath + 'Bach_prelude_40s.wav', mono=True, normalize=True)
+
+        pySig = signals.Signal(
+            audioFilePath + 'glocs.wav', mono=True, normalize=True)
+        pySig2 = signals.Signal(
+            audioFilePath + 'ClocheB.wav', mono=True, normalize=True)
+        pySig3 = signals.Signal(
+            audioFilePath + 'Bach_prelude_4s.wav', mono=True, normalize=True)
+        pySig4 = signals.Signal(
+            audioFilePath + 'Bach_prelude_40s.wav', mono=True, normalize=True)
 
         decalage = 10
 
@@ -300,7 +307,8 @@ class nonLinearTest(unittest.TestCase):
         pySig.crop(start * pySig.fs, (start + duration) * pySig.fs)
         pySig2.crop(start * pySig.fs, (start + duration) * pySig.fs)
         pySig3.crop(start * pySig.fs, (start + duration) * pySig.fs)
-        pySig4.crop((start + decalage) * pySig.fs, (start + duration + decalage) * pySig.fs)
+        pySig4.crop((start + decalage) * pySig.fs, (start +
+                    duration + decalage) * pySig.fs)
 
         pySig2.data += pySig.data
         pySig3.data += pySig.data
@@ -317,6 +325,7 @@ class nonLinearTest(unittest.TestCase):
         jointDico = joint_dico.SetDico(dico,
                                        selectNature='sum',
                                        tol=[2, 2, 2])
+        
         jointDicoNL = joint_dico.SetDico(dico, nonLinear=True,
                                          selectNature='weighted',
                                          tol=[2, 2, 2], params=1)
@@ -373,14 +382,15 @@ class nonLinearTest(unittest.TestCase):
         approxCommon.plot_tf()
         plt.subplot(212)
         approxCommonNL.plot_tf()
-        plt.show()
+#        plt.show()
 
 
 class perfTest(unittest.TestCase):
-    
+
     def runTest(self):
         print " Starting Performances Tests"
-        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
+        pySig = signals.Signal(
+            audioFilePath + 'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
@@ -393,24 +403,19 @@ class perfTest(unittest.TestCase):
         pySig.pad(16384)
         pySig2.pad(16384)
 #        pySig3.pad(16384)
-
         dico = [128, 1024, 8192]
-
-        classicDIco = mdct_dico.LODico(dico)
 
         jointDico = joint_dico.SetDico(dico, selectNature='sum')
-        jointDicoTol = joint_dico.SetDico(dico,
-                                          selectNature='sum',
-                                          tol=[2, 2, 2])
 
-        cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDico, 10, 2000 ,debug=0,doClean=False)', globals(), locals())
-        cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDicoTol, 10, 2000 ,debug=0)', globals(), locals())
+        cProfile.runctx('mp.mp_joint((pySig,pySig2,pySig2), jointDico, 10, 2000 ,debug=0)', globals(), locals())
+
 
 class perfTestsNL(unittest.TestCase):
-    
+
     def runTest(self):
         print " Starting Performances Tests with NL techniques"
-        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
+        pySig = signals.Signal(
+            audioFilePath + 'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
@@ -427,9 +432,6 @@ class perfTestsNL(unittest.TestCase):
         dico = [128, 1024, 8192]
 
         classicDIco = mdct_dico.LODico(dico)
-
-# cProfile.runctx('mp.mp(pySig, classicDIco, 30, 1500 ,debug=0)' ,
-# globals() , locals())
 
         natures = ('penalized',)
         for nature in natures:
@@ -443,7 +445,8 @@ class perfTestsNL(unittest.TestCase):
 
     def toleranceTests(self):
         print "%%%%%%%%%%%%%%% Testing Joint mp with increased Tolerance %%%%%%%%%%%%%%%"
-        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
+        pySig = signals.Signal(
+            audioFilePath + 'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
@@ -468,25 +471,26 @@ class perfTestsNL(unittest.TestCase):
 
         print jointDico.tolerances
         nbatoms = 50
-        meanApprox, currentApproxList, resEnergyList, residualSignalList = mp.mp_joint((pySig, pySig2, pySig2),
-                                                                                       jointDico, 10, nbatoms, debug=0)
+        residualSignalList = mp.mp_joint((pySig, pySig2, pySig2),
+                                         jointDico, 10, nbatoms, debug=0)[3]
 
         print jointDicoTol.tolerances
-        meanApproxTol, currentApproxListTol, resEnergyListTol, residualSignalListTol = mp.mp_joint((pySig, pySig2, pySig2),
-                                                                                                   jointDicoTol, 10, nbatoms, debug=0)
+        residualSignalListTol = mp.mp_joint((pySig, pySig2, pySig2),
+                                jointDicoTol, 10, nbatoms, debug=0)[3]
 
         for i in range(len(residualSignalList)):
-            print np.sum(residualSignalList[i].data ** 2), np.sum(residualSignalListTol[i].data ** 2)
+            print np.sum(residualSignalList[i].data ** 2),
+            np.sum(residualSignalListTol[i].data ** 2)
 
 if __name__ == "__main__":
     # import syssys.argv = ['', 'Test.testName']
     suite = unittest.TestSuite()
 
-    suite.addTest(BlocksTest())
-    suite.addTest(DicosTest())
-    suite.addTest(PursuitTest())
-#    suite.addTest(nonLinearTest())
-    suite.addTest(perfTest())
+#    suite.addTest(BlocksTest())
+#    suite.addTest(DicosTest())
+#    suite.addTest(PursuitTest())
+    suite.addTest(nonLinearTest())
+#    suite.addTest(perfTest())
 #    suite.addTest(SymetryTest())
     unittest.TextTestRunner(verbosity=2).run(suite)
 

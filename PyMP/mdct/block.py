@@ -126,7 +126,7 @@ class Block(BaseBlock):
     # constructor - initialize residual signal and projection matrix
     def __init__(self, length=0, resSignal=None, frameLen=0, useC=True, forceHF=False, debug_level=None):
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.scale = length
         self.residualSignal = resSignal
@@ -336,9 +336,9 @@ class Block(BaseBlock):
         global _PyServer
 #        print len(_PyServer.Waveforms)
         if value is None:
-            return self.max_value * _PyServer.getWaveForm(self.scale, self.max_bin_idx)
+            return self.max_value * _PyServer.get_waveform(self.scale, self.max_bin_idx)
         else:
-            return value * _PyServer.getWaveForm(self.scale, self.max_bin_idx)
+            return value * _PyServer.get_waveform(self.scale, self.max_bin_idx)
         ###################  old version ############
 #        temp = zeros(2*self.scale)
 #        temp[self.scale/2 + self.max_bin_idx] = self.max_value
@@ -817,7 +817,7 @@ class SpreadBlock(Block):
                  debug_level=None, penalty=0.5, maskSize=1):
 
         if debug_level is not None:
-            _Logger.setLevel(debug_level)
+            _Logger.set_level(debug_level)
 
         self.scale = length
         self.residualSignal = resSignal

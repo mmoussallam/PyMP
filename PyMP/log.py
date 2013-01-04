@@ -1,39 +1,20 @@
 #*****************************************************************************/
 #                                                                            */
-#                           Log.py                                      */
+#                                log.py                                      */
 #                                                                            */
 #                        Matching Pursuit Library                            */
 #                                                                            */
 # M. Moussallam                                             Mon Aug 16 2010  */
 # -------------------------------------------------------------------------- */
-#                                                                            */
-#                                                                            */
-#  This program is free software; you can redistribute it and/or             */
-#  modify it under the terms of the GNU General Public License               */
-#  as published by the Free Software Foundation; either version 2            */
-#  of the License, or (at your option) any later version.                    */
-#                                                                            */
-#  This program is distributed in the hope that it will be useful,           */
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-#  GNU General Public License for more details.                              */
-#                                                                            */
-#  You should have received a copy of the GNU General Public License         */
-#  along with this program; if not, write to the Free Software               */
-#  Foundation, Inc., 59 Temple Place - Suite 330,                            */
-#  Boston, MA  02111-1307, USA.                                              */
-#                                                                            */
-# *****************************************************************************
 # */
 
 '''
-Module Log
-===============
+Module log
+==========
 
 '''
 
 import logging
-import sys
 import traceback
 import matplotlib.pyplot as plt
 
@@ -99,26 +80,26 @@ class Log():
             plt.ion()
             self.logger.info("Set interactive mode ON for pyplot")
 
-    def setLevel(self, newLevel):
+    def set_level(self, newLevel):
         self.debugLevel = newLevel
         self.logger.setLevel(Levels[self.debugLevel])
 
-    def getContext(self):
+    def get_context(self):
         if self.noCtx:
             return ''
-        list = traceback.extract_stack(limit=3)
-        str_context = list[0][0].split('/')[-1] + '::' + str(list[0][
-            1]) + '::' + list[0][2] + '::'
+        ctx_list = traceback.extract_stack(limit=3)
+        str_context = ctx_list[0][0].split('/')[-1] + '::' + str(ctx_list[0][
+            1]) + '::' + ctx_list[0][2] + '::'
         return str_context
 
     def info(self, message):
-        self.logger.info(self.getContext() + message)
+        self.logger.info(self.get_context() + message)
 
     def debug(self, message):
-        self.logger.debug(self.getContext() + message)
+        self.logger.debug(self.get_context() + message)
 
     def warning(self, message):
-        self.logger.warning(self.getContext() + message)
+        self.logger.warning(self.get_context() + message)
 
     def error(self, message):
-        self.logger.error(self.getContext() + message)
+        self.logger.error(self.get_context() + message)
