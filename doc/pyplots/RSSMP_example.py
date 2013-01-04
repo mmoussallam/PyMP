@@ -33,7 +33,7 @@ srr = 30
 
 mpDico = dico.Dico(scales)
 lompDico = dico.LODico(scales)
-rssMPDico = random_dico.RandomDico(scales)
+rssMPDico = random_dico.SequenceDico(scales)
 
 approxMP , decayMP = mp.mp(pySig,mpDico,srr,nbAtom,pad=True)
 approxLoMP, decayLoMP = mp.mp(pySig,lompDico,srr,nbAtom,pad=True)

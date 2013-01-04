@@ -88,7 +88,7 @@ class Dico(BaseDico):
         self._pp = parallel
         _Logger.info('New dictionary created with sizes : ' + str(self.sizes))
 
-    def getBlock(self, size):
+    def find_block_by_scale(self, size):
         ''' Returns the index of the block corresponding to the given size or None if not found'''
         for i in range(len(self.sizes)):
             if size == self.sizes[i]:
@@ -105,14 +105,14 @@ class Dico(BaseDico):
             self.blocks.append(block.Block(mdctSize,
                                            residualSignal, useC=self.use_c_optim, forceHF=self.forceHF))
 
-    def initProjMatrix(self, itNumbers):
+    def init_proj_matrix(self, itNumbers):
         """ method used for monitoring the projection along iterations
             ONLY for DEV purposes"""
         projShape = self.blocks[0].projs_matrix.shape
         # Here all blocks have same number of projections
         return zeros((projShape[0] * len(self.sizes), itNumbers))
 
-    def updateProjMatrix(self, projMatrix, iterationNumber, normedProj=False):
+    def update_proj_matrix(self, projMatrix, iterationNumber, normedProj=False):
         """ method used for monitoring the projection along iterations
             ONLY for DEV purposes"""
 
@@ -152,16 +152,16 @@ class Dico(BaseDico):
                 self.max_block_score = abs(block.max_value)
                 self.best_current_block = block
 
-    def getBestAtom(self, debug):
+    def get_best_atom(self, debug):
         if self.best_current_block == None:
             raise ValueError("no best block constructed, make sure inner product have been updated")
 
         if debug > 2:
-            self.best_current_block.plotScores()
+            self.best_current_block.plot_proj_matrix()
 
-        return self.best_current_block.getMaxAtom()
+        return self.best_current_block.get_max_atom()
 
-    def computeTouchZone(self, previousBestAtom):
+    def compute_touched_zone(self, previousBestAtom):
         ''' update zone computed from the previously selected atom '''
         self.starting_touched_index = previousBestAtom.time_position  # - previousBestAtom.length/2
         self.ending_touched_index = self.starting_touched_index + \
@@ -185,7 +185,7 @@ class Dico(BaseDico):
         DicoNode.appendChild(SizesNode)
         return DicoNode
 
-    def getAtomKey(self, atom, sigLength):
+    def get_atom_key(self, atom, sigLength):
         ''' Get the atom index in the dictionary '''
         if not isinstance(atom, BaseAtom):
             return None
@@ -197,7 +197,7 @@ class Dico(BaseDico):
         return int(block * sigLength + frame * float(atom.length / 2) + atom.freq_bin)
 
     #
-    def getProjections(self, indexes, sigLength):
+    def get_projections(self, indexes, sigLength):
         """ additional method provided for Gradient Pursuits
             indexes formalism: key as in the py_pursuit_Approx Object :
             int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)"""
@@ -248,7 +248,7 @@ class LODico(Dico):
                 self.blocks.append(
                     block.Block(mdctSize, residualSignal, useC=self.use_c_optim))
 
-    def getProjections(self, indexes, sigLength):
+    def get_projections(self, indexes, sigLength):
         """ additional method provided for Gradient Pursuits
             indexes formalism: key as in the py_pursuit_Approx Object :
             int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)"""
@@ -285,7 +285,7 @@ class FullDico(Dico):
         for mdctSize in self.sizes:
             self.blocks.append(block.FullBlock(mdctSize, residualSignal))
 
-    def initProjMatrix(self, itNumbers):
+    def init_proj_matrix(self, itNumbers):
         """ method used for monitoring the projection along iterations"""
         projShape = zeros(len(self.sizes))
         nbprojs = zeros(len(self.sizes))
@@ -296,7 +296,7 @@ class FullDico(Dico):
 
         return zeros((sum(projShape * nbprojs), itNumbers))
 
-    def updateProjMatrix(self, projMatrix, iterationNumber, normedProj=False):
+    def update_proj_matrix(self, projMatrix, iterationNumber, normedProj=False):
         """ method used for monitoring the projection along iterations"""
         ide = 0
         for blockIdx in range(len(self.blocks)):

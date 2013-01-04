@@ -7,7 +7,7 @@ M. Moussallam
 """
 
 from PyMP.mdct import dico
-from PyMP.mdct.random import dico as random_dico
+from PyMP.mdct.rand import dico as random_dico
 from PyMP import mp, mp_coder, signals
 myPympSignal = signals.Signal('../data/ClocheB.wav', mono=True)  # Load Signal
 myPympSignal.crop(0, 4.0 * myPympSignal.fs)     # Keep only 4 seconds
@@ -19,7 +19,7 @@ pyDico = dico.Dico(scales)
 # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
 mpApprox, mpDecay = mp.mp(myPympSignal, pyDico, 20, 2000, pad=False)
 
-mpApprox.atomNumber
+mpApprox.atom_number
 
 SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(
     mpApprox, 8000, Q=14)
@@ -42,7 +42,7 @@ SNRlo, bitratelo, quantizedApproxLO = mp_coder.simple_mdct_encoding(
     lompApprox, 2000, Q=14, TsPenalty=True)
 print (SNRlo, bitratelo)
 
-pyRSSDico = random_dico.RandomDico(scales)
+pyRSSDico = random_dico.SequenceDico(scales)
 rssApprox, rssDecay = mp.mp(myPympSignal, pyRSSDico, 20, 2000, pad=False)
 SNRrss, bitraterss, quantizedApproxRSS = mp_coder.simple_mdct_encoding(
     rssApprox, 2000, Q=14)
@@ -61,11 +61,15 @@ SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(
     mpApprox, 64000, Q=16)
 print (SNR, bitrate)
 
+del mpApprox, pyDico
+
 lompApprox, lompDecay = mp.mp(
     myPympSignal, pyLODico, 50, 20000, pad=False)
 SNRlo, bitratelo, quantizedApproxLO = mp_coder.simple_mdct_encoding(
     lompApprox, 64000, Q=16, TsPenalty=True)
 print (SNRlo, bitratelo)
+
+del lompApprox, pyLODico
 
 rssApprox, rssDecay = mp.mp(
     myPympSignal, pyRSSDico, 50, 20000, pad=False)

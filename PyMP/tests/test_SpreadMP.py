@@ -40,9 +40,9 @@ class Test(unittest.TestCase):
         classicBlock.update(pySig, 0, -1)
         spreadBlock.update(pySig, 0, -1)
 
-        maxClassicAtom1 = classicBlock.getMaxAtom();
+        maxClassicAtom1 = classicBlock.get_max_atom();
         print maxClassicAtom1.length , maxClassicAtom1.frame , maxClassicAtom1.freq_bin , maxClassicAtom1.mdct_value
-        maxSpreadcAtom1 = spreadBlock.getMaxAtom();
+        maxSpreadcAtom1 = spreadBlock.get_max_atom();
         print maxSpreadcAtom1.length , maxSpreadcAtom1.frame , maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.mdct_value
         # assert equality using the inner comparison method of MDCT atoms
         self.assertEqual(maxClassicAtom1 ,maxSpreadcAtom1 )
@@ -54,9 +54,9 @@ class Test(unittest.TestCase):
         spreadBlock.update(pySig, 0, -1)
 
 #        plt.show()
-        maxClassicAtom2 = classicBlock.getMaxAtom();
+        maxClassicAtom2 = classicBlock.get_max_atom();
         print maxClassicAtom2.length , maxClassicAtom2.frame , maxClassicAtom2.freq_bin , maxClassicAtom2.mdct_value
-        maxSpreadcAtom2 = spreadBlock.getMaxAtom();
+        maxSpreadcAtom2 = spreadBlock.get_max_atom();
         print maxSpreadcAtom2.length , maxSpreadcAtom2.frame , maxSpreadcAtom2.freq_bin, maxSpreadcAtom2.mdct_value
         self.assertNotEqual(maxClassicAtom2 ,maxSpreadcAtom2 )
 
@@ -77,8 +77,8 @@ class Test(unittest.TestCase):
         classicDIco.update(pySig, 2)
         spreadDico.update(pySig, 2)
 
-        classicAtom1 = classicDIco.getBestAtom(0)
-        spreadAtom1 = spreadDico.getBestAtom(0)
+        classicAtom1 = classicDIco.get_best_atom(0)
+        spreadAtom1 = spreadDico.get_best_atom(0)
 
         self.assertEqual(classicAtom1 ,spreadAtom1 )
 
@@ -86,8 +86,8 @@ class Test(unittest.TestCase):
         classicDIco.update(pySig, 2)
         spreadDico.update(pySig, 2)
 
-        classicAtom2 = classicDIco.getBestAtom(0)
-        spreadAtom2 = spreadDico.getBestAtom(0)
+        classicAtom2 = classicDIco.get_best_atom(0)
+        spreadAtom2 = spreadDico.get_best_atom(0)
 
         self.assertNotEqual(classicAtom2 ,spreadAtom2 )
 

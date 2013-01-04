@@ -244,7 +244,7 @@ class BlockTest(unittest.TestCase):
         pySigOriginal.pad(2048)
 
         block = mdct_block.Block(
-            1024, pySigOriginal, debug_level=3, useC=True)
+            1024, pySigOriginal, debug_level=2, useC=True)
         # testing the automated enframing of the data
         self.assertEqual(block.frame_len, 512)
         print block.frame_num
@@ -281,54 +281,18 @@ class py_mpTest(unittest.TestCase):
 
         pySigOriginal.data += 0.01 * np.random.random(5 * 16384)
 
-#        pySigOriginal.plot()
-
         # first try with a single-atom signals
         pyAtom = mdct_atom.Atom(2048, 1, 11775, 128, 8000, 0.57)
         pyApprox_oneAtom = approx.Approx(pyDico, [], pySigOriginal)
         pyApprox_oneAtom.add(pyAtom)
 
-#        plt.plot(pyApprox_oneAtom.synthesize(0).data[12287:12287+2048])
-#        plt.plot(pyAtom.synthesize(0))
-#        plt.legend(("IMDCT","Atom"))
-#        plt.show()
 
         pySignal_oneAtom = signals.Signal(pyApprox_oneAtom.
             synthesize(0).data, pySigOriginal.fs, False)
 
-        # add some noise
-#        pySignal_oneAtom.data += 0.0001*random.random(5*16384)
-
-#        approximant = mp.mp_proto1(pySignal_oneAtom, pyDico, 10, 10)
-##        approximant.plot_tf()
-#        plt.plot(pySignal_oneAtom.data)
-#        plt.plot(approximant.synthesize(0).data)
-#        plt.legend(("original","approximant"))
-#        plt.show()
-#        del approximant
-
-        # test two atoms
-# pyAtom2 = Atom.Atom(16384 , 1, 6*8192-1-4096 , 128 , 8000 ,
-# Atom.transformType.MDCT , -0.42)
-#        pySignal_oneAtom.add(pyAtom2)
-##        pySignal_oneAtom.plot()
-#        approximant = mp.mp(pySignal_oneAtom, pyDico, 20, 10 , True, False)[0]
-#
-#        plt.plot(approximant.synthesize(0).data)
-#        plt.title("Reconstituted signals")
-#        plt.show()
-#        plt.plot(pySignal_oneAtom.data)
-#        plt.plot(approximant.synthesize(0).data)
-#        plt.legend(("original","approximant"))
-#        plt.show()
-
-#        cProfile.run('mp.mp_proto1')
-
         # second test
         pySigOriginal = signals.Signal(
             audioFilePath + "ClocheB.wav", normalize=True, mono=True)
-#        approximant = mp.mp_proto1(pySigOriginal, pyDico, 10, 10)
-#        self.assertTrue( isinstance(approximant , Approx.Approx));
 
         # last test - decomposition profonde
         pyDico2 = mdct_dico.Dico([128, 256, 512, 1024, 2048,
@@ -339,63 +303,6 @@ class py_mpTest(unittest.TestCase):
         cProfile.runctx('mp.mp(pySigOriginal, pyDico1, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
 
         cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
-
-#        print "Parallel"
-# cProfile.runctx('mp.mp(pySigOriginal, pyDico_parallel, 40, 100 ,debug=0)' ,
-# globals() , locals())
-#
-#        print pySigOriginal.length
-#        t0 = time.clock()
-#        approximant = mp.mp(pySigOriginal, pyDico2, 20, 4000 ,False)[0]
-#        t1 = time.clock()
-# print "SRR of ", approximant.compute_srr() , " dB achieved in ", t1 - t0 , "
-# sec and ", approximant.atomNumber,"iteration with C"
-#
-#        del approximant , pyDico2
-#
-#        t2 = time.clock()
-# pyDico2 = Dico.LODico([128 , 256 , 512 , 1024 , 2048 , 4096, 8192 , 16384])
-# approximant = mp.mp(pySigOriginal, pyDico2, 20, 4000
-# ,debug=0,padSignal=True)[0]
-#        t3 = time.clock()
-# print "SRR of ", approximant.compute_srr() , " dB achieved in ", t3 - t2 , "
-# sec with C and ", approximant.atomNumber,"iteration and LOmp"
-#
-#        del approximant , pyDico2
-##
-
-# pyDico1 = Dico.LODico([2**j for j in range(7,15) ] , Atom.transformType.MDCT
-# )
-# pyDico2 = Dico.LODico([2**j for j in range(7,15) ] , Atom.transformType.MDCT
-# )
-#
-#        t = time.clock()
-# approximant_High , decays_high = mp.mp(pySigOriginal, pyDico2, 40, 1000
-# ,debug=0 , forceHighFreqs=True , HFitNum = 800)
-#        print "elapsed : " , time.clock() - t;
-#        t = time.clock()
-# approximant , decay = mp.mp(pySigOriginal, pyDico1, 40, 1000
-# ,debug=0,padSignal=False)
-#        print "elapsed : " , time.clock() - t;
-#        approximant_High.recomposedSignal.write('recomposedHF.wav');
-#        approximant.recomposedSignal.write('recomposed.wav');
-#
-# print "SRR of ", approximant.compute_srr() , " dB achieved in ", t3 - t2 , "
-# sec without C"
-#        plt.figure()
-#        plt.subplot(211)
-#        approximant.plot_tf()
-#        plt.subplot(212)
-#        approximant_High.plot_tf()
-#
-#        plt.figure()
-#        plt.plot(decay)
-#        plt.plot(decays_high , 'r')
-#        plt.legend(('Without HF forcing' , 'With HF forcing'));
-
-#        plt.show()
-
-#        del pySigOriginal
 
 
 class ApproxTest(unittest.TestCase):
@@ -575,7 +482,7 @@ class py_mpTest2(unittest.TestCase):
 
         fig_1Atom = plt.figure()
         print "Testing one Aligned Atom with LOmp - should be perfect"
-        approximant = mp.mp(pySignal_oneAtom, pyCCDico, 10, 10, debug=1)[0]
+        approximant = mp.mp(pySignal_oneAtom, pyCCDico, 10, 10, debug=2)[0]
 #        approximant.plot_tf()
 #        plt.subplot(211)
         plt.plot(pySignal_oneAtom.data)
@@ -747,7 +654,7 @@ class py_mpTest2Bis(unittest.TestCase):
         ApproxPath = "../Approxs/"
 #        ext = ".png"
 
-        pyRandomDico = random_dico.RandomDico([256, 2048, 8192], 'scale')
+        pyRandomDico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
         pyDico = mdct_dico.Dico([256, 2048, 8192])
 
         pySigOriginal = signals.Signal(

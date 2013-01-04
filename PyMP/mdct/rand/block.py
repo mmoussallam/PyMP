@@ -15,7 +15,7 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.
 
 """
 
-from numpy import zeros, random, abs, max
+import numpy as np
 from math import floor
 
 from ...tools import Misc
@@ -32,26 +32,26 @@ _PyServer = win_server.PyServer()
 _Logger = log.Log('RandomMDCTBlock', level=0)
 
 
-class RandomBlock(mdct_block.Block):
+class SequenceBlock(mdct_block.Block):
     """ block implementing the Randomized Pursuit
 
     Attributes:
 
-        `randomType`: The type of time-shift sequence, available choices are *scale* , *random* , *gaussian* , *binom* , *dicho* , *jump* , *binary* default is *random* which use a uniform pseudo-random generator
+        `sequence_type`: The type of time-shift sequence, available choices are *scale* , *random* , *gaussian* , *binom* , *dicho* , *jump* , *binary* default is *random* which use a uniform pseudo-random generator
 
-        `TSsequence`: The actual sequence of subdictionary time-shifts
+        `shift_list`: The actual sequence of subdictionary time-shifts
 
-        `currentTS`: The current time-shift
+        `current_shift`: The current time-shift
 
         `nbSim`: Number of consecutive iterations with the same time-shift (default is 1)
     """
 
     # properties
-    randomType = 'random'
-    TSsequence = []
-    currentTS = 0
-    currentSubF = 0
-    nbSim = 1
+    sequence_type = 'random'
+    shift_list = []
+    current_shift = 0
+    currentSubF = 0 #DEPRECATED
+    nb_consec_sim = 1
     w_long = None
 
     # constructor - initialize residual signal and projection matrix
@@ -68,38 +68,38 @@ class RandomBlock(mdct_block.Block):
 
         self.framed_data_matrix = self.residualSignal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
-        self.projs_matrix = zeros(len(self.framed_data_matrix))
+        self.projs_matrix = np.zeros(len(self.framed_data_matrix))
 
-        self.randomType = randomType
-        if self.randomType == 'scale':
-            self.TSsequence = range(self.scale / 2)
-        elif self.randomType == 'random':
-            self.TSsequence = [floor(
-                (self.scale / 2) * (i - 0.5)) for i in random.random(self.scale)]
-        elif self.randomType == 'gaussian':
-            self.TSsequence = [floor(self.scale / 8 * i)
-                  for i in random.randn(self.scale / 2)]
-            for k in self.TSsequence:
+        self.sequence_type = randomType
+        if self.sequence_type == 'scale':
+            self.shift_list = range(self.scale / 2)
+        elif self.sequence_type == 'random':
+            self.shift_list = [floor(
+                (self.scale / 2) * (i - 0.5)) for i in np.random.random(self.scale)]
+        elif self.sequence_type == 'gaussian':
+            self.shift_list = [floor(self.scale / 8 * i)
+                  for i in np.random.randn(self.scale / 2)]
+            for k in self.shift_list:
                 k = min(k, self.scale / 4)
                 k = max(k, -self.scale / 4)
 
-        elif self.randomType == 'binom':
-            self.TSsequence = Misc.binom(range(self.scale / 2))
-        elif self.randomType == 'dicho':
-            self.TSsequence = Misc.dicho([], range(self.scale / 2))
-        elif self.randomType == 'jump':
-            self.TSsequence = Misc.jump(range(self.scale / 2))
-        elif self.randomType == 'sine':
-            self.TSsequence = Misc.sine(range(self.scale / 2))
+        elif self.sequence_type == 'binom':
+            self.shift_list = Misc.binom(range(self.scale / 2))
+        elif self.sequence_type == 'dicho':
+            self.shift_list = Misc.dicho([], range(self.scale / 2))
+        elif self.sequence_type == 'jump':
+            self.shift_list = Misc.jump(range(self.scale / 2))
+        elif self.sequence_type == 'sine':
+            self.shift_list = Misc.sine(range(self.scale / 2))
 #        elif self.randomType == 'triangle':
-#            self.TSsequence = Misc.triangle(range(self.scale/2))
-        elif self.randomType == 'binary':
-            self.TSsequence = Misc.binary(range(self.scale / 2))
+#            self.shift_list = Misc.triangle(range(self.scale/2))
+        elif self.sequence_type == 'binary':
+            self.shift_list = Misc.binary(range(self.scale / 2))
 
         else:
-            self.TSsequence = zeros(self.scale / 2)
+            self.shift_list = np.zeros(self.scale / 2)
 
-        self.nbSim = nbSim
+        self.nb_consec_sim = nbSim
         self.windowType = windowType
 
     # The update method is nearly the same as CCBlock
@@ -107,10 +107,10 @@ class RandomBlock(mdct_block.Block):
         """ Same as superclass except that at each update, one need to pick a time shift from the sequence """
 
         # change the current Time-Shift if enough iterations have been done
-        if (self.nbSim > 0):
-            if (iterationNumber % self.nbSim == 0):
-                self.currentTS = self.TSsequence[(
-                    iterationNumber / self.nbSim) % len(self.TSsequence)]
+        if (self.nb_consec_sim > 0):
+            if (iterationNumber % self.nb_consec_sim == 0):
+                self.current_shift = self.shift_list[(
+                    iterationNumber / self.nb_consec_sim) % len(self.shift_list)]
         self.residualSignal = newResidual
 
         if stopFrameIdx < 0:
@@ -123,13 +123,13 @@ class RandomBlock(mdct_block.Block):
         self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
         # TODO changes here
-        self.computeTransform(startFrameIdx, stopFrameIdx)
+        self.compute_transform(startFrameIdx, stopFrameIdx)
 
         # TODO changes here
-        self.getMaximum()
+        self.find_max()
 
     # inner product computation through MCLT with all possible time shifts
-    def computeTransform(self,   startingFrame=1, endFrame=-1):
+    def compute_transform(self,   startingFrame=1, endFrame=-1):
         if self.w_long is None:
             self.initialize()
 
@@ -142,7 +142,7 @@ class RandomBlock(mdct_block.Block):
 #        K = L/2;
 
         ############" changes  ##############
-#        T = K/2 + self.currentTS
+#        T = K/2 + self.current_shift
         # new version with C calculus
         parallelProjections.project(self.framed_data_matrix, self.best_score_tree,
                                                  self.projs_matrix,
@@ -151,7 +151,7 @@ class RandomBlock(mdct_block.Block):
                                                  startingFrame,
                                                  endFrame,
                                                  self.scale,
-                                                 int(self.currentTS))
+                                                 int(self.current_shift))
 #        computeMCLT.project(self.enframedDataMatrix, self.bestScoreTree,
 #                                                 self.projectionMatrix ,
 #                                                 self.locCoeff ,
@@ -159,7 +159,7 @@ class RandomBlock(mdct_block.Block):
 #                                                 startingFrame,
 #                                                 endFrame,
 #                                                 self.scale ,
-#                                                 int(self.currentTS))
+#                                                 int(self.current_shift))
 
 #        normaCoeffs = sqrt(2/float(K))
 ##        locCoeff = self.wLong * self.pre_twidVec
@@ -186,16 +186,16 @@ class RandomBlock(mdct_block.Block):
 #                print "oups here"
 #            # store new max score in tree
 # self.bestScoreTree[i] = abs(self.projectionMatrix[i*K : (i+1)*K]).max()
-    def getMaximum(self):
+    def find_max(self):
         treeMaxIdx = self.best_score_tree.argmax()
-        maxIdx = abs(self.projs_matrix[treeMaxIdx * self.scale /
+        maxIdx = np.abs(self.projs_matrix[treeMaxIdx * self.scale /
             2: (treeMaxIdx + 1) * self.scale / 2]).argmax()
 
         self.maxIdx = maxIdx + treeMaxIdx * self.scale / 2
         self.max_value = self.projs_matrix[self.maxIdx]
 
     # construct the atom
-    def getMaxAtom(self):
+    def get_max_atom(self):
         self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
         Atom = mdct_atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
@@ -203,12 +203,12 @@ class RandomBlock(mdct_block.Block):
         Atom.mdct_value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
-        Atom.waveform = self.synthesizeAtom()
+        Atom.waveform = self.synthesize_atom()
 
         if self.windowType == 'half1':
             Atom.waveform[0:self.scale / 2] = 0
 
-        Atom.time_shift = self.currentTS
+        Atom.time_shift = self.current_shift
         Atom.time_position -= Atom.time_shift
 
         return Atom

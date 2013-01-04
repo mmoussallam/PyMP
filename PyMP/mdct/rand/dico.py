@@ -38,7 +38,7 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.
 """
 
 import math
-from numpy import abs
+import numpy as np
 
 from ..dico import Dico
 from ... import log
@@ -49,30 +49,30 @@ global _Logger
 _Logger = log.Log('RandomMDCTDico', level=0)
 
 
-class RandomDico(Dico):
+class SequenceDico(Dico):
     """ This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner
         the shifts are controlled by the different blocks.
 
         Attributes:
 
-            `randomType`: The type of time-shift sequence, available choices are *scale*,*random*,*gaussian*,*binom*,*dicho*,*jump*,*binary* default is *random* which use a uniform pseudo-random generator
+            `sequence_type`: The type of time-shift sequence, available choices are *scale*,*random*,*gaussian*,*binom*,*dicho*,*jump*,*binary* default is *random* which use a uniform pseudo-random generator
 
-            `nbSim`: Number of consecutive iterations with the same time-shift (default is 1)
+            `nb_consec_sim`: Number of consecutive iterations with the same time-shift (default is 1)
 
     """
 
     # properties
-    randomType = 'none'  # type of sequence , Scale , Random or Dicho
-    iterationNumber = 0  # memorizes the position in the sequence
-    nbSim = 1
+    sequence_type = 'none'  # type of sequence , Scale , Random or Dicho
+    it_num = 0  # memorizes the position in the sequence
+    nb_consec_sim = 1
     # number of consecutive similar position
     nature = 'RandomMDCT'
 
     # constructor
-    def __init__(self, sizes=[], randomType='random', nbSame=1, windowType=None):
-        self.randomType = randomType
+    def __init__(self, sizes=[], seq_type='random', nbSame=1, windowType=None):
+        self.sequence_type = seq_type
         self.sizes = sizes
-        self.nbSim = nbSame
+        self.nb_consec_sim = nbSame
 
         self.windowType = windowType
 
@@ -84,14 +84,14 @@ class RandomDico(Dico):
 
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
-            self.blocks.append(block.RandomBlock(mdctSize, residualSignal, randomType=self.
-                randomType, nbSim=self.nbSim, windowType=self.windowType))
+            self.blocks.append(block.SequenceBlock(mdctSize, residualSignal, randomType=self.
+                sequence_type, nbSim=self.nb_consec_sim, windowType=self.windowType))
 
-    def computeTouchZone(self, previousBestAtom):
+    def compute_touched_zone(self, previousBestAtom):
         # if the current time shift is about to change: need to recompute all
         # the scores
-        if (self.nbSim > 0):
-            if ((self.iterationNumber + 1) % self.nbSim == 0):
+        if (self.nb_consec_sim > 0):
+            if ((self.it_num + 1) % self.nb_consec_sim == 0):
                 self.starting_touched_index = 0
                 self.ending_touched_index = -1
             else:
@@ -104,7 +104,7 @@ class RandomDico(Dico):
     def update(self, residualSignal, iterationNumber=0, debug=0):
         self.max_block_score = 0
         self.best_current_block = None
-        self.iterationNumber = iterationNumber
+        self.it_num = iterationNumber
         # BUGFIX STABILITY
 #        self.endingTouchedIndex = -1
 #        self.startingTouchedIndex = 0
@@ -122,13 +122,13 @@ class RandomDico(Dico):
             block.update(residualSignal,
                  startingTouchedFrame, endingTouchedFrame, iterationNumber)
 
-            if abs(block.max_value) > self.max_block_score:
+            if np.abs(block.max_value) > self.max_block_score:
 #                self.maxBlockScore = block.getMaximum()
-                self.max_block_score = abs(block.max_value)
+                self.max_block_score = np.abs(block.max_value)
                 self.best_current_block = block
 
     def getSequences(self, length):
         sequences = []
         for block in self.blocks:
-            sequences.append(block.TSsequence[0:length])
+            sequences.append(block.shift_list[0:length])
         return sequences

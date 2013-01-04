@@ -92,5 +92,6 @@ class BaseDico(object):
     def __init__(self):
         """ default constructor doesn't do anything"""
 
-    def getN(self):
-        return self.sizes[-1]  # last element of the list should be the biggest
+    def get_pad(self):
+        """ the amount of zeroes that need to be added on the sides """
+        return self.sizes[-1]  # last element of the list should be the biggest, 

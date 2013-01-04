@@ -17,31 +17,8 @@ from PyMP.mdct import block as mdct_block
 from PyMP.mdct import dico as mdct_dico
 from PyMP.mdct.joint import block as joint_block
 from PyMP.mdct.joint import dico as joint_dico
-from PyMP.tests.test_mainTests import audioFilePath
 
 audioFilePath = '../../data/'
-
-
-class Test(unittest.TestCase):
-
-    def testJointMP(self):
-#
-
-#        self.realTest()
-#
-#
-#        self.realTest()
-#        self.perfTestsNL()
-#        self.nonLinearTest()
-#
-#
-#        self.symetryTest()
-#        self.toleranceTests()
-#
-#        self.perfTests()
-
-        print "Done"
-#        self.realTest()
 
 
 class BlocksTest(unittest.TestCase):
@@ -59,7 +36,7 @@ class BlocksTest(unittest.TestCase):
 
         tol = [1]
 
-        parallelProjections.initialize_plans(np.array([scale]), np.array([2]))
+        parallelProjections.initialize_plans(np.array([scale]), np.array(tol))
 
         classicBlock = mdct_block.Block(scale, pySig,
                                         debug_level=3)
@@ -71,7 +48,7 @@ class BlocksTest(unittest.TestCase):
         classicBlock.update(pySig)
         setBlock.update([pySig], [0], [-1])
 
-        maxClassicAtom1 = classicBlock.getMaxAtom()
+        maxClassicAtom1 = classicBlock.get_max_atom()
         print maxClassicAtom1.length, maxClassicAtom1.frame
         print maxClassicAtom1.freq_bin, maxClassicAtom1.mdct_value
 
@@ -80,7 +57,7 @@ class BlocksTest(unittest.TestCase):
 #        plt.plot(setBlock.projectionMatrix[:,0],'r:')
 #        plt.show()
 
-        maxSpreadcAtom1 = setBlock.getAdaptedBestAtoms(noAdapt=True)[0]
+        maxSpreadcAtom1 = setBlock.get_optimized_best_atoms(noAdapt=True)[0]
         print maxSpreadcAtom1.length, maxSpreadcAtom1.frame
         print maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.mdct_value
 
@@ -94,9 +71,9 @@ class BlocksTest(unittest.TestCase):
         setBlock.update([pySig], [0], [-1])
 
 #        plt.show()
-        maxClassicAtom2 = classicBlock.getMaxAtom()
+        maxClassicAtom2 = classicBlock.get_max_atom()
         print maxClassicAtom2.length, maxClassicAtom2.frame, maxClassicAtom2.freq_bin, maxClassicAtom2.mdct_value
-        maxSpreadcAtom2 = setBlock.getAdaptedBestAtoms(noAdapt=True)[0]
+        maxSpreadcAtom2 = setBlock.get_optimized_best_atoms(noAdapt=True)[0]
         print maxSpreadcAtom2.length, maxSpreadcAtom2.frame, maxSpreadcAtom2.freq_bin, maxSpreadcAtom2.mdct_value
 
         self.assertEqual(maxClassicAtom2, maxSpreadcAtom2)
@@ -132,8 +109,8 @@ class DicosTest(unittest.TestCase):
         classicDIco.update(pySig, 2)
         DicoSet.update((pySig, pySig2), 2)
 
-        classicAtom1 = classicDIco.getBestAtom(0)
-        JointAtoms = DicoSet.getBestAtom(0)
+        classicAtom1 = classicDIco.get_best_atom(0)
+        JointAtoms = DicoSet.get_best_atom(0)
 
         print JointAtoms
 
@@ -150,8 +127,8 @@ class DicosTest(unittest.TestCase):
 #        classicDIco.update(pySig, 2)
 #        spreadDico.update(pySig, 2)
 #
-#        classicAtom2 = classicDIco.getBestAtom(0)
-#        spreadAtom2 = spreadDico.getBestAtom(0)
+#        classicAtom2 = classicDIco.get_best_atom(0)
+#        spreadAtom2 = spreadDico.get_best_atom(0)
 #
 #        self.assertNotEqual(classicAtom2 ,spreadAtom2 )
 
@@ -348,23 +325,23 @@ class nonLinearTest(unittest.TestCase):
         approxCommon, approxSpecList, decayList, residualSignalList = mp.mp_joint((pySig2, pySig3, pySig4),
                                                                                   jointDico, 20,
                                                                                   nbAtoms, debug=0,
-                                                                                  padSignal=False)
+                                                                                  pad=False)
 
         approxCommon2, approxSpecList2, decayList2, residualSignalList2 = mp.mp_joint((pySig3, pySig2, pySig4),
                                                                                       jointDico, 20,
                                                                                       nbAtoms, debug=0,
-                                                                                      padSignal=False)
+                                                                                      pad=False)
 
         approxCommonNL, approxSpecListNL, decayListNL, residualSignalListNL = mp.mp_joint((pySig2, pySig3, pySig4),
                                                                                           jointDicoNL, 20,
                                                                                           nbAtoms, debug=0,
-                                                                                          padSignal=False)
+                                                                                          pad=False)
 
         # shifting the order of the signals just to see if it's the same
         approxCommonNL2, approxSpecListNL2, decayListNL2, residualSignalListNL2 = mp.mp_joint((pySig3, pySig2, pySig4),
                                                                                               jointDicoNL, 20,
                                                                                               nbAtoms, debug=0,
-                                                                                              padSignal=False)
+                                                                                              pad=False)
 
 #        cProfile.runctx('mp.mp_joint((pySig2,pySig3), jointDico, 10, nbAtoms ,debug=0,doClean=False,padSignal=False)' , globals() , locals())
 #        cProfile.runctx('mp.mp_joint((pySig2,pySig3), jointDicoNL, 10, nbAtoms ,debug=0,doClean=False,padSignal=False)' , globals() , locals())
@@ -433,8 +410,7 @@ class perfTestsNL(unittest.TestCase):
     
     def runTest(self):
         print " Starting Performances Tests with NL techniques"
-        pySig = signals.InitFromFile(
-            '../../../data/glocs.wav', forceMono=True, doNormalize=True)
+        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
@@ -467,8 +443,7 @@ class perfTestsNL(unittest.TestCase):
 
     def toleranceTests(self):
         print "%%%%%%%%%%%%%%% Testing Joint mp with increased Tolerance %%%%%%%%%%%%%%%"
-        pySig = signals.InitFromFile(
-            '../../../data/glocs.wav', forceMono=True, doNormalize=True)
+        pySig = signals.Signal(audioFilePath+'glocs.wav', mono=True, normalize=True)
         pySig2 = pySig.copy()
 #        pySig3 = pySig.copy()
 
@@ -510,10 +485,9 @@ if __name__ == "__main__":
     suite.addTest(BlocksTest())
     suite.addTest(DicosTest())
     suite.addTest(PursuitTest())
-    suite.addTest(PursuitTest())
 #    suite.addTest(nonLinearTest())
     suite.addTest(perfTest())
 #    suite.addTest(SymetryTest())
     unittest.TextTestRunner(verbosity=2).run(suite)
-    
+
     plt.show()

@@ -206,7 +206,7 @@ def main(argv):
     elif decType == 'LOMP':
         dictionary = Dico.LODico(mdctDico, useC=True)
     elif decType == 'RSSMP':
-        dictionary = pymp_RandomDicos.RandomDico(mdctDico, useC=True)
+        dictionary = pymp_RandomDicos.SequenceDico(mdctDico, useC=True)
     else:
         print "unrecognized dictionary type for now, availables are mp and LOMP"
         sys.exit()
@@ -234,7 +234,7 @@ def main(argv):
 # originalSignal.length + dictionary.getN(), originalSignal.samplingFrequency)
 
     approxs = mp.mp_long(longSignal, dictionary, targetSRR, maxAtomNumber,
-                               debug=_debug - 1, padSignal=padSignal, outputDir='', doWrite=False)[0]
+                               debug=_debug - 1, pad=padSignal, output_dir='', write=False)[0]
 
 #    for segidx in range(segmentNumber):
 #        if _debug >0:

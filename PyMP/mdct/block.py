@@ -178,7 +178,7 @@ class Block(BaseBlock):
 
     # Search among the inner products the one that maximizes correlation
     # the best candidate for each frame is already stored in the best_score_tree
-    def getMaximum(self):
+    def find_max(self):
         """Search among the inner products the one that maximizes correlation
         the best candidate for each frame is already stored in the best_score_tree """
         treeMaxIdx = self.best_score_tree.argmax()
@@ -188,7 +188,7 @@ class Block(BaseBlock):
         self.maxIdx = maxIdx + treeMaxIdx * self.scale / 2
         self.max_value = self.projs_matrix[self.maxIdx]
 
-#        print "block getMaximum called : " , self.maxIdx , self.max_value
+#        print "block find_max called : " , self.maxIdx , self.max_value
 
         if self.HF:
             treemaxHFidx = self.bestScoreHFTree.argmax()
@@ -200,7 +200,7 @@ class Block(BaseBlock):
             self.maxHFValue = self.projs_matrix[self.maxHFIdx]
 
     # construct the atom that best correlates with the signal
-    def getMaxAtom(self, HF=False):
+    def get_max_atom(self, HF=False):
         """ construct the atom that best correlates with the signal"""
 
         if not HF:
@@ -220,14 +220,11 @@ class Block(BaseBlock):
             Atom.mdct_value = self.maxHFValue
 
         # new version : compute also its waveform through inverse MDCT
-        Atom.waveform = self.synthesizeAtom()
+        Atom.waveform = self.synthesize_atom()
 
         if HF:
             Atom.waveform = Atom.waveform * (self.maxHFValue / self.max_value)
         return Atom
-
-    def getWindow(self):
-        return self.w_long
 
     #
     def update(self, newResidual, startFrameIdx=0, stopFrameIdx=-1):
@@ -245,12 +242,12 @@ class Block(BaseBlock):
 
         self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
-        self.computeTransform(startFrameIdx, stopFrameIdx)
+        self.compute_transform(startFrameIdx, stopFrameIdx)
 
-        self.getMaximum()
+        self.find_max()
 
     # inner product computation through MDCT
-    def computeTransform(self, startingFrame=1, endFrame=-1):
+    def compute_transform(self, startingFrame=1, endFrame=-1):
         """ inner product computation through MDCT """
         if self.w_long is None:
             self.initialize()
@@ -332,7 +329,7 @@ class Block(BaseBlock):
 
     # synthesizes the best atom through ifft computation (much faster than
     # closed form)
-    def synthesizeAtom(self, value=None):
+    def synthesize_atom(self, value=None):
         """ synthesizes the best atom through ifft computation (much faster than closed form)
             New version uses the PyWinServer to serve waveforms"""
         ###################" new version ############"
@@ -373,7 +370,7 @@ class Block(BaseBlock):
 #        # scrap zeroes on the borders
 #        return waveform[L/2:-L/2]
 
-    def plotScores(self):
+    def plot_proj_matrix(self):
         plt.figure()
 #        plt.subplot(211)
 #        plt.plot(self.best_score_tree)
@@ -435,9 +432,9 @@ class LOBlock(Block):
 #        self.computeMCLT(startFrameIdx , stopFrameIdx)
 #
 #        # TODO changes here
-#        self.getMaximum()
+#        self.find_max()
     # inner product computation through MDCT
-    def computeTransform(self, startingFrame=1, endFrame=-1):
+    def compute_transform(self, startingFrame=1, endFrame=-1):
         if self.w_long is None:
             self.initialize()
 
@@ -504,7 +501,7 @@ class LOBlock(Block):
 #
 
     # construct the atom that best correlates with the signal
-    def getMaxAtom(self, debug=0):
+    def get_max_atom(self, debug=0):
 
         self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
@@ -524,7 +521,7 @@ class LOBlock(Block):
 
         Atom.mdct_value = self.max_value
         # new version : compute also its waveform through inverse MDCT
-        Atom.waveform = self.synthesizeAtom(value=1)
+        Atom.waveform = self.synthesize_atom(value=1)
         Atom.time_shift = 0
         Atom.proj_score = 0.0
 
@@ -618,7 +615,7 @@ class LOBlock(Block):
 
         return Atom
 
-    def plotScores(self):
+    def plot_proj_matrix(self):
         maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
         maxBinIdx = self.maxIdx - maxFrameIdx * (0.5 * self.scale)
         plt.figure()
@@ -706,13 +703,13 @@ class FullBlock(Block):
         self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
         # TODO changes here
-        self.computeTransform(startFrameIdx, stopFrameIdx)
+        self.compute_transform(startFrameIdx, stopFrameIdx)
 
         # TODO changes here
-        self.getMaximum()
+        self.find_max()
 
     # inner product computation through MCLT with all possible time shifts
-    def computeTransform(self, startingFrame=1, endFrame=-1):
+    def compute_transform(self, startingFrame=1, endFrame=-1):
         if self.w_long is None:
             self.initialize()
 
@@ -741,7 +738,7 @@ class FullBlock(Block):
                                                  endFrame,
                                                  self.scale, l)
 
-    def getMaximum(self):
+    def find_max(self):
         K = self.scale / 2
         bestL = 0
         treeMaxIdx = 0
@@ -762,7 +759,7 @@ class FullBlock(Block):
 
 #        print "Max Atom : " , self.maxIdx , self.maxLidx , self.max_value
     # construct the atom that best correlates with the signal
-    def getMaxAtom(self):
+    def get_max_atom(self):
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
 
         Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
@@ -772,7 +769,7 @@ class FullBlock(Block):
         Atom.mdct_value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
-        Atom.waveform = self.synthesizeAtom()
+        Atom.waveform = self.synthesize_atom()
 
         Atom.time_shift = -self.maxLidx  # + self.scale/4
         self.maxTimeShift = Atom.time_shift
@@ -781,7 +778,7 @@ class FullBlock(Block):
 
         return Atom
 
-    def plotScores(self):
+    def plot_proj_matrix(self):
         ''' For debug purposes only... '''
 
         plt.figure()
@@ -844,7 +841,7 @@ class SpreadBlock(Block):
         self.mask = np.ones(len(self.framed_data_matrix))
         self.maskSize = maskSize
 
-    def getMaximum(self, it=-1):
+    def find_max(self, it=-1):
         ''' Apply the mask to the projection before choosing the maximum '''
 
         # cannot use the tree indexing ant more... too bad
@@ -864,7 +861,7 @@ class SpreadBlock(Block):
 #        self.maxIdx = maxIdx + treeMaxIdx*self.scale/2
         self.max_value = self.projs_matrix[self.maxIdx]
 
-    def getMaxAtom(self, HF=False):
+    def get_max_atom(self, HF=False):
         self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
 
@@ -880,6 +877,6 @@ class SpreadBlock(Block):
         Atom.mdct_value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
-        Atom.waveform = self.synthesizeAtom()
+        Atom.waveform = self.synthesize_atom()
 
         return Atom
