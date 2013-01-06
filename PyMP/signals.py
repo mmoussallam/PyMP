@@ -258,7 +258,7 @@ class Signal(object):
             raise TypeError("argument provided is not an atom")
 
         if atom.waveform is None:
-            print "Resynthesizing"
+            _Logger.info("Resynthesizing  waveform")
             atom.synthesize()
 
         localEnergy = np.sum(self.data[atom.time_position: atom.
