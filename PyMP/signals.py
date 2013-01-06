@@ -180,6 +180,11 @@ class Signal(object):
             self.data = self.data[startIndex:stopIndex]
         self.length = stopIndex - startIndex
 
+    def window(self, K):
+        """ apply a sine window on norders """
+        self.data[0:K] *= np.sin((np.arange(K).astype(float))*np.pi/(2*K));
+        self.data[-K:] *= np.sin((np.arange(K).astype(float))*np.pi/(2*K) + np.pi/2);
+
     def copy(self):
         copiedSignal = Signal(self.data.copy(), self.fs)
         copiedSignal.location = self.location
