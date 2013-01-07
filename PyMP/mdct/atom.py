@@ -28,8 +28,8 @@
 Module mdct.atom
 ====================
 
-This class inherits from :class:`.pymp_Atom` and is used to represent and manipulate MDCT atoms.
-:class:`pymp_MDCTAtom` Objects can either be constructed or recovered from Xml using :func:`pymp_MDCTAtom.fromXml`
+This class inherits from :class:`.Atom` and is used to represent and manipulate MDCT atoms.
+:class:`Atom` Objects can either be constructed or recovered from Xml using :func:`fromXml`
 
 """
 

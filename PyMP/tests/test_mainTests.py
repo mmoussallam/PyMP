@@ -5,8 +5,8 @@ testing normal behavior of most MP functions and classes
 
 M.Moussallam
 """
-import matplotlib
-matplotlib.use('Agg')  # to avoid display while testing
+#import matplotlib
+#matplotlib.use('Agg')  # to avoid display while testing
 
 import os
 import os.path as op
@@ -24,6 +24,7 @@ global _Logger
 
 #from Classes.gabor import *
 from PyMP.mdct import atom as mdct_atom
+from PyMP.wavelet import atom as wavelet_atom
 from PyMP.mdct import dico as mdct_dico
 from PyMP.mdct import block as mdct_block
 from PyMP.base import BaseAtom, BaseDico
@@ -97,11 +98,31 @@ class AtomTest(unittest.TestCase):
         plt.plot(wf2)
         plt.plot(wf3)
         plt.legend(('1', '2', '3'))
+                        
+        
 #        plt.show()
 
     def tearDown(self):
         pass
 
+class WaveletAtomTest(unittest.TestCase):
+    def runTest(self):
+        
+        # full creation
+        atom = wavelet_atom.WaveAtom(scale=1024, amp=0.59, timePos=12432, Fs=1000,nature='db8',level=5)
+        self.assertEqual(atom.length, 1024)
+        self.assertEqual(atom.amplitude, 0.59)
+        self.assertEqual(atom.level, 5)
+        self.assertEqual(atom.fs, 1000)        
+        self.assertEqual(atom.time_position, 12432)
+        self.assertEqual(atom.nature, 'db8')
+
+        print atom
+        print atom.get_waveform()
+        plt.figure()
+        plt.plot(atom.x, atom.waveform)
+        plt.show()
+        
 
 class DicoTest(unittest.TestCase):
     def runTest(self):
@@ -911,7 +932,8 @@ if __name__ == '__main__':
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
-    suite.addTest(Signaltest())
+#    suite.addTest(Signaltest())
+    suite.addTest(WaveletAtomTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
 
