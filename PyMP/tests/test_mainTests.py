@@ -235,8 +235,8 @@ class Signaltest(unittest.TestCase):
 class BlockTest(unittest.TestCase):
     def runTest(self):
 
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True)
         pySigOriginal.crop(0, 5 * 8192)
         pySigOriginal.pad(2048)
 
@@ -272,8 +272,8 @@ class py_mpTest(unittest.TestCase):
 # pyDico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
         pyDico = mdct_dico.Dico([256, 2048, 8192])
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True)
         pySigOriginal.crop(0, 5 * 16384)
 
         pySigOriginal.data += 0.01 * np.random.random(5 * 16384)
@@ -673,8 +673,8 @@ class py_mpTest2Bis(unittest.TestCase):
         pyRandomDico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
         pyDico = mdct_dico.Dico([256, 2048, 8192])
 
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True)
         pySigOriginal.crop(0, 1 * 16384)
 
         # intentionally non aligned atom -> objective is to fit it completely
@@ -861,7 +861,7 @@ class py_mpTest2Bis(unittest.TestCase):
 class py_mpTest3(unittest.TestCase):
     """ this time we decompose a longer signals with the mp_LongSignal : result in an enframed signals """
     def runTest(self):
-        filePath = audioFilePath + "Bach_prelude_4s.wav"
+        filePath = op.join(audioFilePath, "Bach_prelude_4s.wav")
 
         # Let us load a long signals: not loaded in memory for now, only
         # segment by segment in the mp process
@@ -877,7 +877,8 @@ class py_mpTest3(unittest.TestCase):
         # Let's feed the proto 3 with these:
         # we should get a collection of approximants (one for each frame) in
         # return
-        xmlOutPutDir = '../../Approxs/Bach_prelude/LOmp/'
+        # xmlOutPutDir = op.join(op.dirname(__file__), '..', '..', '/Approxs/Bach_prelude/LOmp/')
+        xmlOutPutDir = '.'
         approximants = mp.mp_long(
             originalSignal, pyCCDico, 10, 100, False, True, xmlOutPutDir)[0]
 
