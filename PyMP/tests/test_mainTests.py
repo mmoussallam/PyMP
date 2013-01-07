@@ -43,30 +43,27 @@ class AtomTest(unittest.TestCase):
 
     def runTest(self):
         # empty creation
-        pyAtom = BaseAtom()
-        self.assertEqual(pyAtom.length, 0)
-        self.assertEqual(pyAtom.amplitude, 0)
-        self.assertEqual(pyAtom.nature, 'Abstract')
+        atom = BaseAtom()
+        self.assertEqual(atom.length, 0)
+        self.assertEqual(atom.amplitude, 0)
+        self.assertEqual(atom.nature, 'Abstract')
 
-       
-
-        del pyAtom
+        del atom
 
         # full creation
-        pyAtom2 = mdct_atom.Atom(1024, 1, 12432, 128, 44100, 0.57)
-        self.assertEqual(pyAtom2.length, 1024)
-        self.assertEqual(pyAtom2.amplitude, 1)
-        self.assertEqual(pyAtom2.mdct_value, 0.57)
-        self.assertEqual(pyAtom2.fs, 44100)
-        self.assertEqual(
-            pyAtom2.reduced_frequency, float(128 + 0.5) / float(1024))
-        self.assertEqual(pyAtom2.time_position, 12432)
-        self.assertEqual(pyAtom2.nature, 'MDCT')
-        
-        print pyAtom2
-#        synthesizedAtom2 = pyAtom2.synthesize()
+        atom2 = mdct_atom.Atom(1024, 1, 12432, 128, 44100, 0.57)
+        self.assertEqual(atom2.length, 1024)
+        self.assertEqual(atom2.amplitude, 1)
+        self.assertEqual(atom2.mdct_value, 0.57)
+        self.assertEqual(atom2.fs, 44100)
+        self.assertEqual(atom2.reduced_frequency, (128 + 0.5) / 1024.)
+        self.assertEqual(atom2.time_position, 12432)
+        self.assertEqual(atom2.nature, 'MDCT')
 
-        synthAtom3 = pyAtom2.synthesize_ifft()
+        print atom2
+#        synthesizedAtom2 = atom2.synthesize()
+
+        synthAtom3 = atom2.synthesize_ifft()
 
 #        energy1 = sum(synthesizedAtom2.waveform**2)
         energy2 = sum(synthAtom3.real ** 2)
@@ -75,24 +72,24 @@ class AtomTest(unittest.TestCase):
 
 #        plt.plot(synthesizedAtom2.real)
         plt.plot(synthAtom3.real)
-        del pyAtom2
+        del atom2
 
         print " testing LOmp atoms synthesis "
-        mdctValue = 0.57
+        mdct_value = 0.57
         timeShift = 144
-        projectionScore = -0.59
-        pyAtomLOmp = mdct_atom.Atom(1024, 1, 12432, 128, 44100, 0.57)
-        pyAtomLOmp.time_shift = timeShift
-        pyAtomLOmp.proj_score = projectionScore
+        projection_score = -0.59
+        atom_LOmp = mdct_atom.Atom(1024, 1, 12432, 128, 44100, 0.57)
+        atom_LOmp.time_shift = timeShift
+        atom_LOmp.proj_score = projection_score
 
         # test 1 synthesis
-        pyAtomLOmp.synthesize_ifft()
-        wf1 = pyAtomLOmp.waveform.copy()
+        atom_LOmp.synthesize_ifft()
+        wf1 = atom_LOmp.waveform.copy()
 
-        wf2 = -(math.sqrt(abs(projectionScore) / sum(wf1 ** 2))) * wf1
+        wf2 = -(math.sqrt(abs(projection_score) / sum(wf1 ** 2))) * wf1
 
         mdctVec = np.zeros(3 * 1024)
-        mdctVec[1024 + 128] = projectionScore
+        mdctVec[1024 + 128] = projection_score
         wf3 = mdct.imdct(mdctVec, 1024)[0.75 * 1024: 1.75 * 1024]
 
         plt.figure()
@@ -112,16 +109,12 @@ class DicoTest(unittest.TestCase):
         pyDico = BaseDico()
         self.assertEqual(pyDico.nature, 'Abstract')
 
-        del pyDico
-
         # test dictionary class
         pyDico = mdct_dico.Dico(
             [2 ** l for l in range(7, 15, 1)], debug_level=3)
         self.assertEqual(pyDico.sizes, [128, 256, 512, 1024,
              2048, 4096, 8192, 16384])
         self.assertEqual(pyDico.nature, 'MDCT')
-
-        del pyDico
 
 
 class Signaltest(unittest.TestCase):
@@ -175,10 +168,12 @@ class Signaltest(unittest.TestCase):
         # frame 5  to 12
         startSeg = 2
         segNumber = 3
-        shortSignal = longSignal.get_sub_signal(startSeg, segNumber, normalize=True)
+        shortSignal = longSignal.get_sub_signal(
+            startSeg, segNumber, normalize=True)
 
         # witness signals
-        witSignal = signals.Signal(op.join(audioFilePath, "Bach_prelude_40s.wav"),
+        witSignal = signals.Signal(op.join(audioFilePath,
+                                           "Bach_prelude_40s.wav"),
                                    normalize=True, mono=False)
 
 #        shortSignal.plot()
@@ -186,7 +181,6 @@ class Signaltest(unittest.TestCase):
         plt.figure()
         plt.plot(shortSignal.data)
         witSignal[startSeg * L: (startSeg + segNumber) * L].plot(pltStr='r:')
-
 
         # test writing signals
         outputPath = 'subsignal.wav'
@@ -206,7 +200,8 @@ class Signaltest(unittest.TestCase):
         shortSignal = longSignal.get_sub_signal(startSeg, segNumber, False)
 
         # witness signals
-        witSignal = signals.Signal(op.join(audioFilePath, "Bach_prelude_40s.wav"),
+        witSignal = signals.Signal(op.join(audioFilePath,
+                                           "Bach_prelude_40s.wav"),
                                    normalize=True, mono=False)
 
 #        shortSignal.plot()
@@ -246,7 +241,8 @@ class BlockTest(unittest.TestCase):
         self.assertEqual(block.frame_len, 512)
         print block.frame_num
 #        import parallelProjections
-        parallelProjections.initialize_plans(np.array([1024,]), np.array([2,]))
+        parallelProjections.initialize_plans(
+            np.array([1024, ]), np.array([2, ]))
 
         try:
             import fftw3
@@ -262,7 +258,7 @@ class BlockTest(unittest.TestCase):
         self.assertAlmostEqual(np.sum((block.projs_matrix - mdct.
             mdct(pySigOriginal.data, block.scale)) ** 2), 0)
 
-        parallelProjections.clean_plans(np.array([1024,]))
+        parallelProjections.clean_plans(np.array([1024, ]))
         print "Cleaning done"
         del pySigOriginal
 
@@ -283,7 +279,6 @@ class py_mpTest(unittest.TestCase):
         pyApprox_oneAtom = approx.Approx(pyDico, [], pySigOriginal)
         pyApprox_oneAtom.add(pyAtom)
 
-
         pySignal_oneAtom = signals.Signal(pyApprox_oneAtom.
             synthesize(0).data, pySigOriginal.fs, False)
 
@@ -297,9 +292,11 @@ class py_mpTest(unittest.TestCase):
         pyDico1 = mdct_dico.Dico([16384])
         # profiling test
         print "Plain"
-        cProfile.runctx('mp.mp(pySigOriginal, pyDico1, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
+        cProfile.runctx('mp.mp(pySigOriginal, pyDico1, 20, 1000 ,debug=0 , '
+                        'clean=True)', globals(), locals())
 
-        cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 1000 ,debug=0 , clean=True)', globals(), locals())
+        cProfile.runctx('mp.mp(pySigOriginal, pyDico2, 20, 1000 ,debug=0 , '
+                        'clean=True)', globals(), locals())
 
 
 class SequenceDicoTest(unittest.TestCase):
@@ -307,14 +304,15 @@ class SequenceDicoTest(unittest.TestCase):
     def runTest(self):
 # pyDico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
-        pyDico = random_dico.SequenceDico([256, 2048, 8192],seq_type='random')
+        pyDico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random')
         pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
         pySigOriginal.crop(0, 5 * 16384)
 
         pySigOriginal.data += 0.01 * np.random.random(5 * 16384)
 
-        cProfile.runctx('mp.mp(pySigOriginal, pyDico, 20, 20 ,debug=1 , clean=True)', globals(), locals())
+        cProfile.runctx('mp.mp(pySigOriginal, pyDico, 20, 20, debug=1, '
+                        'clean=True)', globals(), locals())
 
 
 class ApproxTest(unittest.TestCase):
@@ -387,7 +385,7 @@ class ApproxTest(unittest.TestCase):
         approx_LOmp = mp.mp(pySigOriginal, pyCCDico, 10, 100, False)[0]
 
         sliceApprox = approx_LOmp[:10]
-        
+
         print approx_LOmp
         print sliceApprox
         sliceApprox.compute_srr()
@@ -403,7 +401,8 @@ class ApproxTest(unittest.TestCase):
 
     def writeXmlTest(self):
         pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
-                                       normalize=True, mono=True, debug_level=0)
+                                       normalize=True, mono=True,
+                                       debug_level=0)
         pySigOriginal.crop(0, 1 * 16384)
         pyDico = mdct_dico.Dico([256, 2048, 8192], debug_level=2)
         # first compute an approximant using mp
@@ -473,7 +472,6 @@ class ApproxTest(unittest.TestCase):
         del newApprox
 
 
-
 class py_mpTest2(unittest.TestCase):
     def runTest(self):
 
@@ -501,13 +499,13 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data)
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Aligned Atom with LOmp")
 #        plt.show()
         plt.xlabel("samples")
 #        plt.savefig(figPath +"LOmp_aligned" +ext)
 
-#        approximant.write_to_xml(ApproxPath+"LOmp_aligned")
+#        approximant.write_to_xml(approx_path+"LOmp_aligned")
 
         print " Approx Reached : ", approximant.compute_srr(
             ), " dB in ", approximant.atom_number, " iteration"
@@ -529,7 +527,7 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data)
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Non aligned atom with mp : SRR of "
                   + str(int(approximant.compute_srr())) + " dB in "
                   + str(approximant.atom_number) + " iteration")
@@ -554,7 +552,7 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data)
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Non aligned atom with LOmp : SRR of "
                   + str(int(approximant.compute_srr())) + " dB in "
                   + str(approximant.atom_number) + " iteration")
@@ -575,9 +573,9 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data[4096:-4096])
         plt.plot(pySigOriginal.data[4096:-4096] - approximant.
             recomposed_signal.data[4096:-4096])
-        plt.legend(("original", "approximant", "resisual"))
-        plt.title("Bell signals with mp : SRR of " + str(int(approximant.compute_srr(
-            ))) + " dB in " + str(approximant.atom_number) + " iteration")
+        plt.legend(("original", "approximant", "residual"))
+        plt.title("Bell signals with mp : SRR of %d dB in %d iteration" %
+                  (approximant.compute_srr(), approximant.atom_number))
 #        plt.show()
         print " Approx Reached : ", approximant.compute_srr(
             ), " dB in ", approximant.atom_number, " iteration"
@@ -593,13 +591,13 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data[4096:-4096])
         plt.plot(pySigOriginal.data[4096:-4096] - approximant.
             recomposed_signal.data[4096:-4096])
-        plt.legend(("original", "approximant", "resisual"))
-        plt.title("Bell signals with LOmp : SRR of " + str(int(approximant.compute_srr(
-            ))) + " dB in " + str(approximant.atom_number) + " iteration")
+        plt.legend(("original", "approximant", "residual"))
+        plt.title("Bell signals with LOmp : SRR of %d dB in %d iteration" %
+                  (approximant.compute_srr(), approximant.atom_number))
         plt.xlabel("samples")
 #        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_nbIt10"+ext)
-        print " Approx Reached : ", approximant.compute_srr(
-            ), " dB in ", approximant.atom_number, " iteration"
+        print(" Approx Reached : ", approximant.compute_srr(),
+              " dB in ", approximant.atom_number, " iteration")
 
         del approximant
         print "comparing results and processing times for long decompositions"
@@ -612,10 +610,12 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approx1.recomposed_signal.data[12288:-12288])
         plt.plot(pySigOriginal.data[12288:-12288] - approx1.
             recomposed_signal.data[12288:-12288])
-        plt.legend(("original", "approximant", "resisual"))
-        plt.title("Bell signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
+        plt.legend(("original", "approximant", "residual"))
+        plt.title("Bell signals with mp : SRR of %d dB in %d iteration and %s s" %
+                  (approx1.compute_srr(), approx1.atom_number, t1 - t0))
 #        plt.show()
-        print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
+        print(" Approx Reached : ", approx1.compute_srr(), " dB in ",
+              approx1.atom_number, " iteration and: ", t1 - t0, " seconds")
 
         t2 = time.clock()
         approx2 = mp.mp(pySigOriginal, pyCCDico, 20, 500, False, False)[0]
@@ -625,7 +625,7 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approx2.recomposed_signal.data[12288:-12288])
         plt.plot(pySigOriginal.data[12288:-12288] - approx2.
             recomposed_signal.data[12288:-12288])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Bell signals with LOmp : SRR of " + str(int(approx2.compute_srr())) + " dB in " + str(approx2.atom_number) + " iteration and " + str(t3 - t2) + "s")
 #        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_SRR20"+ext)
         print " Approx Reached : ", approx2.compute_srr(), " dB in ", approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
@@ -645,7 +645,7 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approx1.recomposed_signal.data[16384:-16384])
         plt.plot(pyNoiseSignal.data[16384:-16384] - approx1.
             recomposed_signal.data[16384:-16384])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("White Noise signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
 #        plt.show()
         print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
@@ -658,7 +658,7 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(approx2.recomposed_signal.data[16384:-16384])
         plt.plot(pyNoiseSignal.data[16384:-16384] - approx2.
             recomposed_signal.data[16384:-16384])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Noise signals with LOmp : SRR of " + str(int(approx2.compute_srr())) + " dB in " + str(approx2.atom_number) + " iteration and " + str(t3 - t2) + "s")
         plt.xlabel("samples")
 #        plt.savefig(figPath+"NoiseSignal_mp_vs_LOmp_SRR20"+ext)
@@ -667,7 +667,7 @@ class py_mpTest2(unittest.TestCase):
 
 class py_mpTest2Bis(unittest.TestCase):
     def runTest(self):
-        ApproxPath = "../Approxs/"
+        approx_path = "../Approxs/"
 #        ext = ".png"
 
         pyRandomDico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
@@ -695,13 +695,13 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data)
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Aligned Atom with LOmp")
 #        plt.show()
         plt.xlabel("samples")
 #        plt.savefig(figPath +"LOmp_aligned" +ext)
 
-        approximant.write_to_xml(ApproxPath + "LOmp_aligned")
+        approximant.write_to_xml(approx_path + "LOmp_aligned")
 
         print " Approx Reached : ", approximant.compute_srr(
             ), " dB in ", approximant.atom_number, " iteration"
@@ -724,7 +724,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data)
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Non aligned atom with mp : SRR of " + str(int(approximant.compute_srr())) + " dB in " + str(approximant.atom_number) + " iteration")
 #        plt.show()
         print " Approx Reached : ", int(approximant.compute_srr()
@@ -747,7 +747,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data)
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Non aligned atom with LOmp : SRR of " + str(int(approximant.compute_srr())) + " dB in " + str(approximant.atom_number) + " iteration")
         plt.xlabel("samples")
 #        plt.savefig(figPath+"nonAlignedAtom_mp_vs_LOmp" + ext)
@@ -766,7 +766,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data[4096:-4096])
         plt.plot(pySigOriginal.data[4096:-4096] - approximant.
             recomposed_signal.data[4096:-4096])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Bell signals with mp : SRR of " + str(int(approximant.compute_srr(
             ))) + " dB in " + str(approximant.atom_number) + " iteration")
 #        plt.show()
@@ -785,7 +785,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approximant.recomposed_signal.data[4096:-4096])
         plt.plot(pySigOriginal.data[4096:-4096] - approximant.
             recomposed_signal.data[4096:-4096])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Bell signals with LOmp : SRR of " +
                   str(int(approximant.compute_srr())) +
                    " dB in " + str(approximant.atom_number) + " iteration")
@@ -805,7 +805,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approx1.recomposed_signal.data[12288:-12288])
         plt.plot(pySigOriginal.data[12288:-12288] - approx1.
             recomposed_signal.data[12288:-12288])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Bell signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
 #        plt.show()
         print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
@@ -818,7 +818,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approx2.recomposed_signal.data[12288:-12288])
         plt.plot(pySigOriginal.data[12288:-12288] - approx2.
             recomposed_signal.data[12288:-12288])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Bell signals with LOmp : SRR of " + str(int(approx2.compute_srr())) + " dB in " + str(approx2.atom_number) + " iteration and " + str(t3 - t2) + "s")
 #        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_SRR20"+ext)
         print " Approx Reached : ", approx2.compute_srr(), " dB in ", approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
@@ -838,7 +838,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approx1.recomposed_signal.data[16384:-16384])
         plt.plot(pyNoiseSignal.data[16384:-16384] - approx1.
             recomposed_signal.data[16384:-16384])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("White Noise signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
 #        plt.show()
         print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
@@ -851,7 +851,7 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.plot(approx2.recomposed_signal.data[16384:-16384])
         plt.plot(pyNoiseSignal.data[16384:-16384] - approx2.
             recomposed_signal.data[16384:-16384])
-        plt.legend(("original", "approximant", "resisual"))
+        plt.legend(("original", "approximant", "residual"))
         plt.title("Noise signals with LOmp : SRR of " + str(int(approx2.compute_srr())) + " dB in " + str(approx2.atom_number) + " iteration and " + str(t3 - t2) + "s")
         plt.xlabel("samples")
 #        plt.savefig(figPath+"NoiseSignal_mp_vs_LOmp_SRR20"+ext)
@@ -872,12 +872,13 @@ class py_mpTest3(unittest.TestCase):
         originalSignal = signals.LongSignal(filePath, frameSize, True)
 
         # dictionaries
-        pyCCDico = mdct_dico.LODico(mdctDico)        
+        pyCCDico = mdct_dico.LODico(mdctDico)
 
         # Let's feed the proto 3 with these:
         # we should get a collection of approximants (one for each frame) in
         # return
-        # xmlOutPutDir = op.join(op.dirname(__file__), '..', '..', '/Approxs/Bach_prelude/LOmp/')
+        # xmlOutPutDir = op.join(op.dirname(__file__), '..', '..',
+        # '/Approxs/Bach_prelude/LOmp/')
         xmlOutPutDir = '.'
         approximants = mp.mp_long(
             originalSignal, pyCCDico, 10, 100, False, True, xmlOutPutDir)[0]
