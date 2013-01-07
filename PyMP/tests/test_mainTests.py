@@ -670,7 +670,7 @@ class py_mpTest2Bis(unittest.TestCase):
         approx_path = "../Approxs/"
 #        ext = ".png"
 
-        random_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
+        rand_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
         pyDico = mdct_dico.Dico([256, 2048, 8192])
 
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
@@ -688,7 +688,7 @@ class py_mpTest2Bis(unittest.TestCase):
         fig_1Atom = plt.figure()
         print "Testing one Aligned Atom with Random"
         approximant = mp.mp(
-            signal_one_atom, random_dico, 10, 10, False, False)[0]
+            signal_one_atom, rand_dico, 10, 10, False, False)[0]
 #        approximant.plot_tf()
 #        plt.subplot(211)
         plt.plot(signal_one_atom.data)
@@ -740,7 +740,7 @@ class py_mpTest2Bis(unittest.TestCase):
         signal_one_atom.add(pyAtom)
 
         approximant, decay = mp.mp(
-            signal_one_atom, random_dico, 10, 10, False, False)
+            signal_one_atom, rand_dico, 10, 10, False, False)
 #        approximant.plot_tf()
         plt.subplot(212)
         plt.plot(signal_one_atom.data)
@@ -777,7 +777,7 @@ class py_mpTest2Bis(unittest.TestCase):
         print "Testing Real signals with Randommp"
 #        pyCCDico =
         approximant = mp.mp(
-            signal_original, random_dico, 10, 10, False, False)[0]
+            signal_original, rand_dico, 10, 10, False, False)[0]
 #        approximant.plot_tf()
         plt.subplot(212)
         plt.plot(signal_original.data[4096:-4096])
@@ -810,7 +810,7 @@ class py_mpTest2Bis(unittest.TestCase):
         print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
 
         t2 = time.clock()
-        approx2 = mp.mp(signal_original, random_dico, 20, 500, False, False)[0]
+        approx2 = mp.mp(signal_original, rand_dico, 20, 500, False, False)[0]
         t3 = time.clock()
         plt.subplot(212)
         plt.plot(signal_original.data[12288:-12288])
@@ -835,15 +835,15 @@ class py_mpTest2Bis(unittest.TestCase):
         plt.subplot(211)
         plt.plot(noise_signal.data[16384:-16384])
         plt.plot(approx1.recomposed_signal.data[16384:-16384])
-        plt.plot(noise_signal.data[16384:-16384] - approx1.
-            recomposed_signal.data[16384:-16384])
+        plt.plot(noise_signal.data[16384:-16384]
+                 - approx1.recomposed_signal.data[16384:-16384])
         plt.legend(("original", "approximant", "residual"))
         plt.title("White Noise signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
 #        plt.show()
         print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
 
         t2 = time.clock()
-        approx2 = mp.mp(noise_signal, random_dico, 10, 500, False, True)[0]
+        approx2 = mp.mp(noise_signal, rand_dico, 10, 500, False, True)[0]
         t3 = time.clock()
         plt.subplot(212)
         plt.plot(noise_signal.data[16384:-16384])

@@ -2,32 +2,34 @@
 PyMP Tutorial 1. Signal decomposition
 =====================================
 
-This Tutorial will describe how pymp works, and mostly how to use it to perform audio signal decompositions on multiscale MDCT dictionaries
+This tutorial will describe how PyMP works, and mostly how to use it to perform audio
+signal decompositions on multiscale MDCT dictionaries
 for any question feel free to contact me (firstname.lastname@gmail.com)
-Documentation for the modules that we're using here is provided in the next sections. 
+Documentation for the modules that we're using here is provided in the next sections.
 
 
 Standard Algorithm
 ******************
 In this example, the standard algorithm is used to decomposed the glockenspiel signal over a union of 3 MDCT basis::
 
+>>> import numpy as np
 >>> from PyMP.signals import Signal
 >>> from PyMP.approx import Approx
->>> from PyMP.mdct import dico
->>> sizes = [128,1024,8192]
->>> Natom = 1000
->>> pySig = Signal('data/glocs.wav',mono=True,normalize=True)
->>> pySig.crop(0, 3.5*pySig.fs)
->>> pySig.pad(8192)
->>> pySig.data += 0.0001*np.random.randn(pySig.length)
->>> pyDico= dico.Dico(sizes)
->>> approx, decay = mp.mp(pySig, pyDico, 50, Natom)
+>>> from PyMP.mdct import Dico
+>>> sizes = [128, 1024, 8192]
+>>> n_atoms = 1000
+>>> signal = Signal('data/glocs.wav', mono=True, normalize=True)
+>>> signal.crop(0, 3.5 * signal.fs)
+>>> signal.pad(8192)
+>>> signal.data += 0.0001 * np.random.randn(signal.length)
+>>> dico = Dico(sizes)
+>>> approx, decay = mp.mp(signal, dico, 50, n_atoms)
 
 .. note::
-	
+
 	IMPORTANT: the fact that we know it's the standard algorithm that is used is because we choosed a :class:`.Dico` object as dictionary.
 
-First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (absolute values) considered. 
+First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (absolute values) considered.
 (c) is the reconstructed signal, accessible via::
 
 >>> approx.recomposed_signal
@@ -51,9 +53,9 @@ Locally Optimized MP
 To run a locally adaptive (or optimized) MP, all we have to do is to pick a :class:`.LODico` object as a dictionary. The internal
 routines of its blocks will perform the local optimization so that at our level this is quite transparent:
 
-
->>> approxMP, decayMP = mp.mp(pySig, dico.DICO(scales) ,srr,nbAtom,padSignal=True)
->>> approxLoMP, decayLoMP = mp.mp(pySig, dico.LODICO(scales), srr,nbAtom,padSignal=False)
+>>> from PyMP.mdct import LODico
+>>> approxMP, decayMP = mp.mp(signal, Dico(scales), srr, n_atoms, padSignal=True)
+>>> approxLoMP, decayLoMP = mp.mp(signal, LODico(scales), srr, n_atoms, padSignal=False)
 
 
 .. plot:: pyplots/LoMP_example.py
@@ -62,7 +64,7 @@ In addition to plotting, we can compare the quality of the approximations, given
 
 >>> print approxMP
 Approx Object: 500 atoms, SRR of 19.51 dB
->>> print approxLoMP 
+>>> print approxLoMP
 Approx Object: 500 atoms, SRR of 23.21 dB
 
 The locally adaptive Matching pursuit has yielded a better decomposition (in the sense of mean squared error).
@@ -71,7 +73,7 @@ Alternatively one can verify that for a given level of SRR, LoMP will use a smal
 MP with Random Sequential Subdictionaries
 -----------------------------------------
 
-RSSMP is explained in the journal paper_ .  
+RSSMP is explained in the journal paper_ .
 
 .. _paper: http://dx.doi.org/10.1016/j.sigpro.2012.03.019
 
@@ -81,7 +83,7 @@ Implementation of RSSMP is quite transparent, it's done through the use of a :cl
 >>> from PyMP.mdct.random import dico as random_dico
 >>> pyRandomDico = random_dico.RandomDico(sizes, 'random')
 
-We can now compare the three strategies in terms of normalized reconstruction error 
+We can now compare the three strategies in terms of normalized reconstruction error
 
 .. math::
 
@@ -91,5 +93,5 @@ This gives the following results:
 
 .. plot:: pyplots/RSSMP_example.py
 
-And that's it.  
+And that's it.
 
