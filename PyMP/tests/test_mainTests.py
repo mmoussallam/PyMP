@@ -5,12 +5,12 @@ testing normal behavior of most MP functions and classes
 
 M.Moussallam
 """
+import matplotlib
+matplotlib.use('Agg')  # to avoid display while testing
 
 import os
+import os.path as op
 import sys
-mainClassesPath = os.path.abspath('..')
-sys.path.append(mainClassesPath)
-
 
 import unittest
 from PyMP.tools import mdct
@@ -34,7 +34,7 @@ from PyMP import log
 from PyMP import mp
 from PyMP import parallelProjections
 
-audioFilePath = '../../data/'
+audioFilePath = op.join(op.dirname(__file__), '..', '..', 'data')
 
 
 class AtomTest(unittest.TestCase):
@@ -133,11 +133,11 @@ class Signaltest(unittest.TestCase):
 
         del pySig
 
-        pySig = signals.Signal(audioFilePath + "ClocheB.wav")
+        pySig = signals.Signal(op.join(audioFilePath, "ClocheB.wav"))
         self.assertNotEqual(pySig.length, 0)
         self.assertNotEqual(pySig.data, [])
         self.assertEqual(pySig.channel_num, 2)
-        self.assertEqual(pySig.location, audioFilePath + "ClocheB.wav")
+        self.assertEqual(pySig.location, op.join(audioFilePath, "ClocheB.wav"))
         self.assertEqual(pySig.fs, 8000)
 
         # Last test, the wigner ville plot
@@ -148,8 +148,8 @@ class Signaltest(unittest.TestCase):
 
         del pySig
 
-        pySig = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySig = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                               normalize=True, mono=True)
         data1 = pySig.data.copy()
         # try adding and subtracting an atom
         pyAtom = mdct_atom.Atom(1024, 0.57, 4500, 128, 8000, 0.57)
@@ -169,8 +169,8 @@ class Signaltest(unittest.TestCase):
 
         # test on a long signals
         L = 4 * 16384
-        longSignal = signals.LongSignal(
-            audioFilePath + "Bach_prelude_40s.wav", L)
+        longSignal = signals.LongSignal(op.join(audioFilePath,
+                                                "Bach_prelude_40s.wav"), L)
         # suppose we want to retrieve the middle of the signals , namely from
         # frame 5  to 12
         startSeg = 2
@@ -178,8 +178,8 @@ class Signaltest(unittest.TestCase):
         shortSignal = longSignal.get_sub_signal(startSeg, segNumber, normalize=True)
 
         # witness signals
-        witSignal = signals.Signal(
-            audioFilePath + "Bach_prelude_40s.wav", normalize=True, mono=False)
+        witSignal = signals.Signal(op.join(audioFilePath, "Bach_prelude_40s.wav"),
+                                   normalize=True, mono=False)
 
 #        shortSignal.plot()
 #        witSignal.plot()
@@ -196,8 +196,9 @@ class Signaltest(unittest.TestCase):
         shortSignal.write(outputPath)
 
         # test long signals with overlap 50 %
-        longSignal = signals.LongSignal(
-            audioFilePath + "Bach_prelude_40s.wav", L, True, 0.5)
+        longSignal = signals.LongSignal(op.join(audioFilePath,
+                                                "Bach_prelude_40s.wav"),
+                                        L, True, 0.5)
         # suppose we want to retrieve the middle of the signals , namely from
         # frame 5  to 12
         startSeg = 2
@@ -205,8 +206,8 @@ class Signaltest(unittest.TestCase):
         shortSignal = longSignal.get_sub_signal(startSeg, segNumber, False)
 
         # witness signals
-        witSignal = signals.Signal(
-            audioFilePath + "Bach_prelude_40s.wav", normalize=True, mono=False)
+        witSignal = signals.Signal(op.join(audioFilePath, "Bach_prelude_40s.wav"),
+                                   normalize=True, mono=False)
 
 #        shortSignal.plot()
 #        witSignal.plot()
@@ -287,8 +288,8 @@ class py_mpTest(unittest.TestCase):
             synthesize(0).data, pySigOriginal.fs, False)
 
         # second test
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True)
 
         # last test - decomposition profonde
         pyDico2 = mdct_dico.Dico([128, 256, 512, 1024, 2048,
@@ -307,8 +308,8 @@ class SequenceDicoTest(unittest.TestCase):
 # pyDico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
         pyDico = random_dico.SequenceDico([256, 2048, 8192],seq_type='random')
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True)
         pySigOriginal.crop(0, 5 * 16384)
 
         pySigOriginal.data += 0.01 * np.random.random(5 * 16384)
@@ -333,8 +334,8 @@ class ApproxTest(unittest.TestCase):
         del pyApprox
 
         pyDico = mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", mono=True)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       mono=True)
         pySigOriginal.crop(0, 5 * max(pyDico.sizes))
 
         pyApprox = approx.Approx(pyDico, [], pySigOriginal)
@@ -401,8 +402,8 @@ class ApproxTest(unittest.TestCase):
         del pySigOriginal
 
     def writeXmlTest(self):
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True, debug_level=0)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True, debug_level=0)
         pySigOriginal.crop(0, 1 * 16384)
         pyDico = mdct_dico.Dico([256, 2048, 8192], debug_level=2)
         # first compute an approximant using mp
@@ -479,8 +480,8 @@ class py_mpTest2(unittest.TestCase):
         pyCCDico = mdct_dico.LODico([256, 2048, 8192])
         pyDico = mdct_dico.Dico([256, 2048, 8192])
 
-        pySigOriginal = signals.Signal(
-            audioFilePath + "ClocheB.wav", normalize=True, mono=True)
+        pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True)
         pySigOriginal.crop(0, 1 * 16384)
 
         # intentionally non aligned atom -> objective is to fit it completely
@@ -529,7 +530,9 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
         plt.legend(("original", "approximant", "resisual"))
-        plt.title("Non aligned atom with mp : SRR of " + str(int(approximant.compute_srr())) + " dB in " + str(approximant.atom_number) + " iteration")
+        plt.title("Non aligned atom with mp : SRR of "
+                  + str(int(approximant.compute_srr())) + " dB in "
+                  + str(approximant.atom_number) + " iteration")
 #        plt.show()
         print " Approx Reached : ", int(approximant.compute_srr()
             ), " dB in ", approximant.atom_number, " iteration"
@@ -552,7 +555,9 @@ class py_mpTest2(unittest.TestCase):
         plt.plot(
             pySignal_oneAtom.data - approximant.recomposed_signal.data)
         plt.legend(("original", "approximant", "resisual"))
-        plt.title("Non aligned atom with LOmp : SRR of " + str(int(approximant.compute_srr())) + " dB in " + str(approximant.atom_number) + " iteration")
+        plt.title("Non aligned atom with LOmp : SRR of "
+                  + str(int(approximant.compute_srr())) + " dB in "
+                  + str(approximant.atom_number) + " iteration")
         plt.xlabel("samples")
 #        plt.savefig(figPath+"nonAlignedAtom_mp_vs_LOmp" + ext)
 #        plt.show()
