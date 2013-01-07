@@ -6,9 +6,9 @@
 PyMP's documentation!
 =====================
 .. latex::
-	
-		\makeindex 
-		
+
+		\makeindex
+
 .. toctree::
    :maxdepth: 3
 
@@ -16,10 +16,10 @@ PyMP's documentation!
    example
    example_coder
    example_objects
-   
-   MP.rst		
+
+   MP.rst
    classes.rst
-		
+
    Mdct.rst
 
 Indices and tables

@@ -82,5 +82,9 @@ axFFt3.specgram(pySig.data, NFFT=4096, noverlap=0.75 * 4096.0,
 axFFt3.set_yticks([0, pySig.fs / 4])
 axFFt3.set_xticks([1, 2, 3, 4])
 
+try:
+    plt.tight_layout()
+except Exception, e:
+    pass
 
 plt.show()
