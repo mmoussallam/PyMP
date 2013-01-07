@@ -106,15 +106,15 @@ class AtomTest(unittest.TestCase):
 class DicoTest(unittest.TestCase):
     def runTest(self):
         # test dictionary class
-        pyDico = BaseDico()
-        self.assertEqual(pyDico.nature, 'Abstract')
+        dico = BaseDico()
+        self.assertEqual(dico.nature, 'Abstract')
 
         # test dictionary class
-        pyDico = mdct_dico.Dico(
+        dico = mdct_dico.Dico(
             [2 ** l for l in range(7, 15, 1)], debug_level=3)
-        self.assertEqual(pyDico.sizes, [128, 256, 512, 1024,
+        self.assertEqual(dico.sizes, [128, 256, 512, 1024,
              2048, 4096, 8192, 16384])
-        self.assertEqual(pyDico.nature, 'MDCT')
+        self.assertEqual(dico.nature, 'MDCT')
 
 
 class Signaltest(unittest.TestCase):
@@ -265,9 +265,9 @@ class BlockTest(unittest.TestCase):
 
 class py_mpTest(unittest.TestCase):
     def runTest(self):
-# pyDico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
+# dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
-        pyDico = mdct_dico.Dico([256, 2048, 8192])
+        dico = mdct_dico.Dico([256, 2048, 8192])
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
@@ -276,7 +276,7 @@ class py_mpTest(unittest.TestCase):
 
         # first try with a single-atom signals
         pyAtom = mdct_atom.Atom(2048, 1, 11775, 128, 8000, 0.57)
-        pyApprox_oneAtom = approx.Approx(pyDico, [], signal_original)
+        pyApprox_oneAtom = approx.Approx(dico, [], signal_original)
         pyApprox_oneAtom.add(pyAtom)
 
         signal_one_atom = signals.Signal(pyApprox_oneAtom.
@@ -287,31 +287,31 @@ class py_mpTest(unittest.TestCase):
                                        normalize=True, mono=True)
 
         # last test - decomposition profonde
-        pyDico2 = mdct_dico.Dico([128, 256, 512, 1024, 2048,
+        dico2 = mdct_dico.Dico([128, 256, 512, 1024, 2048,
              4096, 8192, 16384], parallel=False)
-        pyDico1 = mdct_dico.Dico([16384])
+        dico1 = mdct_dico.Dico([16384])
         # profiling test
         print "Plain"
-        cProfile.runctx('mp.mp(signal_original, pyDico1, 20, 1000 ,debug=0 , '
+        cProfile.runctx('mp.mp(signal_original, dico1, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
 
-        cProfile.runctx('mp.mp(signal_original, pyDico2, 20, 1000 ,debug=0 , '
+        cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
 
 
 class SequenceDicoTest(unittest.TestCase):
 
     def runTest(self):
-# pyDico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
+# dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
-        pyDico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random')
+        dico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random')
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
 
         signal_original.data += 0.01 * np.random.random(5 * 16384)
 
-        cProfile.runctx('mp.mp(signal_original, pyDico, 20, 20, debug=1, '
+        cProfile.runctx('mp.mp(signal_original, dico, 20, 20, debug=1, '
                         'clean=True)', globals(), locals())
 
 
@@ -331,12 +331,12 @@ class ApproxTest(unittest.TestCase):
         print pyApprox
         del pyApprox
 
-        pyDico = mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
+        dico = mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        mono=True)
-        signal_original.crop(0, 5 * max(pyDico.sizes))
+        signal_original.crop(0, 5 * max(dico.sizes))
 
-        pyApprox = approx.Approx(pyDico, [], signal_original)
+        pyApprox = approx.Approx(dico, [], signal_original)
 
         pyAtom = mdct_atom.Atom(1024, 1, 12288 - 256, 128, 44100, 0.57)
         pyApprox.add(pyAtom)
@@ -404,9 +404,9 @@ class ApproxTest(unittest.TestCase):
                                        normalize=True, mono=True,
                                        debug_level=0)
         signal_original.crop(0, 1 * 16384)
-        pyDico = mdct_dico.Dico([256, 2048, 8192], debug_level=2)
+        dico = mdct_dico.Dico([256, 2048, 8192], debug_level=2)
         # first compute an approximant using mp
-        approximant = mp.mp(signal_original, pyDico, 10, 10, debug=2)[0]
+        approximant = mp.mp(signal_original, dico, 10, 10, debug=2)[0]
 
         outputXmlPath = "approx_test.xml"
         doc = approximant.write_to_xml(outputXmlPath)
@@ -476,7 +476,7 @@ class py_mpTest2(unittest.TestCase):
     def runTest(self):
 
         pyCCDico = mdct_dico.LODico([256, 2048, 8192])
-        pyDico = mdct_dico.Dico([256, 2048, 8192])
+        dico = mdct_dico.Dico([256, 2048, 8192])
 
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
@@ -519,7 +519,7 @@ class py_mpTest2(unittest.TestCase):
             signal_original.length), signal_original.fs, False)
         signal_one_atom.add(pyAtom)
 
-        approximant = mp.mp(signal_one_atom, pyDico, 10, 10, debug=1)[0]
+        approximant = mp.mp(signal_one_atom, dico, 10, 10, debug=1)[0]
 #        approximant.plot_tf()
         plt.figure()
         plt.subplot(211)
@@ -565,7 +565,7 @@ class py_mpTest2(unittest.TestCase):
         del approximant
 
         print "Testing Real signals with mp"
-        approximant = mp.mp(signal_original, pyDico, 10, 10, False)[0]
+        approximant = mp.mp(signal_original, dico, 10, 10, False)[0]
 #        approximant.plot_tf()
         plt.figure()
         plt.subplot(211)
@@ -602,7 +602,7 @@ class py_mpTest2(unittest.TestCase):
         del approximant
         print "comparing results and processing times for long decompositions"
         t0 = time.clock()
-        approx1 = mp.mp(signal_original, pyDico, 20, 500, False)[0]
+        approx1 = mp.mp(signal_original, dico, 20, 500, False)[0]
         t1 = time.clock()
         plt.figure()
         plt.subplot(211)
@@ -637,7 +637,7 @@ class py_mpTest2(unittest.TestCase):
             0.5 * np.random.random(5 * 16384), 44100, False)
         noise_signal.pad(16384)
         t0 = time.clock()
-        approx1 = mp.mp(noise_signal, pyDico, 10, 500, False, True)[0]
+        approx1 = mp.mp(noise_signal, dico, 10, 500, False, True)[0]
         t1 = time.clock()
         plt.figure()
         plt.subplot(211)
@@ -671,7 +671,7 @@ class py_mpTest2Bis(unittest.TestCase):
 #        ext = ".png"
 
         rand_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
-        pyDico = mdct_dico.Dico([256, 2048, 8192])
+        dico = mdct_dico.Dico([256, 2048, 8192])
 
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
@@ -716,7 +716,7 @@ class py_mpTest2Bis(unittest.TestCase):
         signal_one_atom.add(pyAtom)
 
         approximant, decay = mp.mp(
-            signal_one_atom, pyDico, 10, 10, False, False)
+            signal_one_atom, dico, 10, 10, False, False)
 #        approximant.plot_tf()
         plt.figure()
         plt.subplot(211)
@@ -757,7 +757,7 @@ class py_mpTest2Bis(unittest.TestCase):
         del approximant
 
         print "Testing Real signals with mp"
-        approximant, decay = mp.mp(signal_original, pyDico, 10, 10, False)
+        approximant, decay = mp.mp(signal_original, dico, 10, 10, False)
 #        approximant.plot_tf()
         plt.figure()
         plt.subplot(211)
@@ -796,7 +796,7 @@ class py_mpTest2Bis(unittest.TestCase):
         del approximant
         print "comparing results and processing times for long decompositions"
         t0 = time.clock()
-        approx1, decay = mp.mp(signal_original, pyDico, 20, 500, False)
+        approx1, decay = mp.mp(signal_original, dico, 20, 500, False)
         t1 = time.clock()
         plt.figure()
         plt.subplot(211)
@@ -829,7 +829,7 @@ class py_mpTest2Bis(unittest.TestCase):
             0.5 * np.random.random(5 * 16384), 44100, False)
         noise_signal.pad(16384)
         t0 = time.clock()
-        approx1, decay = mp.mp(noise_signal, pyDico, 10, 500, False, True)
+        approx1, decay = mp.mp(noise_signal, dico, 10, 500, False, True)
         t1 = time.clock()
         plt.figure()
         plt.subplot(211)
