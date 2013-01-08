@@ -76,20 +76,20 @@ in the :mod:`.mp_coder` module. Here's an example where we set a target of 8kbps
 And we can check the results:
 
 >>> (snr, bitrate)
-(20.010662962811647, 3472.7238328087619)
+(20.01190738437829, 3472.723832808762)
 
 In other words, we achieved a 20 dB SNR with a (theoretical) 3.4 kbps bitrate. We can change the coder properties, 
 in particular the number of quantizing steps (recall this is :math:`2^Q`  and not directly Q!!):
 
 >>> snr, bitrate, quantized_approx = mp_coder.simple_mdct_encoding(mp_approx, 8000, Q=5)
 >>> (snr, bitrate)
-(12.556647717619505, 997.29788299389475)
+(12.556647717619509, 997.2978829938947)
 
 Indeed we have reduced the bitrate, but increased the distorsion. We can also fix the bitrate at a lower value:
 
 >>> snr, bitrate, quantized_approx = mp_coder.simple_mdct_encoding(mp_approx, 2000, Q=14)
 >>> (snr, bitrate)
-(16.03645910615025, 2003.7309194613388)
+(16.036869059550813, 2003.7309194613388)
 
 The coder stopped when the given bitrate was reached, yieled a higher distorsion. If you wonder how many atoms where used:
 
@@ -133,7 +133,7 @@ the *shift_penalty* argument set to `True` in order to take the additionnal para
 Then one can check that the encoding is more efficient:
 
 >>> (lomp_snr, lomp_bitrate)
-(18.309961590573952, 2006.3726570767478)
+(18.310386722535156, 2006.3726570767478)
 
 For the same bitrate of 2 kbps, we now have an SNR of nearly 20 dB where a standard MP yielded a mere 16 dB. 
 Each atom is more expensive, but also creates less dark energy. One can verify that the coder has used a 

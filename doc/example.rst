@@ -22,7 +22,6 @@ In this example, the standard algorithm is used to decomposed the glockenspiel s
 >>> signal = Signal('data/glocs.wav', mono=True, normalize=True)
 >>> signal.crop(0, 3.5 * signal.fs)
 >>> signal.pad(8192)
->>> signal.data += 0.0001 * np.random.randn(signal.length)
 >>> dico = Dico(scales)
 >>> approx, decay = mp.mp(signal, dico, srr, n_atoms)
 
@@ -35,11 +34,10 @@ First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (a
 
 >>> approx.recomposed_signal
 Signal object located in 
-         length: 144768
-         energy of 1824.217
-         sampling frequency 32000
-         number of channels 1
-
+        length: 144768
+        energy of 1812.389
+        sampling frequency 32000
+        number of channels 1
 
 and (d) is the time-frequency plot of the 1000 atoms that have been used to approximate the original glockenspiel signal
 
@@ -48,7 +46,7 @@ and (d) is the time-frequency plot of the 1000 atoms that have been used to appr
 You can evaluate the quality of the approximation:
 
 >>> approx.compute_srr()
-23.657038395028287
+19.16784863423626
 
 and save the result in various formats (see the :class:`.Approx` documentation)::
 
@@ -70,9 +68,9 @@ routines of its blocks will perform the local optimization so that at our level 
 In addition to plotting, we can compare the quality of the approximations, given a fixed number of atoms (here 500):
 
 >>> print mp_approx
-Approx Object: 500 atoms, SRR of 19.51 dB
+Approx Object: 500 atoms, SRR of 19.17 dB
 >>> print lomp_approx
-Approx Object: 500 atoms, SRR of 23.21 dB
+Approx Object: 500 atoms, SRR of 23.27 dB
 
 The locally adaptive Matching pursuit has yielded a better decomposition (in the sense of mean squared error).
 Alternatively one can verify that for a given level of SRR, LoMP will use a smaller number of atoms.
