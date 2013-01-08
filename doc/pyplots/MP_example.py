@@ -16,36 +16,36 @@ mpl.rcParams['legend.shadow'] = True
 mpl.rcParams['image.interpolation'] = 'Nearest'
 #mpl.rcParams['text.usetex'] = True
 
-from PyMP import signals, mp
-from PyMP.mdct import dico
+from PyMP import Signal, mp
+from PyMP.mdct import Dico
 
 
 sizes = [128, 1024, 8192]
-Natom = 1000
+n_atoms = 1000
 
 
 abPath = os.path.abspath('../../data/')
-pySig = signals.Signal(abPath + '/glocs.wav', mono=True, normalize=True)
+sig = Signal(abPath + '/glocs.wav', mono=True, normalize=True)
 
 # taking only the first musical phrase (3.5 seconds approximately)
-pySig.crop(0, 3.5 * pySig.fs)
-pySig.pad(8192)
+sig.crop(0, 3.5 * sig.fs)
+sig.pad(8192)
 
 # add some minor noise to avoid null areas
-pySig.data += 0.0001 * np.random.randn(pySig.length)
+sig.data += 0.0001 * np.random.randn(sig.length)
 
 # create MDCT multiscale dictionary
-dico = dico.Dico(sizes)
+dico = Dico(sizes)
 
 # run the MP routine
-approx, decay = mp.mp(pySig, dico, 50, Natom)
+approx, decay = mp.mp(sig, dico, 50, n_atoms)
 
 # plotting the results
-timeVec = np.arange(0, float(pySig.length)) / pySig.fs
+timeVec = np.arange(0, float(sig.length)) / sig.fs
 
 plt.figure(figsize=(10, 6))
 axOrig = plt.axes([0.05, 0.55, .4, .4])
-axOrig.plot(timeVec, pySig.data)
+axOrig.plot(timeVec, sig.data)
 axOrig.set_title('(a)')
 axOrig.set_xticks([1, 2, 3, 4])
 axOrig.set_ylim([-1.0, 1.0])
@@ -64,22 +64,22 @@ axtf.set_title('(d)')
 
 axFFt1 = plt.axes([.55, .816, .4, .133])
 axFFt1.specgram(
-    pySig.data, NFFT=128, noverlap=64, cmap=cm.copper_r, Fs=pySig.fs)
-axFFt1.set_yticks([0, pySig.fs / 4])
+    sig.data, NFFT=128, noverlap=64, cmap=cm.copper_r, Fs=sig.fs)
+axFFt1.set_yticks([0, sig.fs / 4])
 axFFt1.set_xticks([])
 axFFt1.set_title('(b)')
 
 axFFt2 = plt.axes([.55, .683, .4, .133])
 axFFt2.specgram(
-    pySig.data, NFFT=1024, noverlap=512, cmap=cm.copper_r, Fs=pySig.fs)
-axFFt2.set_yticks([0, pySig.fs / 4])
+    sig.data, NFFT=1024, noverlap=512, cmap=cm.copper_r, Fs=sig.fs)
+axFFt2.set_yticks([0, sig.fs / 4])
 axFFt2.set_ylabel('Frequence (Hz)')
 axFFt2.set_xticks([])
 
 axFFt3 = plt.axes([.55, .55, .4, .133])
-axFFt3.specgram(pySig.data, NFFT=4096, noverlap=0.75 * 4096.0,
-                cmap=cm.copper_r, Fs=pySig.fs)
-axFFt3.set_yticks([0, pySig.fs / 4])
+axFFt3.specgram(sig.data, NFFT=4096, noverlap=0.75 * 4096.0,
+                cmap=cm.copper_r, Fs=sig.fs)
+axFFt3.set_yticks([0, sig.fs / 4])
 axFFt3.set_xticks([1, 2, 3, 4])
 
 try:
@@ -87,4 +87,6 @@ try:
 except Exception, e:
     pass
 
+
 plt.show()
+

@@ -1,1 +1,3 @@
-__all__ = ['pymp_RandomBlocks.py','pymp_RandomDicos.py']
+__all__ = ['block','dico']
+
+from .dico import SequenceDico

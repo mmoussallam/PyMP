@@ -142,8 +142,7 @@ class Signal(object):
         length: %d
         energy of %2.3f
         sampling frequency %d
-        number of channels %d
-        ''' % (self.location, self.length, self.energy, self.fs, self.channel_num)
+        number of channels %d''' % (self.location, self.length, self.energy, self.fs, self.channel_num)
 
     def normalize(self):
         ''' makes sure all values of the array are between -1 and 1 '''

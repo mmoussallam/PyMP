@@ -2,24 +2,23 @@
 import matplotlib.pyplot as plt
 import os
 
-from PyMP import signals, mp, mp_coder
-from PyMP.mdct import dico
+from PyMP import Signal, mp, mp_coder
+from PyMP.mdct import Dico
 
 
 abPath = os.path.abspath('../../data/')
-myPympSignal = signals.Signal(
+sig = Signal(
     abPath + '/ClocheB.wav', mono=True)  # Load Signal
-myPympSignal.crop(
-    0, 4.0 * myPympSignal.fs)     # Keep only 4 seconds
+sig.crop(0, 4.0 * sig.fs)     # Keep only 4 seconds
 
 # atom of scales 8, 64 and 512 ms
-scales = [(s * myPympSignal.fs / 1000) for s in (8, 64, 512)]
+scales = [(s * sig.fs / 1000) for s in (8, 64, 512)]
 
 # Dictionary for Standard MP
-pyDico = dico.Dico(scales)
+pyDico = Dico(scales)
 
 # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
-mpApprox, mpDecay = mp.mp(myPympSignal, pyDico, 20, 2000)
+mpApprox, mpDecay = mp.mp(sig, pyDico, 20, 2000)
 
 # mpApprox.atomNumber
 

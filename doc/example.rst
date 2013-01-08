@@ -13,17 +13,18 @@ Standard Algorithm
 In this example, the standard algorithm is used to decomposed the glockenspiel signal over a union of 3 MDCT basis::
 
 >>> import numpy as np
->>> from PyMP.signals import Signal
+>>> from PyMP import Signal, mp
 >>> from PyMP.approx import Approx
 >>> from PyMP.mdct import Dico
->>> sizes = [128, 1024, 8192]
->>> n_atoms = 1000
+>>> scales = [128, 1024, 8192]
+>>> n_atoms = 500
+>>> srr = 50
 >>> signal = Signal('data/glocs.wav', mono=True, normalize=True)
 >>> signal.crop(0, 3.5 * signal.fs)
 >>> signal.pad(8192)
 >>> signal.data += 0.0001 * np.random.randn(signal.length)
->>> dico = Dico(sizes)
->>> approx, decay = mp.mp(signal, dico, 50, n_atoms)
+>>> dico = Dico(scales)
+>>> approx, decay = mp.mp(signal, dico, srr, n_atoms)
 
 .. note::
 
@@ -33,6 +34,12 @@ First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (a
 (c) is the reconstructed signal, accessible via::
 
 >>> approx.recomposed_signal
+Signal object located in 
+         length: 144768
+         energy of 1824.217
+         sampling frequency 32000
+         number of channels 1
+
 
 and (d) is the time-frequency plot of the 1000 atoms that have been used to approximate the original glockenspiel signal
 
@@ -54,17 +61,17 @@ To run a locally adaptive (or optimized) MP, all we have to do is to pick a :cla
 routines of its blocks will perform the local optimization so that at our level this is quite transparent:
 
 >>> from PyMP.mdct import LODico
->>> approxMP, decayMP = mp.mp(signal, Dico(scales), srr, n_atoms, padSignal=True)
->>> approxLoMP, decayLoMP = mp.mp(signal, LODico(scales), srr, n_atoms, padSignal=False)
+>>> mp_approx, mp_decay = mp.mp(signal, Dico(scales), srr, n_atoms, pad=True)
+>>> lomp_approx, lomp_decay = mp.mp(signal, LODico(scales), srr, n_atoms, pad=True)
 
 
 .. plot:: pyplots/LoMP_example.py
 
 In addition to plotting, we can compare the quality of the approximations, given a fixed number of atoms (here 500):
 
->>> print approxMP
+>>> print mp_approx
 Approx Object: 500 atoms, SRR of 19.51 dB
->>> print approxLoMP
+>>> print lomp_approx
 Approx Object: 500 atoms, SRR of 23.21 dB
 
 The locally adaptive Matching pursuit has yielded a better decomposition (in the sense of mean squared error).
@@ -80,8 +87,8 @@ RSSMP is explained in the journal paper_ .
 
 Implementation of RSSMP is quite transparent, it's done through the use of a :class:`.SequenceDico` object as dictionary::
 
->>> from PyMP.mdct.random import dico as random_dico
->>> pyRandomDico = random_dico.RandomDico(sizes, 'random')
+>>> from PyMP.mdct.rand import SequenceDico
+>>> seq_dico = SequenceDico(scales, 'random')
 
 We can now compare the three strategies in terms of normalized reconstruction error
 

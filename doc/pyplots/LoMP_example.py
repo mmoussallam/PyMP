@@ -6,8 +6,8 @@ Created on 9 sept. 2012
 import os
 import matplotlib.pyplot as plt
 
-from PyMP import signals, mp
-from PyMP.mdct import dico
+from PyMP import Signal, mp
+from PyMP.mdct import Dico, LODico
 
 import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 1.0
@@ -19,26 +19,26 @@ mpl.rcParams['image.interpolation'] = 'Nearest'
 
 # Load glockenspiel signal
 abPath = os.path.abspath('../../data/')
-pySig = signals.Signal(abPath + '/glocs.wav', mono=True, normalize=True)
+sig = Signal(abPath + '/glocs.wav', mono=True, normalize=True)
 
-pySig.crop(0, 3 * pySig.fs)
+sig.crop(0, 3 * sig.fs)
 
 scales = [128, 1024, 8192]
-nbAtom = 500
+n_atoms = 500
 srr = 30
 
-mpDico = dico.Dico(scales)
-lompDico = dico.LODico(scales)
+mp_dico = Dico(scales)
+lomp_dico = LODico(scales)
 
-approxMP, decayMP = mp.mp(pySig, mpDico, srr, nbAtom, pad=True)
-approxLoMP, decayLoMP = mp.mp(pySig, lompDico, srr, nbAtom, pad=False)
+mp_approx, mp_decay = mp.mp(sig, mp_dico, srr, n_atoms, pad=True)
+lomp_approx, lomp_decay = mp.mp(sig, lomp_dico, srr, n_atoms, pad=False)
 
 plt.figure()
 plt.subplot(211)
-approxMP.plot_tf()
+mp_approx.plot_tf()
 plt.subplot(212)
-approxLoMP.plot_tf()
+lomp_approx.plot_tf()
 
-# print approxMP , approxLoMP
+# print mp_approx , lomp_approx
 
 plt.show()

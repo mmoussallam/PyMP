@@ -10,8 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from PyMP import signals, mp
-from PyMP.mdct import dico
-from PyMP.mdct.rand import dico as random_dico
+from PyMP.mdct import Dico, LODico
+from PyMP.mdct.rand import SequenceDico
 
 import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 1.0
@@ -23,27 +23,27 @@ mpl.rcParams['image.interpolation'] = 'Nearest'
 
 # Load glockenspiel signal
 abPath = os.path.abspath('../../data/')
-pySig = signals.Signal(abPath + '/glocs.wav', mono=True, normalize=True)
+sig = signals.Signal(abPath + '/glocs.wav', mono=True, normalize=True)
 
-pySig.crop(0, 3 * pySig.fs)
+sig.crop(0, 3 * sig.fs)
 
 scales = [128, 1024, 8192]
-nbAtom = 500
+n_atoms = 500
 srr = 30
 
-mpDico = dico.Dico(scales)
-lompDico = dico.LODico(scales)
-rssMPDico = random_dico.SequenceDico(scales)
+mp_mdct_dico = Dico(scales)
+lomp_mdct_dico = LODico(scales)
+rssmp_mdct_dico = SequenceDico(scales)
 
-approxMP, decayMP = mp.mp(pySig, mpDico, srr, nbAtom, pad=True)
-approxLoMP, decayLoMP = mp.mp(pySig, lompDico, srr, nbAtom, pad=True)
-approxRSSMP, decayRSSMP = mp.mp(pySig, rssMPDico, srr, nbAtom, pad=False)
+mp_approx, mp_decay = mp.mp(sig, mp_mdct_dico, srr, n_atoms, pad=True)
+lomp_approx, lomp_decay = mp.mp(sig, lomp_mdct_dico, srr, n_atoms, pad=True)
+rssmp_approx, rssmp_decay = mp.mp(sig, rssmp_mdct_dico, srr, n_atoms, pad=False)
 
 
 plt.figure()
-plt.plot(10 * np.log10(decayMP) - 10 * np.log10(decayMP[0]))
-plt.plot(10 * np.log10(decayLoMP) - 10 * np.log10(decayLoMP[0]), 'r:')
-plt.plot(10 * np.log10(decayRSSMP) - 10 * np.log10(decayRSSMP[0]), 'k--')
+plt.plot(10 * np.log10(mp_decay) - 10 * np.log10(mp_decay[0]))
+plt.plot(10 * np.log10(lomp_decay) - 10 * np.log10(lomp_decay[0]), 'r:')
+plt.plot(10 * np.log10(rssmp_decay) - 10 * np.log10(rssmp_decay[0]), 'k--')
 plt.ylabel('Normalized reconstruction error (dB)')
 plt.xlabel('Iteration')
 plt.legend(('Standard MP', 'Locally Optimized MP', 'RSS MP'))

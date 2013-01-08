@@ -25,7 +25,7 @@ global _Logger
 #from Classes.gabor import *
 from PyMP.mdct import atom as mdct_atom
 from PyMP.wavelet import atom as wavelet_atom
-from PyMP.mdct import dico as mdct_dico
+from PyMP.mdct import dico as mp_mdct_dico
 from PyMP.mdct import block as mdct_block
 from PyMP.base import BaseAtom, BaseDico
 from PyMP.mdct.rand import dico as random_dico
@@ -131,7 +131,7 @@ class DicoTest(unittest.TestCase):
         self.assertEqual(dico.nature, 'Abstract')
 
         # test dictionary class
-        dico = mdct_dico.Dico(
+        dico = mp_mdct_dico.Dico(
             [2 ** l for l in range(7, 15, 1)], debug_level=3)
         self.assertEqual(dico.sizes, [128, 256, 512, 1024,
              2048, 4096, 8192, 16384])
@@ -288,7 +288,7 @@ class py_mpTest(unittest.TestCase):
     def runTest(self):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
-        dico = mdct_dico.Dico([256, 2048, 8192])
+        dico = mp_mdct_dico.Dico([256, 2048, 8192])
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
@@ -308,9 +308,9 @@ class py_mpTest(unittest.TestCase):
                                        normalize=True, mono=True)
 
         # last test - decomposition profonde
-        dico2 = mdct_dico.Dico([128, 256, 512, 1024, 2048,
+        dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
              4096, 8192, 16384], parallel=False)
-        dico1 = mdct_dico.Dico([16384])
+        dico1 = mp_mdct_dico.Dico([16384])
         # profiling test
         print "Plain"
         cProfile.runctx('mp.mp(signal_original, dico1, 20, 1000 ,debug=0 , '
@@ -352,7 +352,7 @@ class ApproxTest(unittest.TestCase):
         print pyApprox
         del pyApprox
 
-        dico = mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
+        dico = mp_mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        mono=True)
         signal_original.crop(0, 5 * max(dico.sizes))
@@ -402,7 +402,7 @@ class ApproxTest(unittest.TestCase):
         # TODO testing du SRR
 
         #testing the write_to_xml and read_from_xml methods
-        pyCCDico = mdct_dico.LODico([256, 2048, 8192])
+        pyCCDico = mp_mdct_dico.LODico([256, 2048, 8192])
         approx_LOmp = mp.mp(signal_original, pyCCDico, 10, 100, False)[0]
 
         sliceApprox = approx_LOmp[:10]
@@ -425,7 +425,7 @@ class ApproxTest(unittest.TestCase):
                                        normalize=True, mono=True,
                                        debug_level=0)
         signal_original.crop(0, 1 * 16384)
-        dico = mdct_dico.Dico([256, 2048, 8192], debug_level=2)
+        dico = mp_mdct_dico.Dico([256, 2048, 8192], debug_level=2)
         # first compute an approximant using mp
         approximant = mp.mp(signal_original, dico, 10, 10, debug=2)[0]
 
@@ -462,7 +462,7 @@ class ApproxTest(unittest.TestCase):
 
         del doc, newApprox
         # test writing with LOmp atoms
-        pyCCDico = mdct_dico.LODico([256, 2048, 8192])
+        pyCCDico = mp_mdct_dico.LODico([256, 2048, 8192])
         approx_LOmp = mp.mp(signal_original, pyCCDico, 10, 100, False)[0]
 
         outputXmlPath = "approxLOmp_test.xml"
@@ -496,8 +496,8 @@ class ApproxTest(unittest.TestCase):
 class py_mpTest2(unittest.TestCase):
     def runTest(self):
 
-        pyCCDico = mdct_dico.LODico([256, 2048, 8192])
-        dico = mdct_dico.Dico([256, 2048, 8192])
+        pyCCDico = mp_mdct_dico.LODico([256, 2048, 8192])
+        dico = mp_mdct_dico.Dico([256, 2048, 8192])
 
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
@@ -692,7 +692,7 @@ class py_mpTest2Bis(unittest.TestCase):
 #        ext = ".png"
 
         rand_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
-        dico = mdct_dico.Dico([256, 2048, 8192])
+        dico = mp_mdct_dico.Dico([256, 2048, 8192])
 
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
@@ -892,7 +892,7 @@ class py_mpTest3(unittest.TestCase):
         original_signal = signals.LongSignal(filePath, frameSize, True)
 
         # dictionaries
-        pyCCDico = mdct_dico.LODico(mdctDico)
+        pyCCDico = mp_mdct_dico.LODico(mdctDico)
 
         # Let's feed the proto 3 with these:
         # we should get a collection of approximants (one for each frame) in

@@ -201,6 +201,7 @@ def mp(orig_signal,
     return current_approx, res_energy
 
 
+
 def mp_continue(current_approx,
                 orig_signal,
                 dictionary,
