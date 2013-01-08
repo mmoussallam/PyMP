@@ -129,16 +129,16 @@ class Block(BaseBlock):
             _Logger.set_level(debug_level)
 
         self.scale = length
-        self.residualSignal = resSignal
+        self.residual_signal = resSignal
 
         if frameLen == 0:
             self.frame_len = length / 2
         else:
             self.frame_len = frameLen
-        if self.residualSignal == None:
+        if self.residual_signal == None:
             raise ValueError("no signal given")
 
-        self.framed_data_matrix = self.residualSignal.data
+        self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
         self.projs_matrix = np.zeros(len(self.framed_data_matrix))
         self.use_c_optim = useC
@@ -211,7 +211,7 @@ class Block(BaseBlock):
             self.max_frame_idx = floor(self.maxHFIdx / (0.5 * self.scale))
             self.max_bin_idx = self.maxHFIdx - self.max_frame_idx * (
                 0.5 * self.scale)
-        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
+        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
 #        print self.max_bin_idx, Atom.reducedFrequency
         if not HF:
@@ -227,11 +227,11 @@ class Block(BaseBlock):
         return Atom
 
     #
-    def update(self, newResidual, startFrameIdx=0, stopFrameIdx=-1):
+    def update(self, new_res_signal, startFrameIdx=0, stopFrameIdx=-1):
         """ update the part of the residual that has been changed and update inner products    """
-# print "block update called : " , self.scale , newResidual.length ,
+# print "block update called : " , self.scale , new_res_signal.length ,
 # self.frameNumber
-        self.residualSignal = newResidual
+        self.residual_signal = new_res_signal
 
         if stopFrameIdx < 0:
             endFrameIdx = self.frame_num - 1
@@ -240,7 +240,7 @@ class Block(BaseBlock):
 
         L = self.scale
 
-        self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
+        self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residual_signal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
         self.compute_transform(startFrameIdx, stopFrameIdx)
 
@@ -392,7 +392,7 @@ class LOBlock(Block):
 
     def __init__(self, length=0, resSignal=None, frameLen=0, tinvOptim=True, useC=True, forceHF=False):
         self.scale = length
-        self.residualSignal = resSignal
+        self.residual_signal = resSignal
         self.adjustTimePos = tinvOptim
         self.use_c_optim = useC
         self.HF = forceHF
@@ -401,10 +401,10 @@ class LOBlock(Block):
             self.frame_len = length / 2
         else:
             self.frame_len = frameLen
-        if self.residualSignal == None:
+        if self.residual_signal == None:
             raise ValueError("no signal given")
 
-        self.framed_data_matrix = self.residualSignal.data
+        self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
 
         # only difference , here, we keep the complex values for the cross
@@ -414,7 +414,7 @@ class LOBlock(Block):
 
 # only the update method is interesting for us : we're hacking it to experiment
 #    def update(self , newResidual , startFrameIdx=0 , stopFrameIdx=-1):
-#        self.residualSignal = newResidual
+#        self.residual_signal = newResidual
 #
 #        if stopFrameIdx <0:
 #            endFrameIdx = self.frameNumber -1
@@ -424,7 +424,7 @@ class LOBlock(Block):
 #
 #        # update residual signal
 # self.framed_data_matrix[startFrameIdx*L/2 : endFrameIdx*L/2 + L] =
-# self.residualSignal.dataVec[startFrameIdx*self.frameLength :
+# self.residual_signal.dataVec[startFrameIdx*self.frameLength :
 # endFrameIdx*self.frameLength + 2*self.frameLength]
 #
 #        # TODO changes here
@@ -510,7 +510,7 @@ class LOBlock(Block):
         # signal in the FFt domain,
         # so that we can find the maximum correlation and best adapt the time-
         # shift
-        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
+        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
 
         # re-compute the atom amplitude for IMDCT
@@ -606,7 +606,7 @@ class LOBlock(Block):
                 Atom.amplitude = sqrt(score)
                 Atom.waveform = (
                     sqrt(score / sum(Atom.waveform ** 2))) * Atom.waveform
-# projOrtho = sum(Atom.waveform * self.residualSignal.dataVec[Atom.timePosition
+# projOrtho = sum(Atom.waveform * self.residual_signal.dataVec[Atom.timePosition
 # : Atom.timePosition + Atom.length])
 
 #        if score <0:
@@ -638,16 +638,16 @@ class FullBlock(Block):
     # constructor - initialize residual signal and projection matrix
     def __init__(self, length=0, resSignal=None, frameLen=0):
         self.scale = length
-        self.residualSignal = resSignal
+        self.residual_signal = resSignal
 
         if frameLen == 0:
             self.frame_len = length / 2
         else:
             self.frame_len = frameLen
-        if self.residualSignal == None:
+        if self.residual_signal == None:
             raise ValueError("no signal given")
 
-        self.framed_data_matrix = self.residualSignal.data
+        self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
 
         # ok here the mdct will be computed for every possible time shift
@@ -684,8 +684,8 @@ class FullBlock(Block):
         self.locCoeff = self.w_long * self.pre_twid_vec
 
     # The update method is nearly the same as CCBlock
-    def update(self, newResidual, startFrameIdx=0, stopFrameIdx=-1):
-        self.residualSignal = newResidual
+    def update(self, new_res_signal, startFrameIdx=0, stopFrameIdx=-1):
+        self.residual_signal = new_res_signal
 
         if stopFrameIdx < 0:
             endFrameIdx = self.frame_num - 1
@@ -700,7 +700,7 @@ class FullBlock(Block):
 # endFrameIdx
 
         # update residual signal
-        self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
+        self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residual_signal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
         # TODO changes here
         self.compute_transform(startFrameIdx, stopFrameIdx)
@@ -762,7 +762,7 @@ class FullBlock(Block):
     def get_max_atom(self):
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
 
-        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
+        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
 
         # re-compute the atom amplitude for IMDCT
@@ -820,16 +820,16 @@ class SpreadBlock(Block):
             _Logger.set_level(debug_level)
 
         self.scale = length
-        self.residualSignal = resSignal
+        self.residual_signal = resSignal
 
         if frameLen == 0:
             self.frame_len = length / 2
         else:
             self.frame_len = frameLen
-        if self.residualSignal == None:
+        if self.residual_signal == None:
             raise ValueError("no signal given")
 
-        self.framed_data_matrix = self.residualSignal.data
+        self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
         self.projs_matrix = np.zeros(len(self.framed_data_matrix))
         self.use_c_optim = useC
@@ -871,7 +871,7 @@ class SpreadBlock(Block):
             self.mask[((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx - self.maskSize): ((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx + self.maskSize)] = self.penalty
 
         # proceed as usual
-        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
+        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
 
         Atom.mdct_value = self.max_value

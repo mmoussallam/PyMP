@@ -284,7 +284,7 @@ class BlockTest(unittest.TestCase):
         del signal_original
 
 
-class py_mpTest(unittest.TestCase):
+class MPTest(unittest.TestCase):
     def runTest(self):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
@@ -325,7 +325,7 @@ class SequenceDicoTest(unittest.TestCase):
     def runTest(self):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
-        dico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random')
+        dico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random', seed=1001)
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
@@ -493,7 +493,7 @@ class ApproxTest(unittest.TestCase):
         del newApprox
 
 
-class py_mpTest2(unittest.TestCase):
+class LOMPTest(unittest.TestCase):
     def runTest(self):
 
         pyCCDico = mp_mdct_dico.LODico([256, 2048, 8192])
@@ -686,12 +686,12 @@ class py_mpTest2(unittest.TestCase):
         print " Approx Reached : ", approx2.compute_srr(), " dB in ", approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
 
 
-class py_mpTest2Bis(unittest.TestCase):
+class SSMPTest(unittest.TestCase):
     def runTest(self):
         approx_path = "../Approxs/"
 #        ext = ".png"
 
-        rand_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
+        seq_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
         dico = mp_mdct_dico.Dico([256, 2048, 8192])
 
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
@@ -702,31 +702,16 @@ class py_mpTest2Bis(unittest.TestCase):
         # through time shift calculation
         pyAtom = mdct_atom.Atom(2048, 1, 8192 - 512, 128, 8000, 0.57)
         pyAtom.synthesize()
+        np.random.seed(42)
         signal_one_atom = signals.Signal(0.0001 * np.random.random(
             signal_original.length), signal_original.fs, False)
         signal_one_atom.add(pyAtom)
 
-        fig_1Atom = plt.figure()
-        print "Testing one Aligned Atom with Random"
+        print "Testing one Aligned Atom with sequence dico"
         approximant = mp.mp(
-            signal_one_atom, rand_dico, 10, 10, False, False)[0]
-#        approximant.plot_tf()
-#        plt.subplot(211)
-        plt.plot(signal_one_atom.data)
-        plt.plot(approximant.recomposed_signal.data)
-        plt.plot(
-            signal_one_atom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Aligned Atom with LOmp")
-#        plt.show()
-        plt.xlabel("samples")
-#        plt.savefig(figPath +"LOmp_aligned" +ext)
+            signal_one_atom, seq_dico, 10, 10, False, False)[0]
 
-        approximant.write_to_xml(approx_path + "LOmp_aligned")
-
-        print " Approx Reached : ", approximant.compute_srr(
-            ), " dB in ", approximant.atom_number, " iteration"
-
+        self.assertEqual(approximant.compute_srr(), 37.78735640946547)
         del pyAtom, approximant, signal_one_atom
 
         print "Testing one Non-Aligned Atom with mp - should not be perfect"
@@ -738,110 +723,55 @@ class py_mpTest2Bis(unittest.TestCase):
 
         approximant, decay = mp.mp(
             signal_one_atom, dico, 10, 10, False, False)
-#        approximant.plot_tf()
-        plt.figure()
-        plt.subplot(211)
-        plt.plot(signal_one_atom.data)
-        plt.plot(approximant.recomposed_signal.data)
-        plt.plot(
-            signal_one_atom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Non aligned atom with mp : SRR of " + str(int(approximant.compute_srr())) + " dB in " + str(approximant.atom_number) + " iteration")
-#        plt.show()
-        print " Approx Reached : ", int(approximant.compute_srr()
-            ), " dB in ", approximant.atom_number, " iteration"
 
+        self.assertEqual(approximant.compute_srr(), 11.039446691092392)
         del approximant
 
-        print "Testing one Non-Aligned Atom with Random"
+        print "Testing one Non-Aligned Atom with Random (reproductible)"
+        seed = 1001;
+        rand_dico = random_dico.SequenceDico([256, 2048, 8192], 'random', seed=seed)
         pyAtom = mdct_atom.Atom(2048, 1, 7500, 128, 8000, 0.57)
         pyAtom.synthesize()
+        np.random.seed(seed)
         signal_one_atom = signals.Signal(0.0001 * np.random.random(
             signal_original.length), signal_original.fs, False)
         signal_one_atom.add(pyAtom)
 
         approximant, decay = mp.mp(
             signal_one_atom, rand_dico, 10, 10, False, False)
-#        approximant.plot_tf()
-        plt.subplot(212)
-        plt.plot(signal_one_atom.data)
-        plt.plot(approximant.recomposed_signal.data)
-        plt.plot(signal_one_atom.data - approximant.recomposed_signal.data)
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Non aligned atom with LOmp : SRR of " + str(int(approximant.compute_srr())) + " dB in " + str(approximant.atom_number) + " iteration")
-        plt.xlabel("samples")
-#        plt.savefig(figPath+"nonAlignedAtom_mp_vs_LOmp" + ext)
-#        plt.show()
-        print " Approx Reached : ", approximant.compute_srr(
-            ), " dB in ", approximant.atom_number, " iteration"
-
-        del approximant
-
-        print "Testing Real signals with mp"
-        approximant, decay = mp.mp(signal_original, dico, 10, 10, False)
-#        approximant.plot_tf()
-        plt.figure()
-        plt.subplot(211)
-        plt.plot(signal_original.data[4096:-4096])
-        plt.plot(approximant.recomposed_signal.data[4096:-4096])
-        plt.plot(signal_original.data[4096:-4096] - approximant.
-            recomposed_signal.data[4096:-4096])
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Bell signals with mp : SRR of " + str(int(approximant.compute_srr(
-            ))) + " dB in " + str(approximant.atom_number) + " iteration")
-#        plt.show()
-        print " Approx Reached : ", approximant.compute_srr(
-            ), " dB in ", approximant.atom_number, " iteration"
+        
+        
+        self.assertEqual(approximant.srr, 10.970629166418217)
 
         del approximant
 
         print "Testing Real signals with Randommp"
 #        pyCCDico =
+        seed = 42;
+        rand_dico = random_dico.SequenceDico([2**j for j in range(7,15)], 'random',seed=seed)
         approximant = mp.mp(
             signal_original, rand_dico, 10, 10, False, False)[0]
-#        approximant.plot_tf()
-        plt.subplot(212)
-        plt.plot(signal_original.data[4096:-4096])
-        plt.plot(approximant.recomposed_signal.data[4096:-4096])
-        plt.plot(signal_original.data[4096:-4096] - approximant.
-            recomposed_signal.data[4096:-4096])
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Bell signals with LOmp : SRR of " +
-                  str(int(approximant.compute_srr())) +
-                   " dB in " + str(approximant.atom_number) + " iteration")
-        plt.xlabel("samples")
-#        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_nbIt10"+ext)
-        print " Approx Reached : ", approximant.compute_srr(
-            ), " dB in ", approximant.atom_number, " iteration"
 
+        self.assertEqual(approximant.atom_number,10)
+        self.assertEqual(approximant.srr, 0.6242965242229909)
+        
         del approximant
         print "comparing results and processing times for long decompositions"
         t0 = time.clock()
         approx1, decay = mp.mp(signal_original, dico, 20, 500, False)
         t1 = time.clock()
-        plt.figure()
-        plt.subplot(211)
-        plt.plot(signal_original.data[12288:-12288])
-        plt.plot(approx1.recomposed_signal.data[12288:-12288])
-        plt.plot(signal_original.data[12288:-12288] - approx1.
-            recomposed_signal.data[12288:-12288])
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Bell signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
-#        plt.show()
+
         print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
+        self.assertEqual(approx1.srr, 19.779705511708805)
+        self.assertEqual(approx1.atom_number, 500)
 
         t2 = time.clock()
         approx2 = mp.mp(signal_original, rand_dico, 20, 500, False, False)[0]
         t3 = time.clock()
-        plt.subplot(212)
-        plt.plot(signal_original.data[12288:-12288])
-        plt.plot(approx2.recomposed_signal.data[12288:-12288])
-        plt.plot(signal_original.data[12288:-12288] - approx2.
-            recomposed_signal.data[12288:-12288])
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Bell signals with LOmp : SRR of " + str(int(approx2.compute_srr())) + " dB in " + str(approx2.atom_number) + " iteration and " + str(t3 - t2) + "s")
-#        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_SRR20"+ext)
+
         print " Approx Reached : ", approx2.compute_srr(), " dB in ", approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
+        self.assertEqual(approx2.srr, 20.02389209197687)
+        self.assertEqual(approx2.atom_number, 271)
 
         del approx1, approx2
         del signal_original
@@ -852,33 +782,18 @@ class py_mpTest2Bis(unittest.TestCase):
         t0 = time.clock()
         approx1, decay = mp.mp(noise_signal, dico, 10, 500, False, True)
         t1 = time.clock()
-        plt.figure()
-        plt.subplot(211)
-        plt.plot(noise_signal.data[16384:-16384])
-        plt.plot(approx1.recomposed_signal.data[16384:-16384])
-        plt.plot(noise_signal.data[16384:-16384]
-                 - approx1.recomposed_signal.data[16384:-16384])
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("White Noise signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
-#        plt.show()
+
         print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
 
+        rand_dico = random_dico.SequenceDico([256, 2048, 8192], 'random',seed=seed)
         t2 = time.clock()
         approx2 = mp.mp(noise_signal, rand_dico, 10, 500, False, True)[0]
         t3 = time.clock()
-        plt.subplot(212)
-        plt.plot(noise_signal.data[16384:-16384])
-        plt.plot(approx2.recomposed_signal.data[16384:-16384])
-        plt.plot(noise_signal.data[16384:-16384] - approx2.
-            recomposed_signal.data[16384:-16384])
-        plt.legend(("original", "approximant", "residual"))
-        plt.title("Noise signals with LOmp : SRR of " + str(int(approx2.compute_srr())) + " dB in " + str(approx2.atom_number) + " iteration and " + str(t3 - t2) + "s")
-        plt.xlabel("samples")
-#        plt.savefig(figPath+"NoiseSignal_mp_vs_LOmp_SRR20"+ext)
+
         print " Approx Reached : ", approx2.compute_srr(), " dB in ", approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
 
 
-class py_mpTest3(unittest.TestCase):
+class MPlongTest(unittest.TestCase):
     """ this time we decompose a longer signals with the mp_LongSignal : result in an enframed signals """
     def runTest(self):
         filePath = op.join(audioFilePath, "Bach_prelude_4s.wav")
@@ -925,15 +840,15 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-#    suite.addTest(py_mpTest3())
-#    suite.addTest(py_mpTest())
-#    suite.addTest(py_mpTest2())
+#    suite.addTest(MPlongTest())
+#    suite.addTest(MPTest())
+    suite.addTest(SSMPTest())
 #    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
 #    suite.addTest(Signaltest())
-    suite.addTest(WaveletAtomTest())
+#    suite.addTest(WaveletAtomTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
 

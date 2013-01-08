@@ -150,7 +150,7 @@ sequence of subdictionaries is known both at the coder and decoder side. This is
 not signal-dependant.
 
 >>> from PyMP.mdct.rand import SequenceDico
->>> rssmp_dico = SequenceDico(scales,'random')
+>>> rssmp_dico = SequenceDico(scales, 'random', seed=42)
 >>> rssmp_approx = mp.mp(sig, rssmp_dico, 20, 2000, pad=False) [0] 
 >>> rssmp_snr, rssmp_bitrate, rssmp_quantized_approx = mp_coder.simple_mdct_encoding(rssmp_approx, 2000, Q=14)
 
@@ -158,7 +158,13 @@ Now we can check that RSSMP atoms are much more efficient at representing the si
 fixed dictionary, but the cost of each atom is the same thus:
 
 >>> (rssmp_snr,rssmp_bitrate)
-(18.938171653961721, 2003.7309194613388)
+(18.931437384835085, 2003.7309194613388)
+
+.. note::
+
+   In order to allow to reproduce results, you can set the *seed* optionnal parameter of the
+   :class:‘.SequenceDico‘ object
+
 
 And we can verify:
 

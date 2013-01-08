@@ -66,10 +66,10 @@ Another way is to use:
 >>> sub_signal = signal[0: 2048]
 >>> print sub_signal
 Signal object located in 
-         length: 2048
-         energy of 0.000
-         sampling frequency 32000
-         number of channels 1
+        length: 2048
+        energy of 0.000
+        sampling frequency 32000
+        number of channels 1
 
 Revesely you can pad signals with zeroes, this is done on both sides with pad and depad methods.
 For example, we can create a signal with only ones and pad it with zeroes on the edges:

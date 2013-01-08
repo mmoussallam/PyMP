@@ -65,18 +65,24 @@ class SequenceBlock(mdct_block.Block):
     w_long = None
 
     # constructor - initialize residual signal and projection matrix
-    def __init__(self, length=0, resSignal=None, frameLen=0, randomType='random', nbSim=1, windowType=None):
+    def __init__(self, length=0, resSignal=None, frameLen=0, 
+                 randomType='random', nbSim=1, 
+                 windowType=None,
+                 seed=None):
         self.scale = length
-        self.residualSignal = resSignal
+        self.residual_signal = resSignal
+        self.seed = seed
+        if self.seed is not None:
+            np.random.seed(self.seed)
 
         if frameLen == 0:
             self.frame_len = length / 2
         else:
             self.frame_len = frameLen
-        if self.residualSignal == None:
+        if self.residual_signal == None:
             raise ValueError("no signal given")
 
-        self.framed_data_matrix = self.residualSignal.data
+        self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
         self.projs_matrix = np.zeros(len(self.framed_data_matrix))
 
@@ -113,7 +119,7 @@ class SequenceBlock(mdct_block.Block):
         self.windowType = windowType
 
     # The update method is nearly the same as CCBlock
-    def update(self, newResidual, startFrameIdx=0, stopFrameIdx=-1, iterationNumber=0):
+    def update(self, new_res_signal, startFrameIdx=0, stopFrameIdx=-1, iterationNumber=0):
         """ Same as superclass except that at each update, one need to pick a time shift from the sequence """
 
         # change the current Time-Shift if enough iterations have been done
@@ -121,7 +127,8 @@ class SequenceBlock(mdct_block.Block):
             if (iterationNumber % self.nb_consec_sim == 0):
                 self.current_shift = self.shift_list[(
                     iterationNumber / self.nb_consec_sim) % len(self.shift_list)]
-        self.residualSignal = newResidual
+
+        self.residual_signal = new_res_signal
 
         if stopFrameIdx < 0:
             endFrameIdx = self.frame_num - 1
@@ -130,7 +137,7 @@ class SequenceBlock(mdct_block.Block):
         L = self.scale
 
         # update residual signal
-        self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residualSignal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
+        self.framed_data_matrix[startFrameIdx * L / 2: endFrameIdx * L / 2 + L] = self.residual_signal.data[startFrameIdx * self.frame_len: endFrameIdx * self.frame_len + 2 * self.frame_len]
 
         # TODO changes here
         self.compute_transform(startFrameIdx, stopFrameIdx)
@@ -208,7 +215,7 @@ class SequenceBlock(mdct_block.Block):
     def get_max_atom(self):
         self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
-        Atom = mdct_atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residualSignal.fs)
+        Atom = mdct_atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
         Atom.mdct_value = self.max_value
 

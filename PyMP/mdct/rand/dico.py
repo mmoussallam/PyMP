@@ -69,13 +69,13 @@ class SequenceDico(Dico):
     nature = 'RandomMDCT'
 
     # constructor
-    def __init__(self, sizes=[], seq_type='random', nbSame=1, windowType=None):
+    def __init__(self, sizes=[], seq_type='random', nbSame=1, windowType=None,seed=None):
         self.sequence_type = seq_type
         self.sizes = sizes
         self.nb_consec_sim = nbSame
-
         self.windowType = windowType
-
+        self.seed = seed
+        
     def initialize(self, residualSignal):
         self.blocks = []
         self.best_current_block = None
@@ -85,7 +85,7 @@ class SequenceDico(Dico):
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
             self.blocks.append(block.SequenceBlock(mdctSize, residualSignal, randomType=self.
-                sequence_type, nbSim=self.nb_consec_sim, windowType=self.windowType))
+                sequence_type, nbSim=self.nb_consec_sim, windowType=self.windowType, seed=self.seed))
 
     def compute_touched_zone(self, previousBestAtom):
         # if the current time shift is about to change: need to recompute all
