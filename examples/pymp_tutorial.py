@@ -2,41 +2,41 @@
 
 """
 import numpy as np
-from PyMP.mdct import dico, atom
-from PyMP import signals, approx
+from PyMP.mdct import Dico, atom
+from PyMP import Signal, approx
 
-myPympSignal = signals.Signal('../data/glocs.wav', debug_level=3)
-print myPympSignal
-print myPympSignal.data
+sig = Signal('../data/glocs.wav', debug_level=3)
+print sig
+print sig.data
 
-# myPympSignal.plot()
-# myPympSignal.write('newDestFile.wav')
+# sig.plot()
+# sig.write('newDestFile.wav')
 # editing
 
-print 'Before cropping Length of ', myPympSignal.length
-myPympSignal.crop(0, 2048)
-print 'After cropping Length of ', myPympSignal.length
+print 'Before cropping Length of ', sig.length
+sig.crop(0, 2048)
+print 'After cropping Length of ', sig.length
 
-subSig = myPympSignal[0:2048]
-print subSig
+sub_sig = sig[0:2048]
+print sub_sig
 
-newSig = signals.Signal(np.ones((8,)), 1)
-newSig.data
+new_sig = Signal(np.ones((8,)), 1)
+new_sig.data
 print "Padding"
-newSig.pad(4)
-newSig.data
+new_sig.pad(4)
+new_sig.data
 print "De-Padding"
-newSig.depad(4)
-newSig.data
+new_sig.depad(4)
+new_sig.data
 
 
-pyDico = dico.Dico([128, 1024, 8192])
-myPympSignal = signals.Signal('../data/glocs.wav', mono=True)
-pyApprox = approx.Approx(pyDico, [], myPympSignal)
+dico = Dico([128, 1024, 8192])
+sig = Signal('../data/glocs.wav', mono=True)
+app = approx.Approx(dico, [], sig)
 
 
-pyApprox.add(atom.Atom(256, 1, 256, 10, 8000, 1))
+app.add(atom.Atom(256, 1, 256, 10, 8000, 1))
 
-pyApprox.compute_srr()
-print pyApprox
+app.compute_srr()
+print app
 

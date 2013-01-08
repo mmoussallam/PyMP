@@ -6,73 +6,73 @@ M. Moussallam
 
 """
 
-from PyMP.mdct import dico
-from PyMP.mdct.rand import dico as random_dico
-from PyMP import mp, mp_coder, signals
-myPympSignal = signals.Signal('../data/ClocheB.wav', mono=True)  # Load Signal
-myPympSignal.crop(0, 4.0 * myPympSignal.fs)     # Keep only 4 seconds
+from PyMP.mdct import Dico, LODico
+from PyMP.mdct.rand import SequenceDico
+from PyMP import mp, mp_coder, Signal
+signal = Signal('../data/ClocheB.wav', mono=True)  # Load Signal
+signal.crop(0, 4.0 * signal.fs)     # Keep only 4 seconds
 # atom of scales 8, 64 and 512 ms
-scales = [(s * myPympSignal.fs / 1000) for s in (8, 64, 512)]
-myPympSignal.pad(scales[-1])
+scales = [(s * signal.fs / 1000) for s in (8, 64, 512)]
+signal.pad(scales[-1])
 # Dictionary for Standard MP
-pyDico = dico.Dico(scales)
+dico = Dico(scales)
 # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
-mpApprox, mpDecay = mp.mp(myPympSignal, pyDico, 20, 2000, pad=False)
+app, dec = mp.mp(signal, dico, 20, 2000, pad=False)
 
-mpApprox.atom_number
+app.atom_number
 
-SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(
-    mpApprox, 8000, Q=14)
-print (SNR, bitrate)
+snr, bitrate, quantized_app = mp_coder.simple_mdct_encoding(
+    app, 8000, Q=14)
+print (snr, bitrate)
 
 print "With Q=5"
-SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(
-    mpApprox, 8000, Q=5)
-print (SNR, bitrate)
+snr, bitrate, quantized_app = mp_coder.simple_mdct_encoding(
+    app, 8000, Q=5)
+print (snr, bitrate)
 
 
-SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(
-    mpApprox, 2000, Q=14)
-print (SNR, bitrate)
+snr, bitrate, quantized_app = mp_coder.simple_mdct_encoding(
+    app, 2000, Q=14)
+print (snr, bitrate)
 
-pyLODico = dico.LODico(scales)
-lompApprox, lompDecay = mp.mp(
-    myPympSignal, pyLODico, 20, 2000, pad=False)
-SNRlo, bitratelo, quantizedApproxLO = mp_coder.simple_mdct_encoding(
-    lompApprox, 2000, Q=14, TsPenalty=True)
-print (SNRlo, bitratelo)
+lomp_dico = LODico(scales)
+lomp_app, lomp_dec = mp.mp(
+    signal, lomp_dico, 20, 2000, pad=False)
+lomp_snr, lomp_bitrate, lomp_quantized_app = mp_coder.simple_mdct_encoding(
+    lomp_app, 2000, Q=14, shift_penalty=True)
+print (lomp_snr, lomp_bitrate)
 
-pyRSSDico = random_dico.SequenceDico(scales)
-rssApprox, rssDecay = mp.mp(myPympSignal, pyRSSDico, 20, 2000, pad=False)
-SNRrss, bitraterss, quantizedApproxRSS = mp_coder.simple_mdct_encoding(
-    rssApprox, 2000, Q=14)
-print (SNRrss, bitraterss)
+rssmp_dico = SequenceDico(scales)
+rsssmp_app, rssmp_dec = mp.mp(signal, rssmp_dico, 20, 2000, pad=False)
+rssmp_snr, rssmp_bitrate, rssmp_quantized_app = mp_coder.simple_mdct_encoding(
+    rsssmp_app, 2000, Q=14)
+print (rssmp_snr, rssmp_bitrate)
 
-print (quantizedApprox.atom_number, quantizedApproxLO.atom_number,
-       quantizedApproxRSS.atom_number)
+print (quantized_app.atom_number, lomp_quantized_app.atom_number,
+       rssmp_quantized_app.atom_number)
 
-# quantizedApprox.plotTF()
+# quantized_app.plotTF()
 # plt.show()
 
 
-print " now at a much larger level : a SNR of nearly 30 dB and around 20 Kbps"
-mpApprox, mpDecay = mp.mp(myPympSignal, pyDico, 30, 20000, pad=False)
-SNR, bitrate, quantizedApprox = mp_coder.simple_mdct_encoding(
-    mpApprox, 64000, Q=16)
-print (SNR, bitrate)
+print " now at a much larger level : a snr of nearly 30 dB and around 10 Kbps"
+app, dec = mp.mp(signal, dico, 30, 20000, pad=False)
+snr, bitrate, quantized_app = mp_coder.simple_mdct_encoding(
+    app, 64000, Q=16)
+print (snr, bitrate)
 
-del mpApprox, pyDico
+del app, dico
 
-lompApprox, lompDecay = mp.mp(
-    myPympSignal, pyLODico, 30, 20000, pad=False)
-SNRlo, bitratelo, quantizedApproxLO = mp_coder.simple_mdct_encoding(
-    lompApprox, 64000, Q=16, TsPenalty=True)
-print (SNRlo, bitratelo)
+lomp_app, lomp_dec = mp.mp(
+    signal, lomp_dico, 30, 20000, pad=False)
+lomp_snr, lomp_bitrate, lomp_quantized_app = mp_coder.simple_mdct_encoding(
+    lomp_app, 64000, Q=16, shift_penalty=True)
+print (lomp_snr, lomp_bitrate)
 
-del lompApprox, pyLODico
+del lomp_app, lomp_dico
 
-rssApprox, rssDecay = mp.mp(
-    myPympSignal, pyRSSDico, 30, 20000, pad=False)
-SNRrss, bitraterss, quantizedApproxRSS = mp_coder.simple_mdct_encoding(
-    rssApprox, 64000, Q=16)
-print (SNRrss, bitraterss)
+rsssmp_app, rssmp_dec = mp.mp(
+    signal, rssmp_dico, 30, 20000, pad=False)
+rssmp_snr, rssmp_bitrate, rssmp_quantized_app = mp_coder.simple_mdct_encoding(
+    rsssmp_app, 64000, Q=16)
+print (rssmp_snr, rssmp_bitrate)

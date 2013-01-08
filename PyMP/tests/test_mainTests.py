@@ -343,43 +343,43 @@ class ApproxTest(unittest.TestCase):
 
         # test dictionary class
 
-        pyApprox = approx.Approx(debug_level=3)
-        self.assertEqual(pyApprox.original_signal, None)
-        self.assertEqual(pyApprox.atom_number, 0)
-        self.assertEqual(pyApprox.srr, 0)
-        self.assertEqual(pyApprox.atoms, [])
+        app = approx.Approx(debug_level=3)
+        self.assertEqual(app.original_signal, None)
+        self.assertEqual(app.atom_number, 0)
+        self.assertEqual(app.srr, 0)
+        self.assertEqual(app.atoms, [])
 
-        print pyApprox
-        del pyApprox
+        print app
+        del app
 
         dico = mp_mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                        mono=True)
         signal_original.crop(0, 5 * max(dico.sizes))
 
-        pyApprox = approx.Approx(dico, [], signal_original)
+        app = approx.Approx(dico, [], signal_original)
 
         pyAtom = mdct_atom.Atom(1024, 1, 12288 - 256, 128, 44100, 0.57)
-        pyApprox.add(pyAtom)
+        app.add(pyAtom)
 #
-#        approxSignal = pyApprox.synthesize(0)
+#        approxSignal = app.synthesize(0)
 #        approxSignal.plot()
 #
 #        del approxSignal
 
-        pyApprox.add(
+        app.add(
             mdct_atom.Atom(8192, 1, 4096 - 2048, 32, 44100, -0.24))
-        approxSignal1 = pyApprox.synthesize(0)
+        approxSignal1 = app.synthesize(0)
 
         plt.figure()
         plt.subplot(121)
-        pyApprox.plot_tf()
+        app.plot_tf()
         plt.subplot(122)
-        pyApprox.plot_tf(multicolor=True, keepValues=True)
+        app.plot_tf(multicolor=True, keepValues=True)
 #        approxSignal1.plot()
 
 #        del approxSignal
-        approxSignal2 = pyApprox.synthesize(1)
+        approxSignal2 = app.synthesize(1)
 #        approxSignal2.plot()
         plt.figure()
         plt.plot(approxSignal1.data)
@@ -394,11 +394,11 @@ class ApproxTest(unittest.TestCase):
 
         # testing filtering
         self.assertEqual(
-            pyAtom, pyApprox.filter_atoms(1024, None, None).atoms[0])
-        self.assertEqual(pyAtom, pyApprox.filter_atoms(1024, [
+            pyAtom, app.filter_atoms(1024, None, None).atoms[0])
+        self.assertEqual(pyAtom, app.filter_atoms(1024, [
             12000, 15000], None).atoms[0])
 
-        print pyApprox.compute_srr()
+        print app.compute_srr()
         # TODO testing du SRR
 
         #testing the write_to_xml and read_from_xml methods
