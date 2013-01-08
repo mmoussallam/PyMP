@@ -12,7 +12,8 @@ the pymp/PyMP/ directory, you can simply type in a python shell:
 >>> from PyMP import Signal
 >>> signal = Signal('data/glocs.wav')
 
-As for many pymp Objects, you can specify a debug level that manages info and warning printing degrees. Try for example::
+As for many pymp Objects, you can specify a debug level that manages info and warning printing degrees. 
+Try for example:
 
 >>> signal =  Signal('data/glocs.wav', debug_level=3)
 >>> print signal
@@ -23,7 +24,7 @@ Signal object located in data/glocs.wav
         number of channels 1
 
 The :class:`.Signal` object `signal` wraps the content of *glocs.wav* as a numpy array and descriptors such as
-sampling frequency, sample format, etc.. you can access the samples directly as a numpy array by doing::
+sampling frequency, sample format, etc.. you can access the samples directly as a numpy array by doing:
 
 >>> signal.data
 array([[  0],
@@ -34,7 +35,7 @@ array([[  0],
        [-41],
        [-44]], dtype=int16)
 
-Meaning you can also create a :class:`.Signal` object directly from a numpy array::
+Meaning you can also create a :class:`.Signal` object directly from a numpy array:
 
 >>> import numpy as np
 >>> zero_signal = Signal(np.zeros((1024,)), Fs=8000)
@@ -50,10 +51,12 @@ Writing a signal is also quite straightforward::
 
 Signal Edition
 **************
-Often you need to edit signals, e.g. crop them or pad them with zeroes on the borders, this can be done easily::
+Often you need to edit signals, e.g. crop them or pad them with zeroes on the borders, 
+this can be done easily:
 
 >>> print signal.length
 276640
+
 >>> signal.crop(0 , 2048)
 >>> print signal.length
 2048
@@ -69,17 +72,18 @@ Signal object located in
          number of channels 1
 
 Revesely you can pad signals with zeroes, this is done on both sides with pad and depad methods.
-For example, we can create a signal with only ones and pad it with zeroes on the edges::
+For example, we can create a signal with only ones and pad it with zeroes on the edges:
 
 >>> signal = Signal(np.ones((8,)), 1)
 >>> signal.data
 array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.])
+
 >>> signal.pad(4)
 >>> signal.data
 array([ 0.,  0.,  0.,  0.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  0.,
         0.,  0.,  0.])
 
-Removing the zeroes is also straightforward::
+Removing the zeroes is also straightforward:
 
 >>> signal.depad(4)
 >>> signal.data
@@ -97,7 +101,7 @@ Manipulating Approximation objects
 Creation
 ********
 
-A trivial creation takes no further arguments.::
+A trivial creation takes no further arguments.
 
 >>> from PyMP.approx import Approx
 >>> approx = Approx()
@@ -114,14 +118,14 @@ This example use the :class:`.Atom` objects. The long atom (2048 samples or 256 
 >>> atom_long = Atom(2048, 1, 0, 40, 8000, 1)
 
 where we have specified its size, amplitude (Deprecated, always put 1 in there) , time localization (0) , frequency bin (40 which corresponds to 156 Hz) and mdct_coefficient value (1)
-then the atom's waveform is synthesized using internal routine and used to create a :class:`.Approx` object::
+then the atom's waveform is synthesized using internal routine and used to create a :class:`.Approx` object:
 
 >>> atom_long.synthesize()
 >>> approx  = Approx(None, [], None, atom_long.length, atom_long.fs)
 >>> print approx
 Approx Object: 0 atoms, SRR of 0.00 dB
 
-Other atoms can be added ::
+Other atoms can be added:
 
 >>> approx.add(Atom(256, 1, 256, 10, 8000, 1))
 >>> print approx
@@ -142,13 +146,15 @@ We can now create an approximation of a specified signal on this dictionary this
 >>> signal = Signal('data/glocs.wav',mono=True)
 >>> approx = Approx(dico, [], signal)
 
-for now this approximation is empty (the *approx.atoms* list is empty). But we can still add an atom to it::
+for now this approximation is empty (the *approx.atoms* list is empty). 
+But we can still add an atom to it:
 
 >>> approx.add(Atom(256, 1, 256, 10, 8000, 1))
 >>> print approx
 Approx Object: 1 atoms, SRR of 0.00 dB
 
-Now we have a reference signal and an approximant of it, we can evaluate the quality of the approximation using the Signal to Residual Ratio (SRR):
+Now we have a reference signal and an approximant of it, we can evaluate the quality of the approximation 
+using the Signal to Residual Ratio (SRR):
 
 >>> print approx.compute_srr()
 -116.636999534
