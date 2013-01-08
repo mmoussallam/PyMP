@@ -5,8 +5,8 @@ testing normal behavior of most MP functions and classes
 
 M.Moussallam
 """
-#import matplotlib
-#matplotlib.use('Agg')  # to avoid display while testing
+import matplotlib
+matplotlib.use('Agg')  # to avoid display while testing
 
 import os
 import os.path as op

@@ -753,7 +753,7 @@ def mp_joint(orig_sig_list,
 
         if escape:
             esc_approx_list.append(Approx.Approx(dictionary, [
-            ], orig_signal, debugLevel=debug))
+            ], orig_signal, debug_level=debug))
             esc_it_list.append([])
         # residualEnergy
         res_energy_list.append([])

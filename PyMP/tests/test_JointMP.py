@@ -159,11 +159,11 @@ class PursuitTest(unittest.TestCase):
 
         dico = [128, 1024, 8192]
         tol = [2] * len(dico)
-        parallelProjections.initialize_plans(np.array(dico), np.array(tol))
+#        parallelProjections.initialize_plans(np.array(dico), np.array(tol))
 
         classicDIco = mp_mdct_dico.LODico(dico)
 
-        jointDico = joint_dico.SetDico(dico,
+        j_dico = joint_dico.SetDico(dico,
                                        selectNature='sum')
 
         nbAtoms = 50
@@ -175,13 +175,13 @@ class PursuitTest(unittest.TestCase):
         print ""
 #        print "%%%%%%%%%%%%%%% Testing Joint mp with one signal %%%%%%%%%%%%%%%"
 #        print ""
-#        approxCommon, approxSpecList, decayList,residualSignalList = mp.mp_joint((sig,), jointDico, 20, nbAtoms, debug=0)
+#        approxCommon, approxSpecList, decayList,residualSignalList = mp.mp_joint((sig,), j_dico, 20, nbAtoms, debug=0)
 #        print ""
 
 #        plt.plot()
         print "%%%%%%%%%%%%%%% Testing Joint mp with two signal %%%%%%%%%%%%%%%"
         approxCommon, approxSpecList, decayList, residualSignalList = mp.mp_joint((sig, pySig2),
-                                                                                  jointDico, 20,
+                                                                                  j_dico, 20,
                                                                                   nbAtoms, debug=2)
 
 #        print [abs(atom.get_value()) for atom in approxSpecList[0].atoms]
@@ -218,7 +218,7 @@ class PursuitTest(unittest.TestCase):
 #        plt.show()
 #        plt.savefig('TestTFMasking.png')
 
-        parallelProjections.clean_plans()
+#        parallelProjections.clean_plans()
 
 
 class SymetryTest(unittest.TestCase):
@@ -443,9 +443,9 @@ class perfTestsNL(unittest.TestCase):
             jointDicoTol = joint_dico.SetDico(dico,
                                               selectNature=nature,
                                               tol=[2, 2, 2], params=1)
-            cProfile.runctx('mp.mp_joint((sig,pySig2,pySig2), jointDicoTol, 10, 1000,interval=500 ,debug=0)', globals(), locals())
+            cProfile.runctx('mp.mp_joint((sig,pySig2,pySig2), jointDicoTol, 10, 200,interval=500 ,debug=0)', globals(), locals())
 
-            cProfile.runctx('mp.mp_joint((sig,pySig2,pySig2), jointDicoTol, 10, 1000,escape=True,interval=500 ,debug=0)', globals(), locals())
+            cProfile.runctx('mp.mp_joint((sig,pySig2,pySig2), jointDicoTol, 10, 200,escape=True,interval=500 ,debug=0)', globals(), locals())
 
     def toleranceTests(self):
         print "%%%%%%%%%%%%%%% Testing Joint mp with increased Tolerance %%%%%%%%%%%%%%%"
@@ -493,8 +493,8 @@ if __name__ == "__main__":
 #    suite.addTest(BlocksTest())
 #    suite.addTest(DicosTest())
 #    suite.addTest(PursuitTest())
-    suite.addTest(nonLinearTest())
-#    suite.addTest(perfTest())
+#    suite.addTest(nonLinearTest())
+    suite.addTest(perfTestsNL())
 #    suite.addTest(SymetryTest())
     unittest.TextTestRunner(verbosity=2).run(suite)
 
