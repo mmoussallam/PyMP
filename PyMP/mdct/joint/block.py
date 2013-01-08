@@ -9,7 +9,7 @@
 #
 """
 Module mdct.joint.block
-========================
+=======================
 
 Please refer to superclass for documentation
 

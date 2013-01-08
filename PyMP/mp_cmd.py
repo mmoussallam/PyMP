@@ -46,10 +46,10 @@ import matplotlib.pyplot as plt
 import sys
 import getopt
 
-import signals, approx
-from mdct import dico
-from mdct.rand import dico as random_dico
-import mp
+from PyMP import signals, approx
+from PyMP.mdct import Dico, LODico
+from PyMP.mdct.rand import SequenceDico
+from PyMP import  mp
 
 
 
@@ -80,7 +80,7 @@ PyPursuit command line arguments looks as follow:
 
              -l [segmentDuration] : length of the segments
 
-             example : python MPcmd.py -f sndFile.wav -m 100 -s 10 -d 128,1024,8192 --debug=1 -a -p
+             example : python mp_cmd.py -f sndFile.wav -m 100 -s 10 -d 128,1024,8192 --debug=1 -a -p
 
              """
 
@@ -97,17 +97,17 @@ def main(argv):
     # initialize default values
     global _debug
     _debug = 0
-    filePath = ''
-    writeOutput = False
-    plotOutput = False
-    outputPath = 'output.xml'
-    maxAtomNumber = 100
-    targetSRR = 10
-    padSignal = True
-    decType = 'mp'
-    mdctDico = [2 ** j for j in range(7, 15)]
+    file_path = ''
+    write = False
+    plot = False
+    out_path = 'output.xml'
+    max_it_num = 100
+    target_srr = 10
+    pad = True
+    dec_algo = 'mp'
+    scales = [2 ** j for j in range(7, 15)]
     matpipe = False
-    segmentLength = 10
+    seg_length = 10
     # argument parsing
 
     try:
@@ -125,39 +125,39 @@ def main(argv):
                 _debug = int(arg)
 
             elif opt == '-f':
-                filePath = arg
+                file_path = arg
 
             elif opt == '-w':
-                writeOutput = True
+                write = True
 
             elif opt in ("-p", "--plot"):
-                plotOutput = True
+                plot = True
 
             elif opt == '-o':
-                outputPath = arg
+                out_path = arg
 
             elif opt == '-m':
-                maxAtomNumber = int(arg)
+                max_it_num = int(arg)
 
             elif opt == '-s':
-                targetSRR = int(arg)
+                target_srr = int(arg)
 
             elif opt == '-l':
-                segmentLength = float(arg)
+                seg_length = float(arg)
 
             # tricky dictionary sizes reading
             elif opt == '-d':
-                mdctDico = []
+                scales = []
 #                print arg
                 for size in arg.split(','):
 #                    print size
-                    mdctDico.append(int(size))
+                    scales.append(int(size))
 
             elif opt in ('-a', '--pad'):
-                padSignal = True
+                pad = True
 
             elif opt in ('-t , --type'):
-                decType = arg
+                dec_algo = arg
     except:
         print "sorry wrong syntax "
         usage()
@@ -165,42 +165,42 @@ def main(argv):
 
     # end of argument parsing : print some info if debug level is above 0
     if _debug > 0:
-        print "Starting ", decType, " on ", filePath, " targetSRR: ", targetSRR, " maxAtomNumber: ", maxAtomNumber, " on ", len(mdctDico), "xMDCT dico"
+        print "Starting ", dec_algo, " on ", file_path, " target_srr: ", target_srr, " max_it_num: ", max_it_num, " on ", len(scales), "xMDCT dico"
         print "debug=", _debug, "- Write ", prtBool(
-            writeOutput), " - Plot : ", prtBool(plotOutput)
+            write), " - Plot : ", prtBool(plot)
 
     ####### Load audio signal - TODO more options ##########"""
-# originalSignal = py_pursuit_Signal.InitFromFile(filePath, forceMono=True,
+# originalSignal = py_pursuit_Signal.InitFromFile(file_path, forceMono=True,
 # doNormalize=True)
-    longSignal = pymp_Signal.pymp_LongSignal(
-        filePath, frameDuration=segmentLength)
+    longSignal = signals.LongSignal(
+        file_path, frameDuration=seg_length)
 
     # now crop the signal to an adequate length
-# originalSignal.crop(0 , math.floor(originalSignal.length/max(mdctDico)) *
-# max(mdctDico))
+# originalSignal.crop(0 , math.floor(originalSignal.length/max(scales)) *
+# max(scales))
 #
 #    if _debug > 0:
 #        print "Cropping signal to ", originalSignal.length
 
     ####### Build dictionary - TODO more options and more dictionaries ########
-    if decType == 'mp':
-        dictionary = Dico.Dico(mdctDico, useC=True)
-    elif decType == 'LOMP':
-        dictionary = Dico.LODico(mdctDico, useC=True)
-    elif decType == 'RSSMP':
-        dictionary = pymp_RandomDicos.SequenceDico(mdctDico, useC=True)
+    if dec_algo == 'mp':
+        dictionary = Dico(scales)
+    elif dec_algo == 'LOMP':
+        dictionary = LODico(scales)
+    elif dec_algo == 'RSSMP':
+        dictionary = SequenceDico(scales)
     else:
         print "unrecognized dictionary type for now, availables are mp and LOMP"
         sys.exit()
 
     # main Decomposition algorithm
     if _debug > 0:
-        print targetSRR, maxAtomNumber
+        print target_srr, max_it_num
 
     # additional parameter: segment length analysis and overlapping
     #segmentOverlap = 0.25 # in per one
-# segPad = math.floor(segmentLength * originalSignal.samplingFrequency
-# /max(mdctDico)) * max(mdctDico); # increment in samples
+# segPad = math.floor(seg_length * originalSignal.samplingFrequency
+# /max(scales)) * max(scales); # increment in samples
 #
 #    # calcul of the number of segment needed
 #    segmentNumber = int(math.floor(originalSignal.length / segPad))
@@ -209,14 +209,14 @@ def main(argv):
     if _debug > 0:
         print segmentNumber, " segments"
 
-    # the maxAtomNumber is fixed in all segments
+    # the max_it_num is fixed in all segments
 
     # initialize approx
 # approx = py_pursuit_Approx.py_pursuit_Approx(dictionary, [], None,
 # originalSignal.length + dictionary.getN(), originalSignal.samplingFrequency)
 
-    approxs = mp.mp_long(longSignal, dictionary, targetSRR, maxAtomNumber,
-                               debug=_debug - 1, pad=padSignal, output_dir='', write=False)[0]
+    approxs = mp.mp_long(longSignal, dictionary, target_srr, max_it_num,
+                               debug=_debug - 1, pad=pad, output_dir='', write=False)[0]
 
 #    for segidx in range(segmentNumber):
 #        if _debug >0:
@@ -228,8 +228,8 @@ def main(argv):
 ##            _debug =2;
 ##        else:
 ##            _debug=1;
-#        subApprox = mp.mp(subSignal,dictionary,targetSRR, maxAtomNumber,
-# debug=_debug-1,padSignal=padSignal, silentFail=True)[0]
+#        subApprox = mp.mp(subSignal,dictionary,target_srr, max_it_num,
+# debug=_debug-1,pad=pad, silentFail=True)[0]
 #        # add all atoms to overall approx
 #        for atom in subApprox.atoms:
 #            atom.timePosition += segPad*segidx
@@ -240,16 +240,16 @@ def main(argv):
 # synthesis
 
     # Fusion the sub approximants
-    approx = pymp_Approx.fusion_approxs(approxs, unPad=padSignal)
+    approx = approx.fusion_approxs(approxs, unPad=pad)
 
-    if writeOutput:
+    if write:
         if _debug > 0:
-            print "Writing to output file :", outputPath
+            print "Writing to output file :", out_path
         approx.original_signal = longSignal
-        approx.dumpToDisk(outputPath)
-#        approx.writeToXml(outputPath)
+        approx.dumpToDisk(out_path)
+#        approx.writeToXml(out_path)
 
-    if plotOutput:
+    if plot:
         plt.figure()
         approx.plot_tf()
         plt.show()

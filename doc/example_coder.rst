@@ -163,7 +163,7 @@ fixed dictionary, but the cost of each atom is the same thus:
 .. note::
 
    In order to allow to reproduce results, you can set the *seed* optionnal parameter of the
-   :class:‘.SequenceDico‘ object
+   :class:`.SequenceDico` object
 
 
 And we can verify:

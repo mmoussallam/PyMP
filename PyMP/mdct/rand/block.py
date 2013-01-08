@@ -1,20 +1,5 @@
 
 
-"""
-Module mdct.random.block
-========================
-
-Please refer to superclass for documentation
-
-This file handle blocks that are used in Randomized Matching Pursuits
-see [1] for details
-
-[1] M. Moussallam, L. Daudet, et G. Richard,
-"Matching Pursuits with Random Sequential Subdictionaries"
-Signal Processing, vol. 92, pp. 2532-2544 2012.
-
-"""
-
 import numpy as np
 from math import floor
 
