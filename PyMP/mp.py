@@ -136,7 +136,7 @@ def mp(orig_signal,
         if debug > 0:
             # TODO reformulate for both 1D and 2D
             _Logger.debug("It: " + str(it_number) + " Selected atom in block "
-                          + str(dictionary.best_current_block.maxIdx)
+                          + str(dictionary.best_current_block.max_index)
                           + str(best_atom))
 
             if best_atom.phase is not None:

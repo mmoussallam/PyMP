@@ -51,6 +51,7 @@ class SequenceDico(Dico):
         self.windowType = windowType
         self.seed = seed
         
+        
     def initialize(self, residualSignal):
         self.blocks = []
         self.best_current_block = None
@@ -69,9 +70,11 @@ class SequenceDico(Dico):
             if ((self.it_num + 1) % self.nb_consec_sim == 0):
                 self.starting_touched_index = 0
                 self.ending_touched_index = -1
-            else:
-                self.starting_touched_index = previousBestAtom.time_position - previousBestAtom.length / 2
-                self.ending_touched_index = self.starting_touched_index + 1.5 * previousBestAtom.length
+            else:                
+                self.starting_touched_index = 0
+                self.ending_touched_index = -1
+#                self.starting_touched_index = previousBestAtom.time_position - 2* previousBestAtom.length
+#                self.ending_touched_index = self.starting_touched_index + 2.5 * previousBestAtom.length
         else:
             self.starting_touched_index = previousBestAtom.time_position - previousBestAtom.length / 2
             self.ending_touched_index = self.starting_touched_index + 1.5 * previousBestAtom.length

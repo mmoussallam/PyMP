@@ -5,8 +5,8 @@ testing normal behavior of most MP functions and classes
 
 M.Moussallam
 """
-import matplotlib
-matplotlib.use('Agg')  # to avoid display while testing
+#import matplotlib
+#matplotlib.use('Agg')  # to avoid display while testing
 
 import os
 import os.path as op
@@ -335,6 +335,33 @@ class SequenceDicoTest(unittest.TestCase):
         cProfile.runctx('mp.mp(signal_original, dico, 20, 20, debug=1, '
                         'clean=True)', globals(), locals())
 
+        # Comparing with MP and a fixed sequence
+        n_atoms = 10;
+        vary_dico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random')
+        
+        fake_fix_dico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random', nbSame=n_atoms)
+        
+        
+        
+        real_fix_dico = mp_mdct_dico.Dico([256, 2048, 8192]);
+        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                       normalize=True, mono=True)
+        signal_original.crop(0, 5 * 16384)
+
+        signal_original.data += 0.01 * np.random.random(5 * 16384)
+
+        app, dec = mp.mp(signal_original, vary_dico, 20, 300, debug=0);
+        app_fake_fix, fake_fix_dec = mp.mp(signal_original, fake_fix_dico, 20, n_atoms, debug=0,pad=True);
+        print [b.shift_list[0:5] for b in dico.blocks]
+        print [b.shift_list[0:5] for b in fake_fix_dico.blocks]
+        print [b.shift_list[0:5] for b in vary_dico.blocks]
+        app_real_fix, dec_real_fix = mp.mp(signal_original, real_fix_dico, 20, n_atoms, debug=0,pad=True);
+
+#        plt.figure()
+#        plt.plot(dec)
+#        plt.plot(fake_fix_dec,'-.')
+#        plt.plot(dec_real_fix,':')
+#        plt.show()
 
 class ApproxTest(unittest.TestCase):
 
@@ -842,7 +869,8 @@ if __name__ == '__main__':
 
 #    suite.addTest(MPlongTest())
 #    suite.addTest(MPTest())
-    suite.addTest(SSMPTest())
+    suite.addTest(SequenceDicoTest())
+#    suite.addTest(SSMPTest())
 #    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())

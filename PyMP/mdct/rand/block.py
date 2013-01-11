@@ -57,8 +57,10 @@ class SequenceBlock(mdct_block.Block):
         self.scale = length
         self.residual_signal = resSignal
         self.seed = seed
-        if self.seed is not None:
-            np.random.seed(self.seed)
+#        if self.seed is not None:
+        np.random.seed(self.seed)
+#        else:            
+#            np.random.seed()
 
         if frameLen == 0:
             self.frame_len = length / 2
@@ -154,40 +156,7 @@ class SequenceBlock(mdct_block.Block):
                                                  endFrame,
                                                  self.scale,
                                                  int(self.current_shift))
-#        computeMCLT.project(self.enframedDataMatrix, self.bestScoreTree,
-#                                                 self.projectionMatrix ,
-#                                                 self.locCoeff ,
-#                                                 self.post_twidVec ,
-#                                                 startingFrame,
-#                                                 endFrame,
-#                                                 self.scale ,
-#                                                 int(self.current_shift))
 
-#        normaCoeffs = sqrt(2/float(K))
-##        locCoeff = self.wLong * self.pre_twidVec
-#        for i in range(startingFrame , endFrame):
-#
-#
-#            x = self.enframedDataMatrix[i*K - T: i*K + L - T]
-#            if len(x) !=L:
-#                x =zeros(L , complex);
-#
-# compute windowing and pre-twiddle simultaneously : suppose first and last
-# frame are always zeroes
-#            x = x * self.locCoeff
-#
-#            # compute fft
-#            self.fftMat[: , i] = fft(x , L)
-#
-#            # post-twiddle
-#            y = self.fftMat[0:K , i] * self.post_twidVec
-#
-#            try:
-#                self.projectionMatrix[i*K : (i+1)*K] = normaCoeffs*y.real;
-#            except:
-#                print "oups here"
-#            # store new max score in tree
-# self.bestScoreTree[i] = abs(self.projectionMatrix[i*K : (i+1)*K]).max()
     def find_max(self):
         treeMaxIdx = self.best_score_tree.argmax()
         maxIdx = np.abs(self.projs_matrix[treeMaxIdx * self.scale /
