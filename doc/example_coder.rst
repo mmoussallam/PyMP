@@ -75,21 +75,21 @@ in the :mod:`.mp_coder` module. Here's an example where we set a target of 8kbps
 
 And we can check the results:
 
->>> (snr, bitrate)
-(20.01190738437829, 3472.723832808762)
+>>> print "%f, %f" % (snr, bitrate)
+20.011907, 3472.723833
 
 In other words, we achieved a 20 dB SNR with a (theoretical) 3.4 kbps bitrate. We can change the coder properties, 
 in particular the number of quantizing steps (recall this is :math:`2^Q`  and not directly Q!!):
 
 >>> snr, bitrate, quantized_approx = mp_coder.simple_mdct_encoding(mp_approx, 8000, Q=5)
->>> (snr, bitrate)
-(12.556647717619509, 997.2978829938947)
+>>> print "%f, %f" % (snr, bitrate)
+12.556648, 997.297883
 
 Indeed we have reduced the bitrate, but increased the distorsion. We can also fix the bitrate at a lower value:
 
 >>> snr, bitrate, quantized_approx = mp_coder.simple_mdct_encoding(mp_approx, 2000, Q=14)
->>> (snr, bitrate)
-(16.036869059550813, 2003.7309194613388)
+>>> print "%f, %f" % (snr, bitrate)
+16.036869, 2003.730919
 
 The coder stopped when the given bitrate was reached, yieled a higher distorsion. If you wonder how many atoms where used:
 

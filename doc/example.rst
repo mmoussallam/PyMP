@@ -45,8 +45,8 @@ and (d) is the time-frequency plot of the 1000 atoms that have been used to appr
 
 You can evaluate the quality of the approximation:
 
->>> approx.compute_srr()
-19.16784863423626
+>>> approx.compute_srr() # doctest:+ELLIPSIS
+19.167848...
 
 and save the result in various formats (see the :class:`.Approx` documentation)::
 
