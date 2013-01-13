@@ -5,8 +5,8 @@ testing normal behavior of most MP functions and classes
 
 M.Moussallam
 """
-#import matplotlib
-#matplotlib.use('Agg')  # to avoid display while testing
+import matplotlib
+matplotlib.use('Agg')  # to avoid display while testing
 
 import os
 import os.path as op
@@ -756,7 +756,7 @@ class SSMPTest(unittest.TestCase):
         approximant, decay = mp.mp(
             signal_one_atom, dico, 10, 10, False, False)
 
-        self.assertAlmostEqual(approximant.compute_srr(), 11.039446691092392)
+        self.assertAlmostEqual(approximant.compute_srr(), 11.0394466910923, 1)
         del approximant
 
         print "Testing one Non-Aligned Atom with Random (reproductible)"

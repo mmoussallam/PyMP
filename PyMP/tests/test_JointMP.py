@@ -125,7 +125,8 @@ class DicosTest(unittest.TestCase):
             JointAtoms[0].time_position, JointAtoms[1].time_position + decalage)
         self.assertEqual(
             JointAtoms[0].time_shift, JointAtoms[1].time_shift + decalage)
-        self.assertEqual(JointAtoms[0].mdct_value, JointAtoms[1].mdct_value)
+        self.assertAlmostEqual(JointAtoms[0].mdct_value,
+                               JointAtoms[1].mdct_value, 6)
 
 #        sig.subtract(classicAtom1)
 #        classicDIco.update(sig, 2)

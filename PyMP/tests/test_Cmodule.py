@@ -16,6 +16,9 @@
 
 
 """
+import matplotlib
+matplotlib.use('Agg')  # to avoid display while testing
+
 import os
 import sys
 import platform
