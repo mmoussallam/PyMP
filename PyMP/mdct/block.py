@@ -244,44 +244,44 @@ class Block(BaseBlock):
             startingFrame = 1
 
         # Wrapping C code call for fast implementation
-        if self.use_c_optim:
-            try:
-                parallelProjections.project(self.framed_data_matrix, self.best_score_tree,
-                                                 self.projs_matrix,
-                                                 self.locCoeff,
-                                                 self.post_twid_vec,
-                                                 startingFrame,
-                                                 endFrame,
-                                                 self.scale, 0)
+#        if self.use_c_optim:
+        try:
+            parallelProjections.project(self.framed_data_matrix, self.best_score_tree,
+                                             self.projs_matrix,
+                                             self.locCoeff,
+                                             self.post_twid_vec,
+                                             startingFrame,
+                                             endFrame,
+                                             self.scale, 0)
 
-            except SystemError:
-                print sys.exc_info()[0]
-                print sys.exc_info()[1]
-                raise
-            except:
-                print "Unexpected error:", sys.exc_info()[0]
-                raise
-        else:
-            try:
-                import fftw3
-            except ImportError:
-                print '''Impossible to load fftw3, you need to use the C extension library or have
-                        a local installation of the python fftw3 wrapper '''
-                return
-        # create a forward fft plan, since fftw is not faster for computing
-        # DCT's no need to use it for that
-            L = self.scale
-            K = L / 2
-            T = K / 2
-            normaCoeffs = sqrt(2 / float(K))
-            if self.fft is None:
-                self.inputa = self.framed_data_matrix[K -
-                     T: K + L - T].astype(complex)
-                self.outputa = None
-                self.fft = fftw3.Plan(self.inputa, self.
-                    outputa, direction='forward', flags=['estimate'])
-
-            self.project(startingFrame, endFrame, L, K, T, normaCoeffs)
+        except SystemError:
+            print sys.exc_info()[0]
+            print sys.exc_info()[1]
+            raise
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
+#        else:
+#            try:
+#                import fftw3
+#            except ImportError:
+#                print '''Impossible to load fftw3, you need to use the C extension library or have
+#                        a local installation of the python fftw3 wrapper '''
+#                return
+#        # create a forward fft plan, since fftw is not faster for computing
+#        # DCT's no need to use it for that
+#            L = self.scale
+#            K = L / 2
+#            T = K / 2
+#            normaCoeffs = sqrt(2 / float(K))
+#            if self.fft is None:
+#                self.inputa = self.framed_data_matrix[K -
+#                     T: K + L - T].astype(complex)
+#                self.outputa = None
+#                self.fft = fftw3.Plan(self.inputa, self.
+#                    outputa, direction='forward', flags=['estimate'])
+#
+#            self.project(startingFrame, endFrame, L, K, T, normaCoeffs)
 
         if self.HF:
             for i in range(startingFrame, endFrame):
@@ -290,26 +290,26 @@ class Block(BaseBlock):
 
     # UPDATE: need to keep this slow version for non C99 compliant systems
     # (windows)
-    def project(self, startingFrame, endFrame, L,  K, T, normaCoeffs):
-
-        for i in range(startingFrame, endFrame):
-            # initialize input data
-            self.inputa[:] = 0
-            self.inputa += self.framed_data_matrix[i * K - T: i *
-                K + L - T] * self.locCoeff
-
-            #compute fft
-            self.fft()
-
-            # post-twiddle and store for max search
-            self.projs_matrix[i * K: (i + 1) *
-                K] = normaCoeffs * (self.inputa[0:K] * self.post_twid_vec).real
-# self.projs_matrix[i , :] = normaCoeffs*(self.inputa[0:K]*
-# self.post_twid_vec).real
-
-#            # store new max score in tree
-            self.best_score_tree[i] = abs(self.projs_matrix[
-                i * K: (i + 1) * K]).max()
+#    def project(self, startingFrame, endFrame, L,  K, T, normaCoeffs):
+#
+#        for i in range(startingFrame, endFrame):
+#            # initialize input data
+#            self.inputa[:] = 0
+#            self.inputa += self.framed_data_matrix[i * K - T: i *
+#                K + L - T] * self.locCoeff
+#
+#            #compute fft
+#            self.fft()
+#
+#            # post-twiddle and store for max search
+#            self.projs_matrix[i * K: (i + 1) *
+#                K] = normaCoeffs * (self.inputa[0:K] * self.post_twid_vec).real
+## self.projs_matrix[i , :] = normaCoeffs*(self.inputa[0:K]*
+## self.post_twid_vec).real
+#
+##            # store new max score in tree
+#            self.best_score_tree[i] = abs(self.projs_matrix[
+#                i * K: (i + 1) * K]).max()
 
     # synthesizes the best atom through ifft computation (much faster than
     # closed form)
@@ -431,51 +431,51 @@ class LOBlock(Block):
         if startingFrame < 2:
             startingFrame = 2
         # new version: C binding
-        if self.use_c_optim:
-            parallelProjections.project_mclt(self.framed_data_matrix, self.best_score_tree,
-                                                 self.projs_matrix,
-                                                 self.locCoeff,
-                                                 self.post_twid_vec,
-                                                 startingFrame,
-                                                 endFrame,
-                                                 self.scale)
-        else:
-            L = self.scale
-            K = L / 2
-            T = K / 2
-            normaCoeffs = sqrt(2 / float(K))
-
-            locenframedDataMat = self.framed_data_matrix
-#            locfftMat = self.fftMat
-#            locprojMat = self.projs_matrix
-
-            preTwidCoeff = self.locCoeff
-            postTwidCoeff = self.post_twid_vec
-
-            # Bottleneck here !! need to fasten this loop : do it by Matrix
-            # technique? or bind to a C++ file?
-            for i in range(startingFrame, endFrame):
-                x = locenframedDataMat[i * K - T: i * K + L - T]
-                if len(x) != L:
-                    x = np.zeros(L, complex)
-
-                # do the pre-twiddle
-                x = x * preTwidCoeff
-
-                # compute fft
-#                locfftMat[: , i] = fft(x , L)
-
-                # post-twiddle
-#                y = locfftMat[0:K , i] * postTwidCoeff
-                y = (fft(x, L)[0:K]) * postTwidCoeff
-    #            y = self.doPretwid(locfftMat[0:K , i], postTwidCoeff)
-
-                # we work with MCLT now
-                self.projs_matrix[i * K: (i + 1) * K] = normaCoeffs * y
-
-                # store new max score in tree
-                self.best_score_tree[i] = abs(self.
-                    projs_matrix[i * K: (i + 1) * K]).max()
+#        if self.use_c_optim:
+        parallelProjections.project_mclt(self.framed_data_matrix, self.best_score_tree,
+                                             self.projs_matrix,
+                                             self.locCoeff,
+                                             self.post_twid_vec,
+                                             startingFrame,
+                                             endFrame,
+                                             self.scale)
+#        else:
+#            L = self.scale
+#            K = L / 2
+#            T = K / 2
+#            normaCoeffs = sqrt(2 / float(K))
+#
+#            locenframedDataMat = self.framed_data_matrix
+##            locfftMat = self.fftMat
+##            locprojMat = self.projs_matrix
+#
+#            preTwidCoeff = self.locCoeff
+#            postTwidCoeff = self.post_twid_vec
+#
+#            # Bottleneck here !! need to fasten this loop : do it by Matrix
+#            # technique? or bind to a C++ file?
+#            for i in range(startingFrame, endFrame):
+#                x = locenframedDataMat[i * K - T: i * K + L - T]
+#                if len(x) != L:
+#                    x = np.zeros(L, complex)
+#
+#                # do the pre-twiddle
+#                x = x * preTwidCoeff
+#
+#                # compute fft
+##                locfftMat[: , i] = fft(x , L)
+#
+#                # post-twiddle
+##                y = locfftMat[0:K , i] * postTwidCoeff
+#                y = (fft(x, L)[0:K]) * postTwidCoeff
+#    #            y = self.doPretwid(locfftMat[0:K , i], postTwidCoeff)
+#
+#                # we work with MCLT now
+#                self.projs_matrix[i * K: (i + 1) * K] = normaCoeffs * y
+#
+#                # store new max score in tree
+#                self.best_score_tree[i] = abs(self.
+#                    projs_matrix[i * K: (i + 1) * K]).max()
 
 #        if self.HF:
 #            for i in range(startingFrame , endFrame):
@@ -539,57 +539,57 @@ class LOBlock(Block):
             return Atom
 
         # retrieve additional timeShift
-        if self.use_c_optim:
-            scoreVec = np.array([0.0])
-            Atom.time_shift = parallelProjections.project_atom(
-                input1, input2, scoreVec, self.scale)
+#        if self.use_c_optim:
+        scoreVec = np.array([0.0])
+        Atom.time_shift = parallelProjections.project_atom(
+            input1, input2, scoreVec, self.scale)
 
-            if abs(Atom.time_shift) > Atom.length / 2:
-                print "out of limits: found time shift of", Atom.time_shift
-                Atom.time_shift = 0
-                return Atom
+        if abs(Atom.time_shift) > Atom.length / 2:
+            print "out of limits: found time shift of", Atom.time_shift
+            Atom.time_shift = 0
+            return Atom
 
-            self.maxTimeShift = Atom.time_shift
-            Atom.time_position += Atom.time_shift
+        self.maxTimeShift = Atom.time_shift
+        Atom.time_position += Atom.time_shift
 
-            # retrieve newly projected waveform
-            Atom.proj_score = scoreVec[0]
-            Atom.waveform *= Atom.proj_score
+        # retrieve newly projected waveform
+        Atom.proj_score = scoreVec[0]
+        Atom.waveform *= Atom.proj_score
 #            Atom.waveform = input2[self.scale/2:-self.scale/2]
-        else:
-            sigFft = fft(self.framed_data_matrix[(self.max_frame_idx - 1.5) * self.scale /
-                2: (self.max_frame_idx + 2.5) * self.scale / 2], 2 * self.scale)
-            atomFft = fft(np.concatenate((np.concatenate((np.zeros(self.scale / 2),
-                 Atom.waveform)), np.zeros(self.scale / 2))), 2 * self.scale)
-
-            Atom.time_shift, score = Xcorr.GetMaxXCorr(
-                atomFft, sigFft, maxlag=self.scale / 2)
-            self.maxTimeShift = Atom.time_shift
-            Atom.proj_score = score
-    # print "found correlation max of " ,
-    # float(score)/sqrt(2/float(self.scale))
-
-            # CAses That might happen: time shift result in choosing another
-            # atom instead
-            if abs(Atom.time_shift) > Atom.length / 2:
-                print "out of limits: found time shift of", Atom.time_shift
-                Atom.time_shift = 0
-                return Atom
-
-            Atom.time_position += Atom.time_shift
-
-            # now let us re-project the atom on the signal to adjust it's
-            # energy: Only if no pathological case
-
-            # TODO optimization : pre-compute energy (better: find closed form)
-            if score < 0:
-                Atom.amplitude = -sqrt(-score)
-                Atom.waveform = (
-                    -sqrt(-score / sum(Atom.waveform ** 2))) * Atom.waveform
-            else:
-                Atom.amplitude = sqrt(score)
-                Atom.waveform = (
-                    sqrt(score / sum(Atom.waveform ** 2))) * Atom.waveform
+#        else:
+#            sigFft = fft(self.framed_data_matrix[(self.max_frame_idx - 1.5) * self.scale /
+#                2: (self.max_frame_idx + 2.5) * self.scale / 2], 2 * self.scale)
+#            atomFft = fft(np.concatenate((np.concatenate((np.zeros(self.scale / 2),
+#                 Atom.waveform)), np.zeros(self.scale / 2))), 2 * self.scale)
+#
+#            Atom.time_shift, score = Xcorr.GetMaxXCorr(
+#                atomFft, sigFft, maxlag=self.scale / 2)
+#            self.maxTimeShift = Atom.time_shift
+#            Atom.proj_score = score
+#    # print "found correlation max of " ,
+#    # float(score)/sqrt(2/float(self.scale))
+#
+#            # CAses That might happen: time shift result in choosing another
+#            # atom instead
+#            if abs(Atom.time_shift) > Atom.length / 2:
+#                print "out of limits: found time shift of", Atom.time_shift
+#                Atom.time_shift = 0
+#                return Atom
+#
+#            Atom.time_position += Atom.time_shift
+#
+#            # now let us re-project the atom on the signal to adjust it's
+#            # energy: Only if no pathological case
+#
+#            # TODO optimization : pre-compute energy (better: find closed form)
+#            if score < 0:
+#                Atom.amplitude = -sqrt(-score)
+#                Atom.waveform = (
+#                    -sqrt(-score / sum(Atom.waveform ** 2))) * Atom.waveform
+#            else:
+#                Atom.amplitude = sqrt(score)
+#                Atom.waveform = (
+#                    sqrt(score / sum(Atom.waveform ** 2))) * Atom.waveform
 # projOrtho = sum(Atom.waveform * self.residual_signal.dataVec[Atom.timePosition
 # : Atom.timePosition + Atom.length])
 

@@ -139,7 +139,9 @@ class DicoTest(unittest.TestCase):
 
 
 class Signaltest(unittest.TestCase):
+   
     def runTest(self):
+        
 
         signal = signals.Signal(debug_level=3)
         self.assertEqual(signal.length, 0)
@@ -166,20 +168,41 @@ class Signaltest(unittest.TestCase):
                                 normalize=True, mono=True)
         data1 = signal.data.copy()
         # try adding and subtracting an atom
+        # TEST bad calls
+        badargs = (None,)
+        self.assertRaises(TypeError, signal.add, *badargs)
+        
         pyAtom = mdct_atom.Atom(1024, 0.57, 4500, 128, 8000, 0.57)
         signal.add(pyAtom)
 
         data2 = signal.data.copy()
 
+        
         self.assertNotEqual(sum((data1 - data2) ** 2), 0)
         signal.subtract(pyAtom)
 
+        self.assertAlmostEqual(sum((signal.data - data1) ** 2), 0)
+
+        # Second time: it should not be happy!
+        badargs = (pyAtom,)
+        self.assertRaises(ValueError, signal.subtract, *badargs)
+        
+        # Unless we force him to accept            
+        signal.subtract(pyAtom, prevent_energy_increase = False);
+        
+        # testing the windowing function
+        sig = signals.Signal(np.ones(128,))
+        sig.window(32)
+        self.assertTrue((sig.data[0:32] == np.sin((np.arange(32).astype(float))*np.pi/(2*32))).all()) 
+        self.assertTrue((sig.data[-32:] == np.sin((np.arange(32).astype(float))*np.pi/(2*32) + np.pi/2)).all())
+
+        
 #        plt.plot(data1)
 #        plt.plot(data2)
 #        plt.plot(signal.data)
 #        plt.legend(("original", "added" , "subtracted"))
 #
-        self.assertAlmostEqual(sum((signal.data - data1) ** 2), 0)
+        
 
         # test on a long signals
         L = 4 * 16384
@@ -279,6 +302,29 @@ class BlockTest(unittest.TestCase):
         self.assertAlmostEqual(np.sum((block.projs_matrix - mdct.
                                        mdct(signal_original.data, block.scale)) ** 2), 0)
 
+        # testing other blocks
+        lomp_block = mdct_block.LOBlock(1024, signal_original)
+        lomp_block.initialize()
+        lomp_block.update(signal_original, 0, -1)
+        lomp_best_atom = lomp_block.get_max_atom(1)
+        
+        lomp_block.plot_proj_matrix()
+        
+        full_block = mdct_block.FullBlock(1024, signal_original)
+        full_block.initialize()
+        full_block.update(signal_original, 0, -1)
+        best_full_atom = full_block.get_max_atom()
+
+        full_block.plot_proj_matrix()
+
+
+        spread_block = mdct_block.SpreadBlock(1024, signal_original, penalty=0.5, maskSize=2)
+        spread_block.initialize()
+        spread_block.update(signal_original, 0, -1)
+        spread_block = full_block.get_max_atom()
+
+        
+
         parallelProjections.clean_plans(np.array([1024, ]))
         print "Cleaning done"
         del signal_original
@@ -312,7 +358,7 @@ class MPTest(unittest.TestCase):
         self.assertRaises(ValueError, mp.mp, *badargs)
     
         mp.mp(signal_original,
-                   dico, 50, 10,debug_iteration=0)
+                   dico, 50, 1,debug_iteration=0)
     
     def runTest(self):                
         
@@ -985,14 +1031,14 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-    suite.addTest(MPlongTest())
-    suite.addTest(MPTest())
+#    suite.addTest(MPlongTest())
+#    suite.addTest(MPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
-#    suite.addTest(BlockTest())
+    suite.addTest(BlockTest())
 #    suite.addTest(Signaltest())
 #    suite.addTest(WaveletAtomTest())
 #

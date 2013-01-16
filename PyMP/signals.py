@@ -193,9 +193,9 @@ class Signal(object):
         copiedSignal.is_normalized = self.is_normalized
         return copiedSignal
 
-    def subtract(self, atom, debug=0, preventEnergyIncrease=True):
+    def subtract(self, atom, debug=0, prevent_energy_increase=True):
         ''' Subtracts the atom waveform from the signal, at the position specified by the atom.timeLocalization property
-            if preventEnergyIncrease is True, an error will be raised if subtracting the atom increases the signal's energy '''
+            if prevent_energy_increase is True, an error will be raised if subtracting the atom increases the signal's energy '''
         if not isinstance(atom, base.BaseAtom):
             raise TypeError("argument provided is not an atom")
         if atom.waveform is None:
@@ -224,16 +224,13 @@ class Signal(object):
                                time_position + atom.length] ** 2).sum()
 
         # Test
-        if (newEnergy > oldEnergy) and preventEnergyIncrease:
+        if (newEnergy > oldEnergy) and prevent_energy_increase:
             # do not substract the atom
             self.data[atom.time_position: atom.
                       time_position + atom.length] += atom.waveform
             # get out of here
-            _Logger.error('Warning : Substracted Atom created energy : at pos: '
-                          + str(atom.time_position) + ' k: ' + ' Amp: ' + str(atom.get_value()) +
-                          str(atom.freq_bin) + ' timeShift :' +
-                          str(atom.time_shift) + ' scale : ' +
-                          str(atom.length) + ' from ' + str(oldEnergy) + ' to ' + str(newEnergy))
+            _Logger.error('Warning : Substracted Atom created energy '
+                          + str(atom) +' from ' + str(oldEnergy) + ' to ' + str(newEnergy))
             raise ValueError('see Logger')
 
         self.energy = self.energy - oldEnergy + newEnergy
@@ -295,7 +292,7 @@ class Signal(object):
         except ValueError:
             print(self.data.shape)
             _Logger.error(
-                "Wrong dimension number %s" % str(self.data.shape))
+                "Wrong dimension number %s" % str(self.data.shape))            
 
 #    def doWindow(self, K):
 #        ''' DEPRECATED '''

@@ -154,25 +154,25 @@ class Atom(BaseAtom):
                              self.reduced_frequency * self.fs,
                              self.mdct_value)
 
-    def to_xml(self, xmlDoc):
-        ''' Useful routine to output the object as an XML node '''
-        if not isinstance(xmlDoc, Document):
-            raise TypeError('Xml document not provided')
-
-        atomNode = xmlDoc.createElement('Atom')
-        atomNode.setAttribute('nature', str(self.nature))
-        atomNode.setAttribute('length', str(self.length))
-        atomNode.setAttribute('tP', str(int(self.time_position)))
-        atomNode.setAttribute('fB', str(int(self.freq_bin)))
-        atomNode.setAttribute('frame', str(int(self.frame)))
-        atomNode.setAttribute('value', str(self.mdct_value))
-        atomNode.setAttribute('Fs', str(self.fs))
-
-        if self.proj_score is not None:
-            atomNode.setAttribute('time_shift', str(self.time_shift))
-            atomNode.setAttribute('score', str(self.proj_score))
-
-        return atomNode
+#    def to_xml(self, xmlDoc):
+#        ''' Useful routine to output the object as an XML node '''
+#        if not isinstance(xmlDoc, Document):
+#            raise TypeError('Xml document not provided')
+#
+#        atomNode = xmlDoc.createElement('Atom')
+#        atomNode.setAttribute('nature', str(self.nature))
+#        atomNode.setAttribute('length', str(self.length))
+#        atomNode.setAttribute('tP', str(int(self.time_position)))
+#        atomNode.setAttribute('fB', str(int(self.freq_bin)))
+#        atomNode.setAttribute('frame', str(int(self.frame)))
+#        atomNode.setAttribute('value', str(self.mdct_value))
+#        atomNode.setAttribute('Fs', str(self.fs))
+#
+#        if self.proj_score is not None:
+#            atomNode.setAttribute('time_shift', str(self.time_shift))
+#            atomNode.setAttribute('score', str(self.proj_score))
+#
+#        return atomNode
 
     def inner_prod(self, otherAtom):
         """ DEPRECATED returns the inner product between current atom and the other one
@@ -225,21 +225,21 @@ class Atom(BaseAtom):
         return self.mdct_value
 
 
-def fromXml(xmlNode):
-    ''' Construct an Object from the corresponding XML Node '''
-    if not isinstance(xmlNode, Element):
-        raise TypeError('Xml element not provided')
-
-    atom = Atom(int(xmlNode.getAttribute('length')),
-                1,
-                int(xmlNode.getAttribute('tP')),
-                int(xmlNode.getAttribute('fB')),
-                int(xmlNode.getAttribute('Fs')),
-                float(xmlNode.getAttribute('value')))
-
-    atom.frame = int(xmlNode.getAttribute('frame'))
-    if not xmlNode.getAttribute('time_shift') in ('None', ''):
-        atom.time_shift = int(xmlNode.getAttribute('time_shift'))
-    if not xmlNode.getAttribute('score') in ('None', ''):
-        atom.proj_score = float(xmlNode.getAttribute('score'))
-    return atom
+#def fromXml(xmlNode):
+#    ''' Construct an Object from the corresponding XML Node '''
+#    if not isinstance(xmlNode, Element):
+#        raise TypeError('Xml element not provided')
+#
+#    atom = Atom(int(xmlNode.getAttribute('length')),
+#                1,
+#                int(xmlNode.getAttribute('tP')),
+#                int(xmlNode.getAttribute('fB')),
+#                int(xmlNode.getAttribute('Fs')),
+#                float(xmlNode.getAttribute('value')))
+#
+#    atom.frame = int(xmlNode.getAttribute('frame'))
+#    if not xmlNode.getAttribute('time_shift') in ('None', ''):
+#        atom.time_shift = int(xmlNode.getAttribute('time_shift'))
+#    if not xmlNode.getAttribute('score') in ('None', ''):
+#        atom.proj_score = float(xmlNode.getAttribute('score'))
+#    return atom

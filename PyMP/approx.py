@@ -269,7 +269,7 @@ class Approx:
         self.atom_number -= 1
 
         if self.recomposed_signal != None:
-            self.recomposed_signal.subtract(atom, preventEnergyIncrease=False)
+            self.recomposed_signal.subtract(atom, prevent_energy_increase=False)
 
     # routine to compute approximation Signal To Residual ratio so far
     def compute_srr(self, residual=None):

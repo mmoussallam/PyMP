@@ -151,23 +151,23 @@ class Dico(BaseDico):
         self.ending_touched_index = self.starting_touched_index + \
             1.5 * previousBestAtom.length
 
-    def to_xml(self, doc):
-        ''' A routine to convert the dictionary to an XML node '''
-        if not isinstance(doc, Document):
-            raise TypeError('Xml document not provided')
-
-        DicoNode = doc.createElement('Dictionary')
-        DicoNode.setAttribute('nature', str(self.nature))
-        DicoNode.setAttribute('class', self.__class__.__name__)
-        SizesNode = doc.createElement('Sizes')
-        SizesNode.setAttribute('number', str(len(self.sizes)))
-        for size in self.sizes:
-            sizeNode = doc.createElement('Size')
-            sizeNode.setAttribute('scale', str(size))
-            SizesNode.appendChild(sizeNode)
-
-        DicoNode.appendChild(SizesNode)
-        return DicoNode
+#    def to_xml(self, doc):
+#        ''' A routine to convert the dictionary to an XML node '''
+#        if not isinstance(doc, Document):
+#            raise TypeError('Xml document not provided')
+#
+#        DicoNode = doc.createElement('Dictionary')
+#        DicoNode.setAttribute('nature', str(self.nature))
+#        DicoNode.setAttribute('class', self.__class__.__name__)
+#        SizesNode = doc.createElement('Sizes')
+#        SizesNode.setAttribute('number', str(len(self.sizes)))
+#        for size in self.sizes:
+#            sizeNode = doc.createElement('Size')
+#            sizeNode.setAttribute('scale', str(size))
+#            SizesNode.appendChild(sizeNode)
+#
+#        DicoNode.appendChild(SizesNode)
+#        return DicoNode
 
     def get_atom_key(self, atom, sigLength):
         ''' Get the atom index in the dictionary '''
@@ -332,28 +332,28 @@ class FullDico(Dico):
     '''
 
 
-def fromXml(xmlNode):
-    ''' Export routine NOT FULLY TESTED '''
-    if not isinstance(xmlNode, Element):
-        raise TypeError('Xml element not provided')
-
-    # retrieve sizes
-    for e in xmlNode.childNodes:
-        if e.localName == 'Sizes':
-            sizesNode = e
-            break
-
-#    sizesNode = xmlNode.childNodes[0]
-    sizes = []
-    for node in sizesNode.childNodes:
-        if node.localName == 'Size':
-            sizes.append(int(node.getAttribute('scale')))
-
-    if xmlNode.getAttribute('class') == 'Dico':
-        return Dico(sizes)
-
-    elif xmlNode.getAttribute('class') == 'LODico':
-        return LODico(sizes)
-
-    elif xmlNode.getAttribute('class') == 'FullDico':
-        return FullDico(sizes)
+#def fromXml(xmlNode):
+#    ''' Export routine NOT FULLY TESTED '''
+#    if not isinstance(xmlNode, Element):
+#        raise TypeError('Xml element not provided')
+#
+#    # retrieve sizes
+#    for e in xmlNode.childNodes:
+#        if e.localName == 'Sizes':
+#            sizesNode = e
+#            break
+#
+##    sizesNode = xmlNode.childNodes[0]
+#    sizes = []
+#    for node in sizesNode.childNodes:
+#        if node.localName == 'Size':
+#            sizes.append(int(node.getAttribute('scale')))
+#
+#    if xmlNode.getAttribute('class') == 'Dico':
+#        return Dico(sizes)
+#
+#    elif xmlNode.getAttribute('class') == 'LODico':
+#        return LODico(sizes)
+#
+#    elif xmlNode.getAttribute('class') == 'FullDico':
+#        return FullDico(sizes)
