@@ -491,9 +491,9 @@ if __name__ == "__main__":
     # import syssys.argv = ['', 'Test.testName']
     suite = unittest.TestSuite()
 
-#    suite.addTest(BlocksTest())
-#    suite.addTest(DicosTest())
-#    suite.addTest(PursuitTest())
+    suite.addTest(BlocksTest())
+    suite.addTest(DicosTest())
+    suite.addTest(PursuitTest())
 #    suite.addTest(nonLinearTest())
     suite.addTest(perfTestsNL())
 #    suite.addTest(SymetryTest())

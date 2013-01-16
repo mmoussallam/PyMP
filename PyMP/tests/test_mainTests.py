@@ -318,7 +318,53 @@ class MPTest(unittest.TestCase):
 
         cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
+        
+        # testing the continued version
+        full_approx = mp.mp(signal_original, dico2, 50, 100 ,debug=0,
+                            pad=False)[0]  
+        stopped_approx = mp.mp(signal_original, dico2, 50, 50 ,debug=0,
+                            pad=False)[0]
 
+        completed_approx = mp.mp_continue(stopped_approx, signal_original,
+                            dico2, 50, 50, debug=0, pad=False)
+        
+        for i in range(100):
+            self.assertEqual(full_approx[i], completed_approx[i])
+
+class OMPTest(unittest.TestCase):
+    def runTest(self):
+# dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
+
+        dico = mp_mdct_dico.Dico([256, 2048, 8192])
+        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+        signal_original.crop(0, 5 * 16384)
+
+        signal_original.data += 0.01 * np.random.random(5 * 16384)
+
+        # first try with a single-atom signals
+        pyAtom = mdct_atom.Atom(2048, 1, 11775, 128, 8000, 0.57)
+        pyApprox_oneAtom = approx.Approx(dico, [], signal_original)
+        pyApprox_oneAtom.add(pyAtom)
+
+        signal_one_atom = signals.Signal(pyApprox_oneAtom.
+                                         synthesize(0).data, signal_original.fs, False)
+
+        # second test
+        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+
+        # last test - decomposition profonde
+        dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
+                                   4096, 8192, 16384], parallel=False)
+        dico1 = mp_mdct_dico.Dico([16384])
+        # profiling test
+        print "Plain"
+        cProfile.runctx('mp.mp(signal_original, dico1, 20, 1000 ,debug=0 , '
+                        'clean=True)', globals(), locals())
+
+        cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
+                        'clean=True)', globals(), locals())
 
 class SequenceDicoTest(unittest.TestCase):
 
@@ -366,10 +412,7 @@ class SequenceDicoTest(unittest.TestCase):
 
 class ApproxTest(unittest.TestCase):
 
-    def runTest(self):
-#        self.writeXmlTest()
-
-        # test dictionary class
+    def runTest(self):        
 
         app = approx.Approx(debug_level=3)
         self.assertEqual(app.original_signal, None)
@@ -389,11 +432,13 @@ class ApproxTest(unittest.TestCase):
 
         pyAtom = mdct_atom.Atom(1024, 1, 12288 - 256, 128, 44100, 0.57)
         app.add(pyAtom)
-#
-#        approxSignal = app.synthesize(0)
-#        approxSignal.plot()
-#
-#        del approxSignal
+        self.assertEqual(app.atom_number, 1)
+
+        # testing the remove method
+        app.remove(pyAtom)
+        self.assertEqual(app.atom_number, 0)
+        
+        app.add(pyAtom)
 
         app.add(
             mdct_atom.Atom(8192, 1, 4096 - 2048, 32, 44100, -0.24))
@@ -420,13 +465,16 @@ class ApproxTest(unittest.TestCase):
         self.assertAlmostEqual(
             sum((approxSignal1.data - approxSignal2.data) ** 2), 0)
 
+        # test last case, with LOMP atoms
+        approxSignal3 = app.synthesize(2)
+        
         # testing filtering
         self.assertEqual(
             pyAtom, app.filter_atoms(1024, None, None).atoms[0])
         self.assertEqual(pyAtom, app.filter_atoms(1024, [
             12000, 15000], None).atoms[0])
-
-        print app.compute_srr()
+        
+        self.assertAlmostEqual(app.compute_srr(), -114.057441323)
         # TODO testing du SRR
 
         # testing the write_to_xml and read_from_xml methods
@@ -434,21 +482,34 @@ class ApproxTest(unittest.TestCase):
         approx_LOmp = mp.mp(signal_original, pyCCDico, 10, 100, False)[0]
 
         sliceApprox = approx_LOmp[:10]
+        
+        for i in range(10):
+            self.assertEqual(approx_LOmp.atoms[i], sliceApprox.atoms[i])
+
+        self.assertEqual(approx_LOmp[0], sliceApprox[0])
 
         print approx_LOmp
         print sliceApprox
         sliceApprox.compute_srr()
         print sliceApprox
+        
         plt.figure()
         plt.subplot(121)
         approx_LOmp.plot_tf()
         plt.subplot(122)
-        sliceApprox.plot_tf()
+        sliceApprox.plot_tf(french=True)
         plt.plot()
+
+        # testing all the plot options
+        plt.figure()
+        sliceApprox.plot_3d(itStep=1)
+        
 
         del signal_original
 
-    def writeXmlTest(self):
+        self.ioTesting()
+
+    def ioTesting(self):
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                          normalize=True, mono=True,
                                          debug_level=0)
@@ -457,68 +518,54 @@ class ApproxTest(unittest.TestCase):
         # first compute an approximant using mp
         approximant = mp.mp(signal_original, dico, 10, 10, debug=2)[0]
 
-        outputXmlPath = "approx_test.xml"
-        doc = approximant.write_to_xml(outputXmlPath)
-
-        # Test reading from the xml flow
-        newApprox = approx.read_from_xml('', doc)
-        self.assertEqual(newApprox.dico.sizes, approximant.dico.sizes)
-        self.assertEqual(newApprox.atom_number, approximant.atom_number)
-        self.assertEqual(newApprox.length, approximant.length)
-
-        # now the hardest test
-        newApprox.synthesize()
-        newApprox.recomposed_signal.plot()
-        self.assertAlmostEquals(sum(approximant.recomposed_signal.
-                                    data - newApprox.recomposed_signal.data), 0)
-
-        # test reading from the xml file
-        del newApprox
-        newApprox = approx.read_from_xml(outputXmlPath)
-        self.assertEqual(newApprox.dico.sizes, approximant.dico.sizes)
-        self.assertEqual(newApprox.atom_number, approximant.atom_number)
-        self.assertEqual(newApprox.length, approximant.length)
+        output_dump_path = os.path.abspath("approx_dump_test.pymp")
+        
+        print "TESTING dump and load "
+        approximant.dump(output_dump_path)
+        
+        
+        # Test reading from the dumped file
+        new_approx = approx.load(output_dump_path)
+        self.assertEqual(new_approx.dico.sizes, approximant.dico.sizes)
+        self.assertEqual(new_approx.atom_number, approximant.atom_number)
+        self.assertEqual(new_approx.length, approximant.length)
 
         # now the hardest test
-        newApprox.synthesize()
-        newApprox.recomposed_signal.plot()
+        new_approx.synthesize()
+#        new_approx.recomposed_signal.plot()
         self.assertAlmostEquals(sum(approximant.recomposed_signal.
-                                    data - newApprox.recomposed_signal.data), 0)
+                                    data - new_approx.recomposed_signal.data), 0)
 
-        mdctOrig = approximant.to_array()[0]
-        mdctRead = newApprox.to_array()[0]
 
-        del doc, newApprox
+        del new_approx
+        
         # test writing with LOmp atoms
-        pyCCDico = mp_mdct_dico.LODico([256, 2048, 8192])
-        approx_LOmp = mp.mp(signal_original, pyCCDico, 10, 100, False)[0]
+        lomp_dico = mp_mdct_dico.LODico([256, 2048, 8192])
+        approx_LOmp = mp.mp(signal_original, lomp_dico, 10, 100, False)[0]
 
-        outputXmlPath = "approxLOmp_test.xml"
-        doc = approx_LOmp.write_to_xml(outputXmlPath)
+        output_lodump_path = os.path.abspath("approx_lodump_test.pymp")
+        approx_LOmp.dump(output_lodump_path)
 
         # Test reading from the xml flow
-        newApprox = approx.read_from_xml('', doc)
-        self.assertEqual(newApprox.dico.sizes, approx_LOmp.dico.sizes)
-        self.assertEqual(newApprox.atom_number, approx_LOmp.atom_number)
-        self.assertEqual(newApprox.length, approx_LOmp.length)
+        new_approx = approx.load(output_lodump_path)
+        self.assertEqual(new_approx.dico.sizes, approx_LOmp.dico.sizes)
+        self.assertEqual(new_approx.atom_number, approx_LOmp.atom_number)
+        self.assertEqual(new_approx.length, approx_LOmp.length)
         self.assertAlmostEqual(
-            sum(newApprox.to_array()[0] - approx_LOmp.to_array()[0]), 0)
+            sum(new_approx.to_array()[0] - approx_LOmp.to_array()[0]), 0)
 
         plt.figure()
-        plt.plot(newApprox.to_array()[0])
+        plt.plot(new_approx.to_array()[0])
         plt.plot(approx_LOmp.to_array()[0], 'r:')
 #        plt.show()
 
-        # test reading from the xml file
-        del newApprox
-        newApprox = approx.read_from_xml(outputXmlPath)
-        self.assertEqual(newApprox.dico.sizes, approx_LOmp.dico.sizes)
-        self.assertEqual(newApprox.atom_number, approx_LOmp.atom_number)
-        self.assertEqual(newApprox.length, approx_LOmp.length)
-        self.assertAlmostEqual(
-            sum(newApprox.to_array()[0] - approx_LOmp.to_array()[0]), 0)
-
-        del newApprox
+        print "TESTING: exports "
+        print new_approx.to_array()
+        print new_approx.to_dico()
+        print new_approx.to_sparse_array()
+                
+        
+        del new_approx  
 
 
 class LOMPTest(unittest.TestCase):
@@ -874,9 +921,9 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-#    suite.addTest(MPlongTest())
-#    suite.addTest(MPTest())
-    suite.addTest(SequenceDicoTest())
+    suite.addTest(MPlongTest())
+    suite.addTest(MPTest())
+#    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())

@@ -185,6 +185,7 @@ class Approx:
         elif isinstance(item, int):
             start = item
             stop = item
+            return self.atoms[item]
 
         else:
             raise TypeError("not recognized")
@@ -263,7 +264,7 @@ class Approx:
     def remove(self, atom):
         ''' We need a routine to remove an atom , by default the last atom is removed '''
         if not isinstance(atom, BaseAtom):
-            raise TypeError("add need a py_pursuit_Atom as parameter ")
+            raise TypeError("add need a BaseAtom as parameter ")
         self.atoms.remove(atom)
         self.atom_number -= 1
 
@@ -497,98 +498,19 @@ class Approx:
 # ss = [float(atom.length)/float(self.fs) for atom in
 # self.atoms]
 
-        # More complicated but not working
-#        ts = []
-#        fs = []
-#        zs=  []
-#        Fs = float(self.fs)
-#        for atom,idx in zip(self.atoms, range(self.atom_number)):
-#            L = atom.length
-#            K = L/2
-#
-#            disp = log2(L)
-#
-#            freq = atom.frequencyBin
-#            f = freq*Fs/float(L)
-#            bw = ( Fs / float(K) ) / 2
-#
-#            p  = float(atom.timePosition + K) / Fs
-#            l  = float(L - K/2) / Fs
-#
-#            # hdispersion is disp - 7
-#            hdisp = int(math.floor(max(disp - 7,1)))
-#            vdisp = int(math.floor(max(15/(disp),1)))
-#            # vdispersion is 15/(disp - 7)
-#            for hdispIdx in range(hdisp):
-#                for vdispIdx in range(vdisp):
-#                    ts.append(p+10*float(hdispIdx)/Fs)
-#                    fs.append(f+vdispIdx)
-#                    zs.append(idx)
-
         ax.scatter(ts, zs, fs, color="k", s=10, marker='o')
         ax.set_xlabel('Temps (s)')
         ax.set_ylabel('Iteration ')
         ax.set_zlabel('Frequence (Hz) ')
 
-#        allAtoms = len(self.atoms)
-#        nbplots = allAtoms/itStep
-#        if nbplots >10:
-#            raise ValueError('Seriously? WTF dude?')
-#
-#        for plotIdx in range(nbplots):
-#            subAx = Axes3D(fig)
-#            self.plot_tf(axes=subAx, maxAtoms=plotIdx*itStep)
+    def dump(self, dumpFilePath):
+        import cPickle
 
-#    def dumpToDisk(self, dumpFileName, dumpFilePath='./'):
-#        import cPickle
-#
-#        output = open(dumpFilePath + dumpFileName, 'wb')
-#        _Logger.info("Dumping approx to  " + dumpFilePath + dumpFileName)
-#        cPickle.dump(self, output, protocol=0)
-#        _Logger.info("Done ")
+        output = open(dumpFilePath, 'wb')
+        _Logger.info("Dumping approx to  " + dumpFilePath )
+        cPickle.dump(self, output, protocol=0)
+        _Logger.info("Done ")
 
-#        plt.show()
-    def write_to_xml(self, fname, output_path="./"):
-        """ Write the atoms using an XML formalism to the designated output file """
-
-        # from xml.dom.minidom import Document
-        import xml.dom
-                # creates the xml document
-        doc = xml.dom.minidom.Document()
-
-        # populate root node information
-        _Logger.info("Retrieving Root node attributes")
-        ApproxNode = doc.createElement("Approx")
-        ApproxNode.setAttribute('length', str(self.length))
-        ApproxNode.setAttribute(
-            'originalLocation', self.original_signal.location)
-        ApproxNode.setAttribute('frame_num', str(self.frame_num))
-        ApproxNode.setAttribute('frame_len', str(self.frame_len))
-        ApproxNode.setAttribute(
-            'Fs', str(self.original_signal.fs))
-        # add dictionary node
-        ApproxNode.appendChild(self.dico.to_xml(doc))
-
-        # now add as many nodes as atoms
-        AtomsNode = doc.createElement("Atoms")
-        AtomsNode.setAttribute('number', str(self.atom_number))
-        _Logger.info(
-            "Getting Child info for " + str(self.atom_number) + " existing atoms")
-        for atom in self.atoms:
-            AtomsNode.appendChild(atom.to_xml(doc))
-
-        ApproxNode.appendChild(AtomsNode)
-        doc.appendChild(ApproxNode)
-
-        # check output file existence
-#        if not os.path.exists(output_path + fname):
-#            os.create
-
-        # flush to external file
-
-#        xml.dom.ext.PrettyPrint(doc, open(output_path + fname, "w"))
-        _Logger.info("Written Xml to : " + output_path + fname)
-        return doc
 
     def to_dico(self):
         """ Returns the approximant as a sparse dictionary object ,
@@ -679,69 +601,27 @@ class Approx:
 #        del self.recomposed_signal.dataVec
 
 
-def load_from_disk(inputFilePath):
-    import cPickle
-    return cPickle.load(inputFilePath)
+def load(inputFilePath):
+    import cPickle    
+    file_obj = open(inputFilePath, 'r')
+    return cPickle.load(file_obj)
 
 
-def read_from_xml(InputXmlFilePath, xmlDoc=None, buildSignal=True):
-    """ reads an xml document and create the corresponding Approx object
-    WARNING this method is only designed for MDCT pursuits for now"""
-
-    from xml.dom.minidom import Document
-    import xml.dom
-    from .mdct import dico, atom
-    # check if reading from file is needed
-    if xmlDoc == None:
-        xmlDoc = xml.dom.minidom.parse(InputXmlFilePath)
-
-    if not isinstance(xmlDoc, Document):
-        raise TypeError('Xml document is wrong')
-
-    # retrieve the main approx node
-    ApproxNode = xmlDoc.getElementsByTagName('Approx')[0]
-
-    # retrieve the dictionary
-    Dico = dico.fromXml(xmlDoc.getElementsByTagName('Dictionary')[0])
-
-    # retrieve atom list
-    AtomsNode = xmlDoc.getElementsByTagName('Atoms')[0]
-    atoms = []
-    approx = Approx(Dico, atoms, None, int(ApproxNode.getAttribute('length')),
-                    int(ApproxNode.getAttribute('Fs')))
-    for node in AtomsNode.childNodes:
-        if node.localName == 'Atom':
-            if buildSignal:
-                approx.add(atom.fromXml(node))
-            else:
-                approx.atoms.append(atom.fromXml(node))
-#            atoms.append(py_pursuit_Atom.fromXml(node))
-#    if not buildSignal:
-#        approx.atom_number = len(approx.atoms)
-    # optional: if load original signal - TODO
-
-# approx =  py_pursuit_Approx(Dico, atoms, None,
-# int(ApproxNode.getAttribute('length')),
-#                                   int(ApproxNode.getAttribute('Fs')))
-    approx.atom_number = len(atoms)
-    return approx
-
-
-def read_from_mat_struct(matl_struct):
-    """ retrieve the python object from a saved version in matlab format
-    This is useful if you saved a py_pursuit_approx object using the scipy.io.savemat
-    routine and you loaded it back using scipy.io.loadmat"""
-
-    # Convert to object struct
-    appObject = matl_struct[0, 0]
-    dico = appObject.dico[0, 0]
-    # TODO proper lecture of dictionary objects
-
-    # So far we only read the parameters
-
-    approx = Approx(None, [], None, appObject.length[0, 0], appObject.
-                    fs[0, 0])
-    return approx
+#def read_from_mat_struct(matl_struct):
+#    """ retrieve the python object from a saved version in matlab format
+#    This is useful if you saved an approx object using the scipy.io.savemat
+#    routine and you loaded it back using scipy.io.loadmat"""
+#
+#    # Convert to object struct
+#    appObject = matl_struct[0, 0]
+#    dico = appObject.dico[0, 0]
+#    # TODO proper lecture of dictionary objects
+#
+#    # So far we only read the parameters
+#
+#    approx = Approx(None, [], None, appObject.length[0, 0], appObject.
+#                    fs[0, 0])
+#    return approx
 
 
 def fusion_approxs(approxCollection, unPad=True):
