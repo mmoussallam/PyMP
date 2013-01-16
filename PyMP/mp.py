@@ -112,8 +112,8 @@ def mp(orig_signal,
 
     # check if signal has null energy
     if res_signal.energy == 0:
-        _Logger.info(" Null signal energy ")
-        return current_approx, res_energy
+        raise ValueError(" Null signal energy ")
+        
     res_energy.append(res_signal.energy)
 
     # Decomposition loop: stopping criteria is either SNR or iteration number
@@ -201,6 +201,70 @@ def mp(orig_signal,
     return current_approx, res_energy
 
 
+def _itprint_(iterationNumber, bestAtom):
+    """ debug printing"""
+    strO = ("It: " + str(iterationNumber) + " Selected atom" + str(bestAtom))
+    print strO
+
+
+def _plot_proj(bestAtom, residual_sig):
+    plt.figure()
+    plt.plot(residual_sig.data[bestAtom.
+                                 time_position: bestAtom.time_position + bestAtom.length])
+    plt.plot(bestAtom.waveform)
+    plt.plot(residual_sig.data[bestAtom.time_position: bestAtom.time_position +
+                                 bestAtom.length] - bestAtom.waveform, ':')
+    plt.legend(('Signal', 'Atom substracted', 'residual'))
+    plt.show()
+
+def _loop(dictionary, current_approx,
+          residual_sig, res_energy_list,
+          iterationNumber, debug):
+            
+        # Compute inner products and selects the best atom
+        dictionary.update(residual_sig)
+    
+        # Retrieve best atom among candidates
+        bestAtom = dictionary.get_best_atom(debug)
+    
+        if bestAtom is None:
+            print 'No atom selected anymore'
+            return current_approx, residual_sig, res_energy_list
+    
+        if debug > 0:
+            _itprint_(iterationNumber, bestAtom)
+    
+        try:
+            residual_sig.subtract(bestAtom, debug)
+            dictionary.compute_touched_zone(bestAtom)
+        
+        except ValueError:
+            print "Something wrong happened at iteration ", iterationNumber, " atom substraction abandonned"
+            if debug > 1:
+                _plot_proj(bestAtom, residual_sig)
+                
+            approxPath = "currentApprox_failed_iteration_" + str(
+                iterationNumber) + ".pymp"
+            signalPath = "currentApproxRecomposedSignal_failed_iteration_" + str(
+                iterationNumber) + ".wav"
+            current_approx.dump(approxPath)
+            current_approx.recomposed_signal.write(signalPath)
+            print " approx saved to ", approxPath
+            print " recomposed signal saved to ", signalPath
+            return current_approx, res_energy_list
+    
+        if debug > 0:
+            print "new residual energy of ", sum(residual_sig.data ** 2)
+    
+        # BUGFIX?
+        res_energy_list.append(residual_sig.energy)
+    #        res_energy_list.append(sum(residual_sig.dataVec **2))
+    
+        # add atom to dictionary
+        current_approx.add(bestAtom)
+            
+        # cleaning
+        del bestAtom.waveform
 
 def mp_continue(current_approx,
                 orig_signal,
@@ -243,83 +307,24 @@ def mp_continue(current_approx,
     res_energy_list = [residual_sig.energy]
 
     iterationNumber = 0
-    approx_srr = current_approx.compute_srr()
-
-    while (approx_srr < target_srr) & (iterationNumber < max_it_num):
-
-        # Compute inner products and selects the best atom
-        dictionary.update(residual_sig)
-
-        # new version - also computes the waveform by inverse mdct
-        # new version - also computes max cross correlation and adjust atom's
-        # waveform timeshift
-        bestAtom = dictionary.get_best_atom(debug)
-
-        if bestAtom is None:
-            print 'No atom selected anymore'
-            return current_approx, res_energy_list
-
-        if debug > 0:
-            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.freq_bin)
-                    + " at " + str(
-                    bestAtom.time_position)
-                    + " value : " + str(
-                    bestAtom.mdct_value)
-                    + " time shift : " + str(bestAtom.time_shift))
-            print strO
-
-        try:
-            residual_sig.subtract(bestAtom, debug)
-            dictionary.compute_touched_zone(bestAtom)
-        except ValueError:
-            print "Something wrong happened at iteration ", iterationNumber, " atom substraction abandonned"
-            if debug > 1:
-                plt.figure()
-                plt.plot(residual_sig.data[bestAtom.
-                                             time_position: bestAtom.time_position + bestAtom.length])
-                plt.plot(bestAtom.waveform)
-                plt.plot(residual_sig.data[bestAtom.time_position: bestAtom.time_position +
-                                             bestAtom.length] - bestAtom.waveform, ':')
-                plt.legend(('Signal', 'Atom substracted', 'residual'))
-                plt.show()
-            approxPath = "currentApprox_failed_iteration_" + str(
-                iterationNumber) + ".xml"
-            signalPath = "currentApproxRecomposedSignal_failed_iteration_" + str(
-                iterationNumber) + ".wav"
-            current_approx.write_to_xml(approxPath)
-            current_approx.recomposed_signal.write(signalPath)
-            print " approx saved to ", approxPath
-            print " recomposed signal saved to ", signalPath
-            return current_approx, res_energy_list
-
-        if debug > 1:
-            plt.figure()
-            plt.plot(orig_signal.data)
-            plt.plot(residual_sig.data, '--')
-            plt.legend(
-                ("original", "residual at iteration " + str(iterationNumber)))
-            plt.show()
-
-        if debug > 0:
-            print "new residual energy of ", sum(residual_sig.data ** 2)
-
-        # BUGFIX?
-        res_energy_list.append(residual_sig.energy)
-#        res_energy_list.append(sum(residual_sig.dataVec **2))
-
-        # add atom to dictionary
-        current_approx.add(bestAtom, dictionary.best_current_block.w_long)
-
+    current_srr = current_approx.compute_srr()
+        
+    
+    while (current_srr < target_srr) & (iterationNumber < max_it_num): 
+        
+        # lauches a mp loop: update projection, retrieve best atom and subtract from residual
+        _loop(dictionary, current_approx,
+              residual_sig, res_energy_list,
+              iterationNumber, debug)
+    
         # compute new SRR and increment iteration Number
-#        approx_srr = current_approx.compute_srr(residual_sig);
         approx_srr = current_approx.compute_srr()
         iterationNumber += 1
-
+    
         if debug > 0:
             print "SRR reached of ", approx_srr, " at iteration ", iterationNumber
-
-        # cleaning
-        del bestAtom.waveform
+    
+        
 
     # VERY IMPORTANT CLEANING STAGE!
     if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:

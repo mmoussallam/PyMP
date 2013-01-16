@@ -311,6 +311,48 @@ class MPTest(unittest.TestCase):
         dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
                                    4096, 8192, 16384], parallel=False)
         dico1 = mp_mdct_dico.Dico([16384])
+        
+    
+        # testing mp
+        # asburd call : should raise a ValueError 
+        badargs = (signals.Signal(np.zeros(signal_original.data.shape)),
+                   dico2, 50, 10)
+        
+        self.assertRaises(ValueError, mp.mp, *badargs)
+        
+        full_num = 100;
+        stop_num = 80;            
+        full_approx = mp.mp(signal_original, dico2, 50, full_num ,debug=0,
+                            pad=False)[0]  
+        
+
+        self.assertEqual(full_approx.atom_number, full_num)
+        # testing mp_continue
+        stopped_approx = mp.mp(signal_original, dico2, 50, stop_num ,debug=0,
+                            pad=False)[0]
+
+        # asburd call : should raise a ValueError 
+        badargs = (approx.Approx(dico1, [], 
+                                signal_original), 
+                   signals.Signal(np.zeros(signal_original.data.shape)),
+                   dico2, 50,
+                   full_num - stop_num)
+        self.assertRaises(ValueError, mp.mp_continue, *badargs)
+                                                    
+        # good call: should work and give same results                                                   
+        completed_approx = mp.mp_continue(stopped_approx, signal_original,
+                            dico2, 50, full_num - stop_num, debug=0, pad=False)[0]
+        
+        self.assertEqual(full_approx.length, completed_approx.length)
+        self.assertEqual(full_approx.atom_number, completed_approx.atom_number)
+        
+        # now assert all atoms are the same in both decompositions
+        for i in range(full_num):            
+            self.assertEqual(full_approx[i], completed_approx[i])
+        
+#        self.assertAlmostEqual(full_approx.srr, completed_approx.srr)
+        
+
         # profiling test
         print "Plain"
         cProfile.runctx('mp.mp(signal_original, dico1, 20, 1000 ,debug=0 , '
@@ -319,17 +361,8 @@ class MPTest(unittest.TestCase):
         cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
         
-        # testing the continued version
-        full_approx = mp.mp(signal_original, dico2, 50, 100 ,debug=0,
-                            pad=False)[0]  
-        stopped_approx = mp.mp(signal_original, dico2, 50, 50 ,debug=0,
-                            pad=False)[0]
-
-        completed_approx = mp.mp_continue(stopped_approx, signal_original,
-                            dico2, 50, 50, debug=0, pad=False)
         
-        for i in range(100):
-            self.assertEqual(full_approx[i], completed_approx[i])
+
 
 class OMPTest(unittest.TestCase):
     def runTest(self):
