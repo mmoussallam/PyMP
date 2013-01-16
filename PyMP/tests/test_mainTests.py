@@ -121,7 +121,7 @@ class WaveletAtomTest(unittest.TestCase):
         print atom.get_waveform()
         plt.figure()
         plt.plot(atom.x, atom.waveform)
-        plt.show()
+#        plt.show()
 
 
 class DicoTest(unittest.TestCase):
@@ -310,6 +310,9 @@ class MPTest(unittest.TestCase):
                    dico, 50, 10)
         
         self.assertRaises(ValueError, mp.mp, *badargs)
+    
+        mp.mp(signal_original,
+                   dico, 50, 10,debug_iteration=0)
     
     def runTest(self):                
         
@@ -982,7 +985,7 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-#    suite.addTest(MPlongTest())
+    suite.addTest(MPlongTest())
     suite.addTest(MPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
@@ -995,5 +998,5 @@ if __name__ == '__main__':
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
 
-    plt.show()
+#    plt.show()
     _Logger.info('Tests stopped')
