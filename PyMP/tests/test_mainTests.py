@@ -285,7 +285,35 @@ class BlockTest(unittest.TestCase):
 
 
 class MPTest(unittest.TestCase):
-    def runTest(self):
+    
+    def badArgsTest(self):
+        print "TESTING BAD CALLS"
+        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+        dico = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
+                                   4096, 8192, 16384], parallel=False)
+        
+    
+        # testing mp with empty signal 
+        badargs = (None,dico,50,10)
+        self.assertRaises(TypeError, mp.mp, *badargs)
+        
+        # testing mp with empty dictionary
+        badargs = (signal_original,None,50,10)
+        self.assertRaises(TypeError, mp.mp,  *badargs)
+                
+        
+    
+        # testing mp
+        # asburd call : should raise a ValueError 
+        badargs = (signals.Signal(np.zeros(signal_original.data.shape)),
+                   dico, 50, 10)
+        
+        self.assertRaises(ValueError, mp.mp, *badargs)
+    
+    def runTest(self):                
+        
+        self.badArgsTest()
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
         dico = mp_mdct_dico.Dico([256, 2048, 8192])
@@ -954,7 +982,7 @@ if __name__ == '__main__':
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
 
-    suite.addTest(MPlongTest())
+#    suite.addTest(MPlongTest())
     suite.addTest(MPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())

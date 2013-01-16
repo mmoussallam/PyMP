@@ -84,19 +84,22 @@ def mp(orig_signal,
     if debug is not None:
         _Logger.set_level(debug)
 
+    # CHECKING INPUTS
+    if not isinstance(orig_signal, Signal.Signal):
+        raise TypeError("MP will only accept objects inheriting from PyMP.signals.Signal as input signals")
+    
+    
+    if not isinstance(dictionary, Dico):
+        raise TypeError("MP will only accept objects inheriting from PyMP.base.BaseDico as dictionaries")
+    
     # optional add zeroes to the edge
     if pad:
         orig_signal.pad(dictionary.get_pad())
     res_signal = orig_signal.copy()
 
     # FFTW Optimization for C code: initialize module global variables
-    try:
-        if parallelProjections.initialize_plans(np.array(dictionary.sizes), np.array([2 for i in dictionary.sizes])) != 1:
-            raise ValueError(
-                "Something failed during FFTW initialization step ")
-    except:
-        _Logger.error("Initialization step failed")
-        raise
+    _initialize_fftw(dictionary)
+    
     # initialize blocks
     dictionary.initialize(res_signal)
 
@@ -195,8 +198,7 @@ def mp(orig_signal,
             del best_atom.waveform
 
     # VERY IMPORTANT CLEANING STAGE!
-    if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
-        raise ValueError("Something failed during FFTW cleaning stage ")
+    _clean_fftw()
 
     return current_approx, res_energy
 
@@ -219,7 +221,7 @@ def _plot_proj(bestAtom, residual_sig):
 
 def _loop(dictionary, current_approx,
           residual_sig, res_energy_list,
-          iterationNumber, debug):
+          it_num, debug):
             
         # Compute inner products and selects the best atom
         dictionary.update(residual_sig)
@@ -232,21 +234,21 @@ def _loop(dictionary, current_approx,
             return current_approx, residual_sig, res_energy_list
     
         if debug > 0:
-            _itprint_(iterationNumber, bestAtom)
+            _itprint_(it_num, bestAtom)
     
         try:
             residual_sig.subtract(bestAtom, debug)
             dictionary.compute_touched_zone(bestAtom)
         
         except ValueError:
-            print "Something wrong happened at iteration ", iterationNumber, " atom substraction abandonned"
+            print "Something wrong happened at iteration ", it_num, " atom substraction abandonned"
             if debug > 1:
                 _plot_proj(bestAtom, residual_sig)
                 
             approxPath = "currentApprox_failed_iteration_" + str(
-                iterationNumber) + ".pymp"
+                it_num) + ".pymp"
             signalPath = "currentApproxRecomposedSignal_failed_iteration_" + str(
-                iterationNumber) + ".wav"
+                it_num) + ".wav"
             current_approx.dump(approxPath)
             current_approx.recomposed_signal.write(signalPath)
             print " approx saved to ", approxPath
@@ -265,6 +267,15 @@ def _loop(dictionary, current_approx,
             
         # cleaning
         del bestAtom.waveform
+
+
+def _initialize_fftw(dictionary):    
+    if parallelProjections.initialize_plans(np.array(dictionary.sizes), np.array([2]*len(dictionary.sizes))) != 1:
+        raise ValueError("Something failed during FFTW initialization step ")
+
+def _clean_fftw():
+    if parallelProjections.clean_plans() != 1:
+        raise ValueError("Something failed during FFTW cleaning stage ")
 
 def mp_continue(current_approx,
                 orig_signal,
@@ -292,13 +303,7 @@ def mp_continue(current_approx,
         for atom in current_approx.atoms:
             residual_sig.subtract(atom, debug)
 
-    try:
-        if parallelProjections.initialize_plans(np.array(dictionary.sizes), np.array([2 for i in dictionary.sizes])) != 1:
-            raise ValueError(
-                "Something failed during FFTW initialization step ")
-    except:
-        _Logger.error("Initialization step failed")
-        raise
+    _initialize_fftw(dictionary)
 
     # initialize blocks
     dictionary.initialize(residual_sig)
@@ -306,29 +311,28 @@ def mp_continue(current_approx,
     # residualEnergy
     res_energy_list = [residual_sig.energy]
 
-    iterationNumber = 0
+    it_num = 0
     current_srr = current_approx.compute_srr()
         
     
-    while (current_srr < target_srr) & (iterationNumber < max_it_num): 
+    while (current_srr < target_srr) & (it_num < max_it_num): 
         
         # lauches a mp loop: update projection, retrieve best atom and subtract from residual
         _loop(dictionary, current_approx,
               residual_sig, res_energy_list,
-              iterationNumber, debug)
+              it_num, debug)
     
         # compute new SRR and increment iteration Number
         approx_srr = current_approx.compute_srr()
-        iterationNumber += 1
+        it_num += 1
     
         if debug > 0:
-            print "SRR reached of ", approx_srr, " at iteration ", iterationNumber
+            print "SRR reached of ", approx_srr, " at iteration ", it_num
     
         
 
     # VERY IMPORTANT CLEANING STAGE!
-    if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
-        raise ValueError("Something failed during FFTW cleaning stage ")
+    _clean_fftw()
 
     return current_approx, res_energy_list
 
