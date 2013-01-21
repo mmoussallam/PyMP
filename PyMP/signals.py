@@ -451,28 +451,28 @@ class LongSignal(Signal):
 #    overlap = 0;         # overlapping rate between two consecutive segments
 
     # constructor
-    def __init__(self, filepath, frameSize=16384 * 3, frameDuration=None, forceMono=False, Noverlap=0):
+    def __init__(self, filepath, frame_size=16384 * 3, frame_duration=None, mono=False, Noverlap=0):
         self.location = filepath
-        self.segmentSize = frameSize
+        self.segmentSize = frame_size
 
         # overlaps methods from SoundFile object
 #        if (filepath[-4:] =='.wav'):
-        file = wave.open(filepath, 'r')
+        wavfile = wave.open(filepath, 'r')
 #        elif (filepath[-4:] =='.raw'):
-#            file = open()
+#            wavfile = open()
         self.filetype = filepath[len(filepath) - 3:]
-        self.channel_num = file.getnchannels()
-        self.fs = file.getframerate()
-        self.nframes = file.getnframes()
-        self.sample_width = file.getsampwidth()
+        self.channel_num = wavfile.getnchannels()
+        self.fs = wavfile.getframerate()
+        self.nframes = wavfile.getnframes()
+        self.sample_width = wavfile.getsampwidth()
 
         self.overlap = Noverlap
 
-        if frameDuration is not None:
+        if frame_duration is not None:
             # optionally set the length in seconds, adapt to the sigbal
             # sampling frequency
             self.segmentSize = math.floor(
-                frameDuration * self.fs)
+                frame_duration * self.fs)
 
         self.segmentNumber = math.floor(
             self.nframes / (self.segmentSize * (1 - self.overlap)))
@@ -487,17 +487,17 @@ class LongSignal(Signal):
         _Logger.info('Type is ' + self.filetype + ' , ' + str(self.
                                                               channel_num) + ' channels at ' + str(self.fs))
         _Logger.info('Separated in ' + str(self.segmentNumber) + ' segments of size ' + str(self.segmentSize) + ' samples overlap of ' + str(self.overlap * self.segmentSize))
-        self.length = self.segmentNumber * frameSize
-        file.close()
+        self.length = self.segmentNumber * frame_size
+        wavfile.close()
 
 #    def readFrames(self , frameIndexes):
 #        #self.data = array.array('h') #creates an array of ints
-#        file = wave.open(self.location, 'r')
-#        str_bytestream = file.readframes(self.nframes)
+#        wavfile = wave.open(self.location, 'r')
+#        str_bytestream = wavfile.readframes(self.nframes)
 #        self.data = fromstring(str_bytestream,'h')
-#        file.close()
+#        wavfile.close()
 
-    def get_sub_signal(self, startSegment, segmentNumber, mono=False, normalize=False, channel=0, padSignal=0):
+    def get_sub_signal(self, start_seg, seg_num, mono=False, normalize=False, channel=0, pad=0):
         """ Routine to actually read from the buffer and return a smaller signal instance
 
         :Returns:
@@ -512,8 +512,8 @@ class LongSignal(Signal):
         """
 
         # convert frame into bytes positions
-        bFrame = startSegment * (self.segmentSize * (1 - self.overlap))
-        nFrames = int(segmentNumber * self.segmentSize)
+        bFrame = start_seg * (self.segmentSize * (1 - self.overlap))
+        nFrames = int(seg_num * self.segmentSize)
         file = wave.open(self.location, 'r')
         file.setpos(bFrame)
         str_bytestream = file.readframes(nFrames)
@@ -533,8 +533,8 @@ class LongSignal(Signal):
         SubSignal = Signal(reshapedData, self.fs, normalize)
         SubSignal.location = self.location
 
-        if padSignal != 0:
-            SubSignal.pad(padSignal)
+        if pad != 0:
+            SubSignal.pad(pad)
 
 # print "Created Signal of length " + str(SubSignal.length) +" samples " #of "
 # + str(Signal.channel_num) + "channels"

@@ -337,7 +337,7 @@ class MPTest(unittest.TestCase):
         signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         dico = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
-                                   4096, 8192, 16384], parallel=False)
+                                   4096, 8192, 16384])
         
     
         # testing mp with empty signal 
@@ -386,7 +386,7 @@ class MPTest(unittest.TestCase):
 
         # last test - decomposition profonde
         dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
-                                   4096, 8192, 16384], parallel=False)
+                                   4096, 8192, 16384])
         dico1 = mp_mdct_dico.Dico([16384])
         
     
@@ -466,7 +466,7 @@ class OMPTest(unittest.TestCase):
 
         # last test - decomposition profonde
         dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
-                                   4096, 8192, 16384], parallel=False)
+                                   4096, 8192, 16384])
         dico1 = mp_mdct_dico.Dico([16384])
         # profiling test
         print "Plain"

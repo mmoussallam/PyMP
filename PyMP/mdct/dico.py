@@ -61,15 +61,15 @@ class Dico(BaseDico):
     forceHF = False
     use_c_optim = True
 
-    def __init__(self, sizes=[], useC=True, forceHF=False, parallel=False, debug_level=None):
+    def __init__(self, sizes=[], useC=True, forceHF=False, debug_level=None):
         if debug_level is not None:
             _Logger.set_level(debug_level)
 
         self.sizes = sizes
-        self.tolerances = [2 for i in self.sizes]
+        self.tolerances = [2]*len(self.sizes)
         self.use_c_optim = useC
         self.forceHF = forceHF
-        self._pp = parallel
+        
         _Logger.info('New dictionary created with sizes : ' + str(self.sizes))
 
     def find_block_by_scale(self, size):
@@ -296,8 +296,8 @@ class FullDico(Dico):
                        iterationNumber] = projMat  # /normCoeff
             ide += projMat.shape[0]
 
-'''class pymp_SpreadDico(py_pursuit_MDCTDico):
-     UNDER DEVELOPPMENT DO NOT USE
+class pymp_SpreadDico(Dico):
+    # !!!!!!!!!!! UNDER DEVELOPPMENT DO NOT USE
     def __init__(self , sizes=[] ,type = 'SpreadMDCT' ,debugLevel=None , useC = True,
                  allBases = True , Spreadbases = [],penalty=0.5, maskSize = 2):
         if debugLevel is not None:
@@ -324,12 +324,12 @@ class FullDico(Dico):
         self.ending_touched_index = -1
         for mdctSize in self.sizes:
             if mdctSize in self.spreadScales:
-                self.blocks.append(Block.py_pursuit_SpreadBlock(
+                self.blocks.append(block.SpreadBlock(
                     mdctSize , residualSignal, useC=self.useC))
             else:
-                self.blocks.append(Block.py_pursuit_MDCTBlock(
+                self.blocks.append(block.Block(
                     mdctSize , residualSignal, useC=self.useC))
-    '''
+    
 
 
 #def fromXml(xmlNode):

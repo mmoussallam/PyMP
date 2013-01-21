@@ -55,8 +55,8 @@ print (quantized_app.atom_number, lomp_quantized_app.atom_number,
 # plt.show()
 
 
-print " now at a much larger level : a snr of nearly 30 dB and around 10 Kbps"
-app, dec = mp.mp(signal, dico, 30, 20000, pad=False)
+print " now at a much larger level : a snr of nearly 40 dB and around 20 Kbps"
+app, dec = mp.mp(signal, dico, 40, 20000, pad=False)
 snr, bitrate, quantized_app = mp_coder.simple_mdct_encoding(
     app, 64000, Q=16)
 print (snr, bitrate)
@@ -64,7 +64,7 @@ print (snr, bitrate)
 del app, dico
 
 lomp_app, lomp_dec = mp.mp(
-    signal, lomp_dico, 30, 20000, pad=False)
+    signal, lomp_dico, 40, 20000, pad=False)
 lomp_snr, lomp_bitrate, lomp_quantized_app = mp_coder.simple_mdct_encoding(
     lomp_app, 64000, Q=16, shift_penalty=True)
 print (lomp_snr, lomp_bitrate)
@@ -72,7 +72,7 @@ print (lomp_snr, lomp_bitrate)
 del lomp_app, lomp_dico
 
 rsssmp_app, rssmp_dec = mp.mp(
-    signal, rssmp_dico, 30, 20000, pad=False)
+    signal, rssmp_dico, 40, 20000, pad=False)
 rssmp_snr, rssmp_bitrate, rssmp_quantized_app = mp_coder.simple_mdct_encoding(
     rsssmp_app, 64000, Q=16)
 print (rssmp_snr, rssmp_bitrate)
