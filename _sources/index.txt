@@ -5,21 +5,18 @@
 
 PyMP's documentation!
 =====================
-.. latex::
-	
-		\makeindex 
-		
+
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    doc
    example
    example_coder
    example_objects
-   
-   MP.rst		
+
+   MP.rst
    classes.rst
-		
+
    Mdct.rst
 
 Indices and tables

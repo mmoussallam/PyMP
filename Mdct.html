@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Union of MDCT basis Classes documentation : &mdash; PyMP 0.9.1 documentation</title>
+    <title>Union of MDCT basis Classes documentation : &mdash; PyMP 0.9.2 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.1',
+        VERSION:     '0.9.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="top" title="PyMP 0.9.2 documentation" href="index.html" />
     <link rel="prev" title="Classes Package Documentation:" href="classes.html" /> 
   </head>
   <body>
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="classes.html" title="Classes Package Documentation:"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -97,8 +97,8 @@
 <blockquote>
 <div><span class="target" id="module-PyMP.mdct.atom"></span><div class="section" id="module-mdct-atom">
 <h3>Module mdct.atom<a class="headerlink" href="#module-mdct-atom" title="Permalink to this headline">¶</a></h3>
-<p>This class inherits from <tt class="xref py py-class docutils literal"><span class="pre">pymp_Atom</span></tt> and is used to represent and manipulate MDCT atoms.
-<tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTAtom</span></tt> Objects can either be constructed or recovered from Xml using <tt class="xref py py-func docutils literal"><span class="pre">pymp_MDCTAtom.fromXml()</span></tt></p>
+<p>This class inherits from <a class="reference internal" href="#PyMP.mdct.atom.Atom" title="PyMP.mdct.atom.Atom"><tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt></a> and is used to represent and manipulate MDCT atoms.
+<a class="reference internal" href="#PyMP.mdct.atom.Atom" title="PyMP.mdct.atom.Atom"><tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt></a> Objects can either be constructed or recovered from Xml using <tt class="xref py py-func docutils literal"><span class="pre">fromXml()</span></tt></p>
 <dl class="class">
 <dt id="PyMP.mdct.atom.Atom">
 <em class="property">class </em><tt class="descclassname">PyMP.mdct.atom.</tt><tt class="descname">Atom</tt><big>(</big><em>scale=0</em>, <em>amp=0</em>, <em>timePos=0</em>, <em>freqBin=0</em>, <em>Fs=0</em>, <em>mdctCoeff=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom" title="Permalink to this definition">¶</a></dt>
@@ -150,12 +150,6 @@ Specifies the amplitude, otherwise it will be initialiazed as unit-normed</p>
 <dt id="PyMP.mdct.atom.Atom.synthesize_ifft">
 <tt class="descname">synthesize_ifft</tt><big>(</big><em>newValue=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom.synthesize_ifft" title="Permalink to this definition">¶</a></dt>
 <dd><p>DEPRECATED synthesis using Python fftw3 wrapper but no waveform server... a lot slower</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="PyMP.mdct.atom.Atom.to_xml">
-<tt class="descname">to_xml</tt><big>(</big><em>xmlDoc</em><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom.to_xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Useful routine to output the object as an XML node</p>
 </dd></dl>
 
 </dd></dl>
@@ -239,7 +233,7 @@ New version uses the PyWinServer to serve waveforms</p>
 
 <dl class="method">
 <dt id="PyMP.mdct.block.Block.update">
-<tt class="descname">update</tt><big>(</big><em>newResidual</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em><big>)</big><a class="headerlink" href="#PyMP.mdct.block.Block.update" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">update</tt><big>(</big><em>new_res_signal</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em><big>)</big><a class="headerlink" href="#PyMP.mdct.block.Block.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>update the part of the residual that has been changed and update inner products</p>
 </dd></dl>
 
@@ -278,7 +272,7 @@ BEWARE: memory consumption and CPU load will be very high! only use with very sm
 </dl>
 <dl class="class">
 <dt id="PyMP.mdct.dico.Dico">
-<em class="property">class </em><tt class="descclassname">PyMP.mdct.dico.</tt><tt class="descname">Dico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>useC=True</em>, <em>forceHF=False</em>, <em>parallel=False</em>, <em>debug_level=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">PyMP.mdct.dico.</tt><tt class="descname">Dico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>useC=True</em>, <em>forceHF=False</em>, <em>debug_level=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico" title="Permalink to this definition">¶</a></dt>
 <dd><p>class to handle multiscale MDCT dictionaries using MDCT blocks</p>
 <dl class="method">
 <dt id="PyMP.mdct.dico.Dico.compute_touched_zone">
@@ -320,12 +314,6 @@ ONLY for DEV purposes</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="PyMP.mdct.dico.Dico.to_xml">
-<tt class="descname">to_xml</tt><big>(</big><em>doc</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico.to_xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>A routine to convert the dictionary to an XML node</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="PyMP.mdct.dico.Dico.update">
 <tt class="descname">update</tt><big>(</big><em>residualSignal</em>, <em>iteratioNumber=0</em>, <em>debug=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the projections in each block, only where it needs to be done as specified</p>
@@ -361,17 +349,9 @@ int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)</p>
 <div class="section" id="classes-for-random-matching-pursuit">
 <h2>Classes for Random Matching Pursuit<a class="headerlink" href="#classes-for-random-matching-pursuit" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><span class="target" id="module-PyMP.mdct.rand.block"></span><div class="section" id="module-mdct-random-block">
-<h3>Module mdct.random.block<a class="headerlink" href="#module-mdct-random-block" title="Permalink to this headline">¶</a></h3>
-<p>Please refer to superclass for documentation</p>
-<p>This file handle blocks that are used in Randomized Matching Pursuits
-see [1] for details</p>
-<p>[1] M. Moussallam, L. Daudet, et G. Richard,
-&#8220;Matching Pursuits with Random Sequential Subdictionaries&#8221;
-Signal Processing, vol. 92, pp. 2532-2544 2012.</p>
-<dl class="class">
+<div><span class="target" id="module-PyMP.mdct.rand.block"></span><dl class="class">
 <dt id="PyMP.mdct.rand.block.SequenceBlock">
-<em class="property">class </em><tt class="descclassname">PyMP.mdct.rand.block.</tt><tt class="descname">SequenceBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>randomType='random'</em>, <em>nbSim=1</em>, <em>windowType=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">PyMP.mdct.rand.block.</tt><tt class="descname">SequenceBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>randomType='random'</em>, <em>nbSim=1</em>, <em>windowType=None</em>, <em>seed=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>block implementing the Randomized Pursuit</p>
 <p>Attributes:</p>
 <blockquote>
@@ -393,15 +373,14 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.</p>
 </div></blockquote>
 <dl class="method">
 <dt id="PyMP.mdct.rand.block.SequenceBlock.update">
-<tt class="descname">update</tt><big>(</big><em>newResidual</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em>, <em>iterationNumber=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock.update" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">update</tt><big>(</big><em>new_res_signal</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em>, <em>iterationNumber=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Same as superclass except that at each update, one need to pick a time shift from the sequence</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<span class="target" id="module-PyMP.mdct.rand.dico"></span><div class="section" id="module-pymp-randomdicos">
-<h3>Module pymp_RandomDicos<a class="headerlink" href="#module-pymp-randomdicos" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-PyMP.mdct.rand.dico"></span><div class="section" id="module-pymp-mdct-rand-dico">
+<h3>Module PyMP.mdct.rand.dico<a class="headerlink" href="#module-pymp-mdct-rand-dico" title="Permalink to this headline">¶</a></h3>
 <p>This file handle dctionaries that are used in Randomized Matching Pursuits
 see [1] for details.</p>
 <p>[1] M. Moussallam, L. Daudet, et G. Richard,
@@ -409,7 +388,7 @@ see [1] for details.</p>
 Signal Processing, vol. 92, pp. 2532-2544 2012.</p>
 <dl class="class">
 <dt id="PyMP.mdct.rand.dico.SequenceDico">
-<em class="property">class </em><tt class="descclassname">PyMP.mdct.rand.dico.</tt><tt class="descname">SequenceDico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>seq_type='random'</em>, <em>nbSame=1</em>, <em>windowType=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.dico.SequenceDico" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">PyMP.mdct.rand.dico.</tt><tt class="descname">SequenceDico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>seq_type='random'</em>, <em>nbSame=1</em>, <em>windowType=None</em>, <em>seed=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.dico.SequenceDico" title="Permalink to this definition">¶</a></dt>
 <dd><p>This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner
 the shifts are controlled by the different blocks.</p>
 <p>Attributes:</p>
@@ -442,7 +421,7 @@ the shifts are controlled by the different blocks.</p>
         <li class="right" >
           <a href="classes.html" title="Classes Package Documentation:"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

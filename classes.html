@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Classes Package Documentation: &mdash; PyMP 0.9.1 documentation</title>
+    <title>Classes Package Documentation: &mdash; PyMP 0.9.2 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.1',
+        VERSION:     '0.9.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="top" title="PyMP 0.9.2 documentation" href="index.html" />
     <link rel="next" title="Union of MDCT basis Classes documentation :" href="Mdct.html" />
     <link rel="prev" title="MP routines Documentation" href="MP.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="MP.html" title="MP routines Documentation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -185,9 +185,9 @@ to define this kind of signal, and slice it in frames overlapping or not.</p>
 
 <dl class="method">
 <dt id="PyMP.signals.Signal.subtract">
-<tt class="descname">subtract</tt><big>(</big><em>atom</em>, <em>debug=0</em>, <em>preventEnergyIncrease=True</em><big>)</big><a class="headerlink" href="#PyMP.signals.Signal.subtract" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">subtract</tt><big>(</big><em>atom</em>, <em>debug=0</em>, <em>prevent_energy_increase=True</em><big>)</big><a class="headerlink" href="#PyMP.signals.Signal.subtract" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subtracts the atom waveform from the signal, at the position specified by the atom.timeLocalization property
-if preventEnergyIncrease is True, an error will be raised if subtracting the atom increases the signal&#8217;s energy</p>
+if prevent_energy_increase is True, an error will be raised if subtracting the atom increases the signal&#8217;s energy</p>
 </dd></dl>
 
 <dl class="method">
@@ -195,6 +195,12 @@ if preventEnergyIncrease is True, an error will be raised if subtracting the ato
 <tt class="descname">wigner_plot</tt><big>(</big><em>window=True</em><big>)</big><a class="headerlink" href="#PyMP.signals.Signal.wigner_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the wigner ville distribution and plots it
 WARNING: not sufficiently tested!</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyMP.signals.Signal.window">
+<tt class="descname">window</tt><big>(</big><em>K</em><big>)</big><a class="headerlink" href="#PyMP.signals.Signal.window" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply a sine window on norders</p>
 </dd></dl>
 
 <dl class="method">
@@ -208,7 +214,7 @@ WARNING: not sufficiently tested!</p>
 
 <dl class="class">
 <dt id="PyMP.signals.LongSignal">
-<em class="property">class </em><tt class="descclassname">PyMP.signals.</tt><tt class="descname">LongSignal</tt><big>(</big><em>filepath</em>, <em>frameSize=49152</em>, <em>frameDuration=None</em>, <em>forceMono=False</em>, <em>Noverlap=0</em><big>)</big><a class="headerlink" href="#PyMP.signals.LongSignal" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">PyMP.signals.</tt><tt class="descname">LongSignal</tt><big>(</big><em>filepath</em>, <em>frame_size=49152</em>, <em>frame_duration=None</em>, <em>mono=False</em>, <em>Noverlap=0</em><big>)</big><a class="headerlink" href="#PyMP.signals.LongSignal" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class handling long audio signals</p>
 <blockquote>
 <div><p>Subclass of <a class="reference internal" href="#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> where the data is not loaded at once for memory consumptions purposes
@@ -228,7 +234,7 @@ process large files such as audio archives</p>
 <div><a class="reference internal" href="#PyMP.signals.LongSignal.get_sub_signal" title="PyMP.signals.LongSignal.get_sub_signal"><tt class="xref py py-func docutils literal"><span class="pre">get_sub_signal()</span></tt></a> : Loads a subSignal</div></blockquote>
 <dl class="method">
 <dt id="PyMP.signals.LongSignal.get_sub_signal">
-<tt class="descname">get_sub_signal</tt><big>(</big><em>startSegment</em>, <em>segmentNumber</em>, <em>mono=False</em>, <em>normalize=False</em>, <em>channel=0</em>, <em>padSignal=0</em><big>)</big><a class="headerlink" href="#PyMP.signals.LongSignal.get_sub_signal" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_sub_signal</tt><big>(</big><em>start_seg</em>, <em>seg_num</em>, <em>mono=False</em>, <em>normalize=False</em>, <em>channel=0</em>, <em>pad=0</em><big>)</big><a class="headerlink" href="#PyMP.signals.LongSignal.get_sub_signal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Routine to actually read from the buffer and return a smaller signal instance</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -276,7 +282,7 @@ Attributes:</p>
 <a class="reference internal" href="#PyMP.approx.Approx.to_dico" title="PyMP.approx.Approx.to_dico"><tt class="xref py py-func docutils literal"><span class="pre">to_dico()</span></tt></a> ,
 <a class="reference internal" href="#PyMP.approx.Approx.to_sparse_array" title="PyMP.approx.Approx.to_sparse_array"><tt class="xref py py-func docutils literal"><span class="pre">to_sparse_array()</span></tt></a> ,
 <a class="reference internal" href="#PyMP.approx.Approx.to_array" title="PyMP.approx.Approx.to_array"><tt class="xref py py-func docutils literal"><span class="pre">to_array()</span></tt></a> ,
-<a class="reference internal" href="#PyMP.approx.Approx.write_to_xml" title="PyMP.approx.Approx.write_to_xml"><tt class="xref py py-func docutils literal"><span class="pre">write_to_xml()</span></tt></a> ,
+<tt class="xref py py-func docutils literal"><span class="pre">write_to_xml()</span></tt> ,
 <tt class="xref py py-func docutils literal"><span class="pre">dumpToDisk()</span></tt> ,</p>
 <p>and reversely can be recovered from these formats</p>
 <p>A useful plotting routine, <a class="reference internal" href="#PyMP.approx.Approx.plot_tf" title="PyMP.approx.Approx.plot_tf"><tt class="xref py py-func docutils literal"><span class="pre">plot_tf()</span></tt></a> is provided to visualize atom distribution in the time frequency plane
@@ -365,12 +371,6 @@ key is the index of the atom and values are atom objects</p>
 <dd><p>Returns the approximant as a sparse dictionary object , key is the index of the atom and value is its amplitude</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="PyMP.approx.Approx.write_to_xml">
-<tt class="descname">write_to_xml</tt><big>(</big><em>fname</em>, <em>output_path='./'</em><big>)</big><a class="headerlink" href="#PyMP.approx.Approx.write_to_xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write the atoms using an XML formalism to the designated output file</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="function">
@@ -378,21 +378,6 @@ key is the index of the atom and values are atom objects</p>
 <tt class="descclassname">PyMP.approx.</tt><tt class="descname">fusion_approxs</tt><big>(</big><em>approxCollection</em>, <em>unPad=True</em><big>)</big><a class="headerlink" href="#PyMP.approx.fusion_approxs" title="Permalink to this definition">¶</a></dt>
 <dd><p>fusion a collection of frame by frame approximation.
 The collection is assumed to be temporally ordered</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="PyMP.approx.read_from_mat_struct">
-<tt class="descclassname">PyMP.approx.</tt><tt class="descname">read_from_mat_struct</tt><big>(</big><em>matl_struct</em><big>)</big><a class="headerlink" href="#PyMP.approx.read_from_mat_struct" title="Permalink to this definition">¶</a></dt>
-<dd><p>retrieve the python object from a saved version in matlab format
-This is useful if you saved a py_pursuit_approx object using the scipy.io.savemat
-routine and you loaded it back using scipy.io.loadmat</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="PyMP.approx.read_from_xml">
-<tt class="descclassname">PyMP.approx.</tt><tt class="descname">read_from_xml</tt><big>(</big><em>InputXmlFilePath</em>, <em>xmlDoc=None</em>, <em>buildSignal=True</em><big>)</big><a class="headerlink" href="#PyMP.approx.read_from_xml" title="Permalink to this definition">¶</a></dt>
-<dd><p>reads an xml document and create the corresponding Approx object
-WARNING this method is only designed for MDCT pursuits for now</p>
 </dd></dl>
 
 </div>
@@ -491,7 +476,7 @@ in order to be used correclty by Pursuit algorithm in this framework:</p>
         <li class="right" >
           <a href="MP.html" title="MP routines Documentation"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

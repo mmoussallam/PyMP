@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyMP Tutorial 1. Signal decomposition &mdash; PyMP 0.9.1 documentation</title>
+    <title>PyMP Tutorial 1. Signal decomposition &mdash; PyMP 0.9.2 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.1',
+        VERSION:     '0.9.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="top" title="PyMP 0.9.2 documentation" href="index.html" />
     <link rel="next" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" />
     <link rel="prev" title="What is PyMP?" href="doc.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="doc.html" title="What is PyMP?"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -100,23 +100,25 @@
             
   <div class="section" id="pymp-tutorial-1-signal-decomposition">
 <h1>PyMP Tutorial 1. Signal decomposition<a class="headerlink" href="#pymp-tutorial-1-signal-decomposition" title="Permalink to this headline">¶</a></h1>
-<p>This Tutorial will describe how pymp works, and mostly how to use it to perform audio signal decompositions on multiscale MDCT dictionaries
+<p>This tutorial will describe how PyMP works, and mostly how to use it to perform audio
+signal decompositions on multiscale MDCT dictionaries
 for any question feel free to contact me (<a class="reference external" href="mailto:firstname&#46;lastname&#37;&#52;&#48;gmail&#46;com">firstname<span>&#46;</span>lastname<span>&#64;</span>gmail<span>&#46;</span>com</a>)
 Documentation for the modules that we&#8217;re using here is provided in the next sections.</p>
 <div class="section" id="standard-algorithm">
 <h2>Standard Algorithm<a class="headerlink" href="#standard-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>In this example, the standard algorithm is used to decomposed the glockenspiel signal over a union of 3 MDCT basis:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.signals</span> <span class="kn">import</span> <span class="n">Signal</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP</span> <span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">mp</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.approx</span> <span class="kn">import</span> <span class="n">Approx</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct</span> <span class="kn">import</span> <span class="n">dico</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">8192</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Natom</span> <span class="o">=</span> <span class="mi">1000</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="s">&#39;data/glocs.wav&#39;</span><span class="p">,</span><span class="n">mono</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">3.5</span><span class="o">*</span><span class="n">pySig</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">8192</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pySig</span><span class="o">.</span><span class="n">data</span> <span class="o">+=</span> <span class="mf">0.0001</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">pySig</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pyDico</span><span class="o">=</span> <span class="n">dico</span><span class="o">.</span><span class="n">Dico</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="p">,</span> <span class="n">decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">pySig</span><span class="p">,</span> <span class="n">pyDico</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="n">Natom</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct</span> <span class="kn">import</span> <span class="n">Dico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">8192</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_atoms</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">srr</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="s">&#39;data/glocs.wav&#39;</span><span class="p">,</span> <span class="n">mono</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">3.5</span> <span class="o">*</span> <span class="n">signal</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">8192</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dico</span> <span class="o">=</span> <span class="n">Dico</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="p">,</span> <span class="n">decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">dico</span><span class="p">,</span> <span class="n">srr</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -126,6 +128,11 @@ Documentation for the modules that we&#8217;re using here is provided in the nex
 <p>First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (absolute values) considered.
 (c) is the reconstructed signal, accessible via:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">recomposed_signal</span>
+<span class="go">Signal object located in</span>
+<span class="go">        length: 144768</span>
+<span class="go">        energy of 1812.389</span>
+<span class="go">        sampling frequency 32000</span>
+<span class="go">        number of channels 1</span>
 </pre></div>
 </div>
 <p>and (d) is the time-frequency plot of the 1000 atoms that have been used to approximate the original glockenspiel signal</p>
@@ -134,8 +141,8 @@ Documentation for the modules that we&#8217;re using here is provided in the nex
 <img alt="_images/MP_example.png" src="_images/MP_example.png" />
 </div>
 <p>You can evaluate the quality of the approximation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">compute_srr</span><span class="p">()</span>
-<span class="go">23.657038395028287</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">compute_srr</span><span class="p">()</span> 
+<span class="go">19.167848...</span>
 </pre></div>
 </div>
 <p>and save the result in various formats (see the <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> documentation):</p>
@@ -146,8 +153,9 @@ Documentation for the modules that we&#8217;re using here is provided in the nex
 <h3>Locally Optimized MP<a class="headerlink" href="#locally-optimized-mp" title="Permalink to this headline">¶</a></h3>
 <p>To run a locally adaptive (or optimized) MP, all we have to do is to pick a <a class="reference internal" href="Mdct.html#PyMP.mdct.dico.LODico" title="PyMP.mdct.dico.LODico"><tt class="xref py py-class docutils literal"><span class="pre">LODico</span></tt></a> object as a dictionary. The internal
 routines of its blocks will perform the local optimization so that at our level this is quite transparent:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approxMP</span><span class="p">,</span> <span class="n">decayMP</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">pySig</span><span class="p">,</span> <span class="n">dico</span><span class="o">.</span><span class="n">DICO</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span> <span class="p">,</span><span class="n">srr</span><span class="p">,</span><span class="n">nbAtom</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">approxLoMP</span><span class="p">,</span> <span class="n">decayLoMP</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">pySig</span><span class="p">,</span> <span class="n">dico</span><span class="o">.</span><span class="n">LODICO</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span><span class="n">nbAtom</span><span class="p">,</span><span class="n">padSignal</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct</span> <span class="kn">import</span> <span class="n">LODico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mp_approx</span><span class="p">,</span> <span class="n">mp_decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">Dico</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lomp_approx</span><span class="p">,</span> <span class="n">lomp_decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">LODico</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>(<a class="reference external" href="./pyplots/LoMP_example.py">Source code</a>, <a class="reference external" href="./pyplots/LoMP_example.png">png</a>, <a class="reference external" href="./pyplots/LoMP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/LoMP_example.pdf">pdf</a>)</p>
@@ -155,10 +163,10 @@ routines of its blocks will perform the local optimization so that at our level 
 <img alt="_images/LoMP_example.png" src="_images/LoMP_example.png" />
 </div>
 <p>In addition to plotting, we can compare the quality of the approximations, given a fixed number of atoms (here 500):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">approxMP</span>
-<span class="go">Approx Object: 500 atoms, SRR of 19.51 dB</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">approxLoMP</span>
-<span class="go">Approx Object: 500 atoms, SRR of 23.21 dB</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">mp_approx</span>
+<span class="go">Approx Object: 500 atoms, SRR of 19.17 dB</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">lomp_approx</span>
+<span class="go">Approx Object: 500 atoms, SRR of 23.27 dB</span>
 </pre></div>
 </div>
 <p>The locally adaptive Matching pursuit has yielded a better decomposition (in the sense of mean squared error).
@@ -168,8 +176,8 @@ Alternatively one can verify that for a given level of SRR, LoMP will use a smal
 <h3>MP with Random Sequential Subdictionaries<a class="headerlink" href="#mp-with-random-sequential-subdictionaries" title="Permalink to this headline">¶</a></h3>
 <p>RSSMP is explained in the journal <a class="reference external" href="http://dx.doi.org/10.1016/j.sigpro.2012.03.019">paper</a> .</p>
 <p>Implementation of RSSMP is quite transparent, it&#8217;s done through the use of a <a class="reference internal" href="Mdct.html#PyMP.mdct.rand.dico.SequenceDico" title="PyMP.mdct.rand.dico.SequenceDico"><tt class="xref py py-class docutils literal"><span class="pre">SequenceDico</span></tt></a> object as dictionary:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct.random</span> <span class="kn">import</span> <span class="n">dico</span> <span class="k">as</span> <span class="n">random_dico</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pyRandomDico</span> <span class="o">=</span> <span class="n">random_dico</span><span class="o">.</span><span class="n">RandomDico</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="s">&#39;random&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct.rand</span> <span class="kn">import</span> <span class="n">SequenceDico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq_dico</span> <span class="o">=</span> <span class="n">SequenceDico</span><span class="p">(</span><span class="n">scales</span><span class="p">,</span> <span class="s">&#39;random&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We can now compare the three strategies in terms of normalized reconstruction error</p>
@@ -204,7 +212,7 @@ Alternatively one can verify that for a given level of SRR, LoMP will use a smal
         <li class="right" >
           <a href="doc.html" title="What is PyMP?"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

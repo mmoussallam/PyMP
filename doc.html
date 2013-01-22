@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>What is PyMP? &mdash; PyMP 0.9.1 documentation</title>
+    <title>What is PyMP? &mdash; PyMP 0.9.2 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.1',
+        VERSION:     '0.9.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 0.9.1 documentation" href="index.html" />
+    <link rel="top" title="PyMP 0.9.2 documentation" href="index.html" />
     <link rel="next" title="PyMP Tutorial 1. Signal decomposition" href="example.html" />
     <link rel="prev" title="PyMP’s documentation!" href="index.html" /> 
   </head>
@@ -46,7 +46,7 @@
         <li class="right" >
           <a href="index.html" title="PyMP’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -108,7 +108,7 @@ multiscale time-frequency dictionaries.</p>
 <p>For now, it can only handle MDCT-based dictionaries</p>
 <div class="section" id="architecture">
 <h2>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h2>
-<p>PyMP is very much structured like the MPTK toolbox from INRIA .
+<p>PyMP is very much structured like the MPTK toolbox from INRIA.
 Some of my research required that I would rewrite the core
 decomposition algorithm in order to design variants of it. In
 particular, the rewriting allows the use of Randomized Algorithms,
@@ -135,8 +135,7 @@ signal. Thus, the algorithm builds an <em>approximant</em> <img src="_images/mat
 <li>Approximants (such as <img src="_images/mathmpl/math-c69356f997.png" style="position: relative; bottom: -8px"/>) are handled through <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> objects</li>
 </ul>
 </div></blockquote>
-<p>The algorithm itself is performed using funnction from the <a class="reference internal" href="MP.html#module-PyMP.mp" title="PyMP.mp"><tt class="xref py py-mod docutils literal"><span class="pre">mp</span></tt></a> module.  A comprehensive view of how it works is provided in the
-next topic.</p>
+<p>The algorithm itself is performed using function from the <a class="reference internal" href="MP.html#module-PyMP.mp" title="PyMP.mp"><tt class="xref py py-mod docutils literal"><span class="pre">mp</span></tt></a> module. A comprehensive view of how it works is provided in the next topic.</p>
 </div>
 </div>
 <div class="section" id="how-to-have-it-work">
@@ -186,14 +185,14 @@ used through a python C extension module.</p>
 </div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>Hopefully you won&#8217;t need to perform these operations, it will be done for you by executing by the <em>setup.py</em> script
-in the root directory. Simply run:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
-</pre></div>
-</div>
-<p class="last">And (provided all headers and libraries are present and accessible) it should be fine.
-This should compile the C extension and install all sources and packages in your dist-package local directory
-You may need to have writing rights to perform this operation (e.g. using <em>sudo</em>).</p>
+<blockquote>
+<div>Hopefully you won&#8217;t need to perform these operations, it will be done for you by executing by the <em>setup.py</em> script
+in the root directory. Simply run:</div></blockquote>
+<p>$python setup.py install</p>
+<blockquote class="last">
+<div>And (provided all headers and libraries are present and accessible) it should be fine.
+This should compile the C extension and install all sources and packages in your dist-package
+local directory. You may need to have writing rights to perform this operation (e.g. using <em>sudo</em>).</div></blockquote>
 </div>
 </div>
 <div class="section" id="bibliography">
@@ -225,7 +224,7 @@ Signal Processing, vol. 92, pp. 2532-2544, 2012. <a class="reference external" h
         <li class="right" >
           <a href="index.html" title="PyMP’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
