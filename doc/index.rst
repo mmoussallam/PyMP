@@ -5,12 +5,9 @@
 
 PyMP's documentation!
 =====================
-.. latex::
-
-		\makeindex
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    doc
    example

@@ -5,8 +5,8 @@ testing normal behavior of most MP functions and classes
 
 M.Moussallam
 """
-import matplotlib
-matplotlib.use('Agg')  # to avoid display while testing
+import matplotlib.pyplot as plt
+plt.switch_backend('Agg')  # to avoid display while testing
 
 import os
 import os.path as op
@@ -14,7 +14,6 @@ import sys
 
 import unittest
 from PyMP.tools import mdct
-import matplotlib.pyplot as plt
 import numpy as np
 import time
 

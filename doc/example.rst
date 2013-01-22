@@ -30,7 +30,7 @@ In this example, the standard algorithm is used to decomposed the glockenspiel s
 	IMPORTANT: the fact that we know it's the standard algorithm that is used is because we choosed a :class:`.Dico` object as dictionary.
 
 First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (absolute values) considered.
-(c) is the reconstructed signal, accessible via::
+(c) is the reconstructed signal, accessible via:
 
 >>> approx.recomposed_signal
 Signal object located in 
@@ -48,7 +48,7 @@ You can evaluate the quality of the approximation:
 >>> approx.compute_srr() # doctest:+ELLIPSIS
 19.167848...
 
-and save the result in various formats (see the :class:`.Approx` documentation)::
+and save the result in various formats (see the :class:`.Approx` documentation):
 
 >>> approx.recomposed_signal.write('outPutPath.wav')
 

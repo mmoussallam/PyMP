@@ -132,8 +132,8 @@ the *shift_penalty* argument set to `True` in order to take the additionnal para
 
 Then one can check that the encoding is more efficient:
 
->>> (lomp_snr, lomp_bitrate)
-(18.310386722535156, 2006.3726570767478)
+>>> print "%f, %f" % (lomp_snr, lomp_bitrate)
+18.310387, 2006.372657
 
 For the same bitrate of 2 kbps, we now have an SNR of nearly 20 dB where a standard MP yielded a mere 16 dB. 
 Each atom is more expensive, but also creates less dark energy. One can verify that the coder has used a 
@@ -157,8 +157,8 @@ not signal-dependant.
 Now we can check that RSSMP atoms are much more efficient at representing the signal than the ones selected in a 
 fixed dictionary, but the cost of each atom is the same thus:
 
->>> (rssmp_snr,rssmp_bitrate)
-(18.931437384835085, 2003.7309194613388)
+>>> print "%f, %f" % (rssmp_snr,rssmp_bitrate)
+18.931437, 2003.730919
 
 .. note::
 
