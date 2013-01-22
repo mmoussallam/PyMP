@@ -23,6 +23,7 @@ software.
 
 In the opposite case let's have a look at how this is built:
 
+.. uml:: /home/manu/workspace/meeg_denoise/bench.py
 
 
 A few notions

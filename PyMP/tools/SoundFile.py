@@ -6,24 +6,6 @@
 #                                                                            */
 # M. Moussallam                                             Mon Aug 16 2010  */
 # -------------------------------------------------------------------------- */
-#                                                                            */
-#                                                                            */
-#  This program is free software; you can redistribute it and/or             */
-#  modify it under the terms of the GNU General Public License               */
-#  as published by the Free Software Foundation; either version 2            */
-#  of the License, or (at your option) any later version.                    */
-#                                                                            */
-#  This program is distributed in the hope that it will be useful,           */
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            */
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
-#  GNU General Public License for more details.                              */
-#                                                                            */
-#  You should have received a copy of the GNU General Public License         */
-#  along with this program; if not, write to the Free Software               */
-#  Foundation, Inc., 59 Temple Place - Suite 330,                            */
-#  Boston, MA  02111-1307, USA.                                              */
-#                                                                            */
-#******************************************************************************/
 
 # A handle for audio files, including routines to Read, Write, Resample, Concatenate and Crop
 
@@ -41,37 +23,37 @@ class SoundFile:
     def __init__(self, filename):
         import wave,numpy
         if not len(filename) >0:
-            print "Invalid file name"
+            print "Invalid wavfile name"
 
         elif filename[-3:] == 'raw':
             self.filename = filename[(filename.rfind('/'))+1:]
             self.filepath = filename[:(filename.rfind('/'))]
-            file = open(filename , 'r');
+            wavfile = open(filename , 'r');
 
             self.filetype = filename[len(filename)-3:]
             self.nbChannel = 1 # fixed value
             self.sampleRate = 11025 # fixed value
-            #self.nframes = file.getnframes() # fixed value
+            #self.nframes = wavfile.getnframes() # fixed value
             self.sample_width = 2 # format is signed int16
             #data = data/max([abs(min(data)) max(data)]);
-            str_bytestream = file.read(-1)
+            str_bytestream = wavfile.read(-1)
             self.data = numpy.fromstring(str_bytestream,'h')
             self.nframes = len(self.data)
-            file.close()
+            wavfile.close()
 
         elif filename[-3:] == 'wav' or filename[-3:] == 'WAV':
             self.filename = filename[(filename.rfind('/'))+1:]
             self.filepath = filename[:(filename.rfind('/'))]
 
-            file = wave.open(filename, 'r')
+            wavfile = wave.open(filename, 'r')
             self.filetype = filename[len(filename)-3:]
-            self.nbChannel = file.getnchannels()
-            self.sampleRate = file.getframerate()
-            self.nframes = file.getnframes()
-            self.sample_width = file.getsampwidth()
+            self.nbChannel = wavfile.getnchannels()
+            self.sampleRate = wavfile.getframerate()
+            self.nframes = wavfile.getnframes()
+            self.sample_width = wavfile.getsampwidth()
 
             #self.data = array.array('h') #creates an array of ints
-            str_bytestream = file.readframes(self.nframes)
+            str_bytestream = wavfile.readframes(self.nframes)
 
             #print filename,self.sampleWidth, self.nbChannel , self.sampleRate,self.nframes
 
@@ -86,7 +68,7 @@ class SoundFile:
             self.data = numpy.fromstring(str_bytestream,dtype=typeStr)
 
 #            self.data = numpy.fromstring(str_bytestream,'h')
-            file.close()
+            wavfile.close()
         else:
             raise TypeError('Audio format not recognized')
 
@@ -117,10 +99,10 @@ class SoundFile:
         else:
             outputpath = destination
 
-        file = wave.open(outputpath + outputname, 'w')
-        file.setparams((self.nbChannel, self.sample_width , self.sampleRate , self.nframes , 'NONE', 'noncompressed'))
-        file.writeframes(self.data.tostring())
-        file.close()
+        wavfile = wave.open(outputpath + outputname, 'w')
+        wavfile.setparams((self.nbChannel, self.sample_width , self.sampleRate , self.nframes , 'NONE', 'noncompressed'))
+        wavfile.writeframes(self.data.tostring())
+        wavfile.close()
 
         print 'File written to ' , outputpath + outputname
 

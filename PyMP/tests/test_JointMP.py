@@ -22,14 +22,14 @@ from PyMP.mdct import dico as mp_mdct_dico
 from PyMP.mdct.joint import block as joint_block
 from PyMP.mdct.joint import dico as joint_dico
 
-audioFilePath = op.join(op.dirname(__file__), '..', '..', 'data')
+audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
 
 
 class BlocksTest(unittest.TestCase):
     """ Testing the blocks """
     def runTest(self):
 
-        sig = signals.Signal(op.join(audioFilePath, 'glocs.wav'),
+        sig = signals.Signal(op.join(audio_filepath, 'glocs.wav'),
                                mono=True, normalize=True)
 
         sig.crop(0, 5 * 8192)
@@ -89,7 +89,7 @@ class DicosTest(unittest.TestCase):
 
     def runTest(self):
         # create a SpreadDico
-        sig = signals.Signal(op.join(audioFilePath, 'glocs.wav'), mono=True)
+        sig = signals.Signal(op.join(audio_filepath, 'glocs.wav'), mono=True)
         pySig2 = sig.copy()
 
         decalage = 50
@@ -143,7 +143,7 @@ class DicosTest(unittest.TestCase):
 class PursuitTest(unittest.TestCase):
 
     def runTest(self):
-        sig = signals.Signal(op.join(audioFilePath, 'glocs.wav'),
+        sig = signals.Signal(op.join(audio_filepath, 'glocs.wav'),
                                mono=True, normalize=True)
         pySig2 = sig.copy()
 #        pySig3 = sig.copy()
@@ -226,13 +226,13 @@ class SymetryTest(unittest.TestCase):
 
     def runTest_notCompleted(self):
 
-        sig = signals.Signal(op.join(audioFilePath, 'glocs.wav'),
+        sig = signals.Signal(op.join(audio_filepath, 'glocs.wav'),
                                mono=True, normalize=True)
-        pySig2 = signals.Signal(op.join(audioFilePath + 'voicemale.wav'),
+        pySig2 = signals.Signal(op.join(audio_filepath + 'voicemale.wav'),
                                 mono=True, normalize=True)
-        pySig3 = signals.Signal(op.join(audioFilePath + 'voicefemale.wav'),
+        pySig3 = signals.Signal(op.join(audio_filepath + 'voicefemale.wav'),
                                 mono=True, normalize=True)
-        pySig4 = signals.Signal(op.join(audioFilePath + 'orchestra.wav'),
+        pySig4 = signals.Signal(op.join(audio_filepath + 'orchestra.wav'),
                                 mono=True, normalize=True)
 
         decalage = 0
@@ -295,13 +295,13 @@ class nonLinearTest(unittest.TestCase):
 
     def runTest(self):
 
-        sig = signals.Signal(op.join(audioFilePath, 'glocs.wav'),
+        sig = signals.Signal(op.join(audio_filepath, 'glocs.wav'),
                                mono=True, normalize=True)
-        pySig2 = signals.Signal(op.join(audioFilePath, 'ClocheB.wav'),
+        pySig2 = signals.Signal(op.join(audio_filepath, 'ClocheB.wav'),
                                 mono=True, normalize=True)
-        pySig3 = signals.Signal(op.join(audioFilePath, 'Bach_prelude_4s.wav'),
+        pySig3 = signals.Signal(op.join(audio_filepath, 'Bach_prelude_4s.wav'),
                                 mono=True, normalize=True)
-        pySig4 = signals.Signal(op.join(audioFilePath, 'Bach_prelude_40s.wav'),
+        pySig4 = signals.Signal(op.join(audio_filepath, 'Bach_prelude_40s.wav'),
                                 mono=True, normalize=True)
 
         decalage = 10
@@ -394,7 +394,7 @@ class perfTest(unittest.TestCase):
 
     def runTest(self):
         print " Starting Performances Tests"
-        sig = signals.Signal(op.join(audioFilePath, 'glocs.wav'),
+        sig = signals.Signal(op.join(audio_filepath, 'glocs.wav'),
                                mono=True, normalize=True)
         pySig2 = sig.copy()
 #        pySig3 = sig.copy()
@@ -419,7 +419,7 @@ class perfTestsNL(unittest.TestCase):
 
     def runTest(self):
         print " Starting Performances Tests with NL techniques"
-        sig = signals.Signal(op.join(audioFilePath, 'glocs.wav'),
+        sig = signals.Signal(op.join(audio_filepath, 'glocs.wav'),
                                mono=True, normalize=True)
         pySig2 = sig.copy()
 #        pySig3 = sig.copy()
@@ -451,7 +451,7 @@ class perfTestsNL(unittest.TestCase):
     def toleranceTests(self):
         print "%%%%%%%%%%%%%%% Testing Joint mp with increased Tolerance %%%%%%%%%%%%%%%"
         sig = signals.Signal(
-            audioFilePath + 'glocs.wav', mono=True, normalize=True)
+            audio_filepath + 'glocs.wav', mono=True, normalize=True)
         pySig2 = sig.copy()
 #        pySig3 = sig.copy()
 

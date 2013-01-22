@@ -430,7 +430,8 @@ class Approx:
             else:
                 if patchColor is None:
                     patchtuplecolor = (1 - math.sqrt(colorvalue),
-                                       1 - math.sqrt(colorvalue), 1 - math.sqrt(colorvalue))
+                                       1 - math.sqrt(colorvalue),
+                                       1 - math.sqrt(colorvalue))
                     colors.append(colorvalue)
                 else:
                     patchtuplecolor = patchColor
@@ -452,7 +453,11 @@ class Approx:
             # first sort the patches by values
             sortedIndexes = valueArray.argsort()
             PatchArray = np.array(patches)
-            p = PatchCollection(PatchArray[sortedIndexes].tolist(), linewidths=0., cmap=matplotlib.cm.copper_r, match_original=False, alpha=alphaCoeff)
+            p = PatchCollection(PatchArray[sortedIndexes].tolist(),
+                                linewidths=0.,
+                                cmap=matplotlib.cm.copper_r,
+                                match_original=False,
+                                alpha=alphaCoeff)
     #        print array(colors).shape
             p.set_array(valueArray[sortedIndexes])
 

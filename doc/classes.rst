@@ -12,7 +12,7 @@ Signal and Approximation Handles
 		:members: Signal, LongSignal
 
 	.. automodule:: PyMP.approx
-		:members:
+		:members: Approx
 
 Abstract MP classes
 *******************

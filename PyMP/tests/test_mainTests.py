@@ -34,7 +34,7 @@ from PyMP import log
 from PyMP import mp
 from PyMP import parallelProjections
 
-audioFilePath = op.join(op.dirname(__file__), '..', '..', 'data')
+audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
 
 
 class AtomTest(unittest.TestCase):
@@ -148,11 +148,11 @@ class Signaltest(unittest.TestCase):
 
         del signal
 
-        signal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"))
+        signal = signals.Signal(op.join(audio_filepath, "ClocheB.wav"))
         self.assertNotEqual(signal.length, 0)
         self.assertNotEqual(signal.data, [])
         self.assertEqual(signal.channel_num, 2)
-        self.assertEqual(signal.location, op.join(audioFilePath, "ClocheB.wav"))
+        self.assertEqual(signal.location, op.join(audio_filepath, "ClocheB.wav"))
         self.assertEqual(signal.fs, 8000)
 
         # Last test, the wigner ville plot
@@ -163,7 +163,7 @@ class Signaltest(unittest.TestCase):
 
         del signal
 
-        signal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                 normalize=True, mono=True)
         data1 = signal.data.copy()
         # try adding and subtracting an atom
@@ -205,7 +205,7 @@ class Signaltest(unittest.TestCase):
 
         # test on a long signals
         L = 4 * 16384
-        longSignal = signals.LongSignal(op.join(audioFilePath,
+        longSignal = signals.LongSignal(op.join(audio_filepath,
                                                 "Bach_prelude_40s.wav"), L)
         # suppose we want to retrieve the middle of the signals , namely from
         # frame 5  to 12
@@ -215,7 +215,7 @@ class Signaltest(unittest.TestCase):
             startSeg, segNumber, normalize=True)
 
         # witness signals
-        witSignal = signals.Signal(op.join(audioFilePath,
+        witSignal = signals.Signal(op.join(audio_filepath,
                                            "Bach_prelude_40s.wav"),
                                    normalize=True, mono=False)
 
@@ -233,7 +233,7 @@ class Signaltest(unittest.TestCase):
         shortSignal.write(outputPath)
 
         # test long signals with overlap 50 %
-        longSignal = signals.LongSignal(op.join(audioFilePath,
+        longSignal = signals.LongSignal(op.join(audio_filepath,
                                                 "Bach_prelude_40s.wav"),
                                         L, True, 0.5)
         # suppose we want to retrieve the middle of the signals , namely from
@@ -243,7 +243,7 @@ class Signaltest(unittest.TestCase):
         shortSignal = longSignal.get_sub_signal(startSeg, segNumber, False)
 
         # witness signals
-        witSignal = signals.Signal(op.join(audioFilePath,
+        witSignal = signals.Signal(op.join(audio_filepath,
                                            "Bach_prelude_40s.wav"),
                                    normalize=True, mono=False)
 
@@ -273,7 +273,7 @@ class Signaltest(unittest.TestCase):
 class BlockTest(unittest.TestCase):
     def runTest(self):
 
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         signal_original.crop(0, 5 * 8192)
         signal_original.pad(2048)
@@ -333,7 +333,7 @@ class MPTest(unittest.TestCase):
     
     def badArgsTest(self):
         print "TESTING BAD CALLS"
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         dico = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
                                    4096, 8192, 16384])
@@ -365,7 +365,7 @@ class MPTest(unittest.TestCase):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
         dico = mp_mdct_dico.Dico([256, 2048, 8192])
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
 
@@ -380,7 +380,7 @@ class MPTest(unittest.TestCase):
                                          synthesize(0).data, signal_original.fs, False)
 
         # second test
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
 
         # last test - decomposition profonde
@@ -445,7 +445,7 @@ class OMPTest(unittest.TestCase):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
         dico = mp_mdct_dico.Dico([256, 2048, 8192])
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
 
@@ -460,7 +460,7 @@ class OMPTest(unittest.TestCase):
                                          synthesize(0).data, signal_original.fs, False)
 
         # second test
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
 
         # last test - decomposition profonde
@@ -482,7 +482,7 @@ class SequenceDicoTest(unittest.TestCase):
 
         dico = random_dico.SequenceDico(
             [256, 2048, 8192], seq_type='random', seed=1001)
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
 
@@ -500,7 +500,7 @@ class SequenceDicoTest(unittest.TestCase):
         
         
         real_fix_dico = mp_mdct_dico.Dico([256, 2048, 8192]);
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                        normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
 
@@ -533,7 +533,7 @@ class ApproxTest(unittest.TestCase):
         del app
 
         dico = mp_mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          mono=True)
         signal_original.crop(0, 5 * max(dico.sizes))
 
@@ -619,7 +619,7 @@ class ApproxTest(unittest.TestCase):
         self.ioTesting()
 
     def ioTesting(self):
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True,
                                          debug_level=0)
         signal_original.crop(0, 1 * 16384)
@@ -683,7 +683,7 @@ class LOMPTest(unittest.TestCase):
         pyCCDico = mp_mdct_dico.LODico([256, 2048, 8192])
         dico = mp_mdct_dico.Dico([256, 2048, 8192])
 
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         signal_original.crop(0, 1 * 16384)
 
@@ -882,7 +882,7 @@ class SSMPTest(unittest.TestCase):
         seq_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
         dico = mp_mdct_dico.Dico([256, 2048, 8192])
 
-        signal_original = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         signal_original.crop(0, 1 * 16384)
 
@@ -986,7 +986,7 @@ class SSMPTest(unittest.TestCase):
 class MPlongTest(unittest.TestCase):
     """ this time we decompose a longer signals with the mp_LongSignal : result in an enframed signals """
     def runTest(self):
-        filePath = op.join(audioFilePath, "Bach_prelude_4s.wav")
+        filePath = op.join(audio_filepath, "Bach_prelude_4s.wav")
 
         # Let us load a long signals: not loaded in memory for now, only
         # segment by segment in the mp process

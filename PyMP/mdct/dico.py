@@ -296,7 +296,7 @@ class FullDico(Dico):
                        iterationNumber] = projMat  # /normCoeff
             ide += projMat.shape[0]
 
-class pymp_SpreadDico(Dico):
+class SpreadDico(Dico):
     # !!!!!!!!!!! UNDER DEVELOPPMENT DO NOT USE
     def __init__(self , sizes=[] ,type = 'SpreadMDCT' ,debugLevel=None , useC = True,
                  allBases = True , Spreadbases = [],penalty=0.5, maskSize = 2):

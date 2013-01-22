@@ -45,7 +45,7 @@ from cmath import exp, pi
 import matplotlib.pyplot as plt
 
 
-audioFilePath = op.join(op.dirname(__file__), '..', '..', 'data')
+audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
 
 
 print "-----Test mp sur multi-echelle MDCT"
@@ -60,7 +60,7 @@ if parallelProjections.clean_plans() != 1:
     print "Initiliazing Stage Failed"
 
 
-pySigOriginal = signals.Signal(op.join(audioFilePath, "ClocheB.wav"),
+pySigOriginal = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                normalize=True, mono=True)
 pyDico2 = dico.Dico(mdctDico)
 
