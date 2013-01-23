@@ -29,7 +29,7 @@ from PyMP.base import BaseAtom
 from PyMP.tools.mdct import imdct
 
 
-global _Logger
+#global _Logger
 _Logger = log.Log('Approx')
 
 

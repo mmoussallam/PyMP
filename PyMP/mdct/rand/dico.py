@@ -20,8 +20,8 @@ from ... import log
 from . import block
 
 
-global _Logger
-_Logger = log.Log('RandomMDCTDico', level=0)
+#global _Logger
+_Logger = log.Log('SSMPDicos', level=0)
 
 
 class SequenceDico(Dico):

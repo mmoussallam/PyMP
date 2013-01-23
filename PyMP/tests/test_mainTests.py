@@ -131,7 +131,7 @@ class DicoTest(unittest.TestCase):
 
         # test dictionary class
         dico = mp_mdct_dico.Dico(
-            [2 ** l for l in range(7, 15, 1)], debug_level=3)
+            [2 ** l for l in range(7, 15, 1)], debug_level=2)
         self.assertEqual(dico.sizes, [128, 256, 512, 1024,
                                       2048, 4096, 8192, 16384])
         self.assertEqual(dico.nature, 'MDCT')
@@ -523,7 +523,7 @@ class ApproxTest(unittest.TestCase):
 
     def runTest(self):        
 
-        app = approx.Approx(debug_level=3)
+        app = approx.Approx(debug_level=2)
         self.assertEqual(app.original_signal, None)
         self.assertEqual(app.atom_number, 0)
         self.assertEqual(app.srr, 0)
@@ -1034,7 +1034,7 @@ if __name__ == '__main__':
 #    suite.addTest(MPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
-#    suite.addTest(ApproxTest())
+    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
     suite.addTest(BlockTest())

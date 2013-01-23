@@ -27,9 +27,10 @@ from ...mdct import block as mdct_block
 from ...mdct import atom as mdct_atom
 
 # declare global win_server shared by all MDCT blocks instances
-global _PyServer, _Logger
+global _PyServer
+# _Logger
 _PyServer = win_server.PyServer()
-_Logger = log.Log('RandomMDCTBlock', level=0)
+_Logger = log.Log('JointBlocks', level=0)
 
 
 class SetBlock(mdct_block.Block):

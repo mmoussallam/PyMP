@@ -38,16 +38,16 @@ This module describes 3 kind of blocks:
 
 import sys
 
-from numpy.fft import fft
+#from numpy.fft import fft
 import numpy as np
 
-from math import sqrt, floor
+from math import  floor
 from cmath import exp
 import matplotlib.pyplot as plt
 
 from .. import win_server
 from .. import  log
-from ..tools import Xcorr  # , Misc
+#from ..tools import Xcorr  # , Misc
 from .. import parallelProjections
 from ..base import BaseBlock
 from . import atom
@@ -55,7 +55,8 @@ from . import atom
 
 
 # declare global PyWinServer shared by all MDCT blocks instances
-global _PyServer, _Logger
+global _PyServer
+#, _Logger
 _PyServer = win_server.PyServer()
 _Logger = log.Log('MDCTBlock', level=0)
 

@@ -41,7 +41,7 @@ from .. import log
 from ..base import BaseDico, BaseAtom
 from . import block
 
-global _Logger
+#global _Logger
 _Logger = log.Log('MDCTDico', level=0)
 
 
@@ -64,7 +64,9 @@ class Dico(BaseDico):
     def __init__(self, sizes=[], useC=True, forceHF=False, debug_level=None):
         if debug_level is not None:
             _Logger.set_level(debug_level)
-
+        else:
+            _Logger.set_level(0)
+            
         self.sizes = sizes
         self.tolerances = [2]*len(self.sizes)
         self.use_c_optim = useC

@@ -7,6 +7,7 @@ from ...mdct import dico as mdct_dico
 from ..rand import dico as random_dico
 from . import block as joint_block
 
+_Logger = log.Log('JointDicos', level=0)
 
 class SetDico(mdct_dico.Dico):
     """ This class handles multiple dictionaries the best atom is selected when best explaining all the signals
