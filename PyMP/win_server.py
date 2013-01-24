@@ -49,28 +49,16 @@ class PyServer():
     PostTwidCoeff = {}
         # dictionary of post-twidlle coefficient: key is the scale
     Windows = {}  # Sine Windows : key is the scale
-#    fftplans = {} ; # dictionary of pre-defined fftwplans
-#    fftinputs = {};
-#    fftoutputs = {};
+
+    __single = None
 
     def __init__(self, useC=True):
         """ The Server is global"""
+        if PyServer.__single:
+            raise PyServer.__single
+        PyServer.__single = self
         self.use_c_optim = useC
 
-    # twidlle coefficients
-#    def initialize(self, L):
-#        """ instantiate the coefficients for the given scale """
-#        self.Windows[L] = np.array([np.sin(float(l + 0.5) * (np.pi / L))
-#                                for l in range(L)])
-#        self.PreTwidCoeffs[L] = np.array([cmath.exp(1j * 2 * float(
-#            n) * np.pi * (float(float(L / 4 + 0.5)) / float(L))) for n in range(L)])
-#        self.PostTwidCoeff[L] = np.array([cmath.exp(
-#            0.5 * 1j * 2 * np.pi * (float(n) + (L / 4 + 0.5)) / L) for n in range(L)])
-
-#        self.fftinputs[L] = zeros((L,1),complex);
-#        self.fftoutputs[L] = zeros((L,1),complex);
-#        self.fftplans[L] = fftw3.Plan(self.fftinputs[L],self.fftoutputs[L], direction='backward', flags=['estimate'])
-#
     def get_waveform(self, scale, binIndex):
         ''' Check whether the waveform is already in the dictionary
             If waveform has already been created, no need to recompute it'''
@@ -85,33 +73,16 @@ class PyServer():
         if self.use_c_optim:
             return parallelProjections.get_atom(int(scale), int(binIndex))
 
-# DEPRECATED
-#        else:
-#            L = scale
-#            # Check whether coefficients are initialized
-#            if not scale in self.Windows:
-#                self.initialize(scale)
-#            K = L / 2
-#            temp = np.zeros(2 * L)
-#            temp[K + binIndex] = 1
-#            waveform = np.zeros(2 * L)
-#
-#            y = np.zeros(L, complex)
-#            x = np.zeros(L, complex)
-#            # we're note in Matlab anymore, loops are more straight than
-#            # indexing
-#            for i in range(1, 3):
-#                y[0:K] = temp[i * K: (i + 1) * K]
-#    #
-#                # do the pre-twiddle
-#                y = y * self.PreTwidCoeffs[L]
-#                x = ifft(y)
-#                x = x * self.PostTwidCoeff[L]
-#                x = 2 * math.sqrt(1 / float(L)) * L * x.real * self.Windows[L]
-#                waveform[i * K: i * K + L] = waveform[i * K: i * K + L] + x
-#
-#            # scrap zeroes on the borders
-#            return waveform[L / 2:-L / 2]
+
+def get_server(x=PyServer):
+    """ You should only access servers via this class method:
+        if no instance is available, it will create one, otherwise
+        it will return the singleton """
+    try:
+        single = x()
+    except PyServer, s:
+        single = s
+    return single
 
 
 class PyGaborServer():

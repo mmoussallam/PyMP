@@ -9,13 +9,18 @@ from . import block as joint_block
 
 _Logger = log.Log('JointDicos', level=0)
 
+
 class SetDico(mdct_dico.Dico):
-    """ This class handles multiple dictionaries the best atom is selected when best explaining all the signals
-        Then a refinement phase is performed late to determine the local time shifts and amplitudes
-        This class handles a set of dictionaries, one for each Jointly decomposed signals
-        update method just call update in all dictionaries, just like initialize
-        get_best_atom starts with retrieving all the projections, sums them all and then decide what atom is the
-        best choice. Then it is locally adapted to each signal, so a list of atoms is returned instead of one
+    """ This class handles multiple dictionaries the best atom is selected
+        when best explaining all the signals
+        Then a refinement phase is performed late to determine the local
+        time shifts and amplitudes
+        This class handles a set of dictionaries, one for each Jointly
+        decomposed signals update method just call update in all
+        dictionaries, just like initialize, get_best_atom starts with
+        retrieving all the projections, sums them all and then decide what
+        atom is the best choice. Then it is locally adapted to each
+        signal, so a list of atoms is returned instead of one
         """
 
     # parameters

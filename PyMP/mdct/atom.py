@@ -44,10 +44,10 @@ try:
 except ImportError:
     print "Atoms can be saved and recovered in xml format, but you XML library seems not available"
 
-global _PyServer
+#global _PyServer
 #_Logger
 # Initializing the waveform server as a global variable
-_PyServer = win_server.PyServer()
+_PyServer = win_server.get_server()
 
 
 class Atom(BaseAtom):

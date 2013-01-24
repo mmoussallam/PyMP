@@ -6,6 +6,7 @@ testing normal behavior of most MP functions and classes
 M.Moussallam
 """
 import matplotlib.pyplot as plt
+from PyMP.mdct.block import Block
 plt.switch_backend('Agg')  # to avoid display while testing
 
 import os
@@ -32,6 +33,7 @@ from PyMP import approx
 from PyMP import signals
 from PyMP import log
 from PyMP import mp
+from PyMP import win_server
 from PyMP import parallelProjections
 
 audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
@@ -138,9 +140,8 @@ class DicoTest(unittest.TestCase):
 
 
 class Signaltest(unittest.TestCase):
-   
+
     def runTest(self):
-        
 
         signal = signals.Signal(debug_level=3)
         self.assertEqual(signal.length, 0)
@@ -152,7 +153,8 @@ class Signaltest(unittest.TestCase):
         self.assertNotEqual(signal.length, 0)
         self.assertNotEqual(signal.data, [])
         self.assertEqual(signal.channel_num, 2)
-        self.assertEqual(signal.location, op.join(audio_filepath, "ClocheB.wav"))
+        self.assertEqual(
+            signal.location, op.join(audio_filepath, "ClocheB.wav"))
         self.assertEqual(signal.fs, 8000)
 
         # Last test, the wigner ville plot
@@ -170,13 +172,12 @@ class Signaltest(unittest.TestCase):
         # TEST bad calls
         badargs = (None,)
         self.assertRaises(TypeError, signal.add, *badargs)
-        
+
         pyAtom = mdct_atom.Atom(1024, 0.57, 4500, 128, 8000, 0.57)
         signal.add(pyAtom)
 
         data2 = signal.data.copy()
 
-        
         self.assertNotEqual(sum((data1 - data2) ** 2), 0)
         signal.subtract(pyAtom)
 
@@ -185,24 +186,23 @@ class Signaltest(unittest.TestCase):
         # Second time: it should not be happy!
         badargs = (pyAtom,)
         self.assertRaises(ValueError, signal.subtract, *badargs)
-        
-        # Unless we force him to accept            
-        signal.subtract(pyAtom, prevent_energy_increase = False);
-        
+
+        # Unless we force him to accept
+        signal.subtract(pyAtom, prevent_energy_increase=False)
+
         # testing the windowing function
         sig = signals.Signal(np.ones(128,))
         sig.window(32)
-        self.assertTrue((sig.data[0:32] == np.sin((np.arange(32).astype(float))*np.pi/(2*32))).all()) 
-        self.assertTrue((sig.data[-32:] == np.sin((np.arange(32).astype(float))*np.pi/(2*32) + np.pi/2)).all())
+        self.assertTrue((sig.data[0:32] == np.sin(
+            (np.arange(32).astype(float)) * np.pi / (2 * 32))).all())
+        self.assertTrue((sig.data[-32:] == np.sin(
+            (np.arange(32).astype(float)) * np.pi / (2 * 32) + np.pi / 2)).all())
 
-        
 #        plt.plot(data1)
 #        plt.plot(data2)
 #        plt.plot(signal.data)
 #        plt.legend(("original", "added" , "subtracted"))
 #
-        
-
         # test on a long signals
         L = 4 * 16384
         longSignal = signals.LongSignal(op.join(audio_filepath,
@@ -287,10 +287,6 @@ class BlockTest(unittest.TestCase):
         parallelProjections.initialize_plans(
             np.array([1024, ]), np.array([2, ]))
 
-        try:
-            import fftw3
-        except ImportError:
-            print " FFTW3 python wrapper not installed, abandonning test"
 #            return
         block.update(signal_original)
 
@@ -299,16 +295,17 @@ class BlockTest(unittest.TestCase):
 #        plt.show()
 
         self.assertAlmostEqual(np.sum((block.projs_matrix - mdct.
-                                       mdct(signal_original.data, block.scale)) ** 2), 0)
+                                       mdct(signal_original.data,
+                                            block.scale)) ** 2), 0)
 
         # testing other blocks
         lomp_block = mdct_block.LOBlock(1024, signal_original)
         lomp_block.initialize()
         lomp_block.update(signal_original, 0, -1)
         lomp_best_atom = lomp_block.get_max_atom(1)
-        
+
         lomp_block.plot_proj_matrix()
-        
+
         full_block = mdct_block.FullBlock(1024, signal_original)
         full_block.initialize()
         full_block.update(signal_original, 0, -1)
@@ -316,13 +313,11 @@ class BlockTest(unittest.TestCase):
 
         full_block.plot_proj_matrix()
 
-
-        spread_block = mdct_block.SpreadBlock(1024, signal_original, penalty=0.5, maskSize=2)
+        spread_block = mdct_block.SpreadBlock(
+            1024, signal_original, penalty=0.5, maskSize=2)
         spread_block.initialize()
         spread_block.update(signal_original, 0, -1)
         spread_block = full_block.get_max_atom()
-
-        
 
         parallelProjections.clean_plans(np.array([1024, ]))
         print "Cleaning done"
@@ -330,37 +325,34 @@ class BlockTest(unittest.TestCase):
 
 
 class MPTest(unittest.TestCase):
-    
+
     def badArgsTest(self):
         print "TESTING BAD CALLS"
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         dico = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
-                                   4096, 8192, 16384])
-        
-    
-        # testing mp with empty signal 
-        badargs = (None,dico,50,10)
+                                  4096, 8192, 16384])
+
+        # testing mp with empty signal
+        badargs = (None, dico, 50, 10)
         self.assertRaises(TypeError, mp.mp, *badargs)
-        
+
         # testing mp with empty dictionary
-        badargs = (signal_original,None,50,10)
-        self.assertRaises(TypeError, mp.mp,  *badargs)
-                
-        
-    
+        badargs = (signal_original, None, 50, 10)
+        self.assertRaises(TypeError, mp.mp, *badargs)
+
         # testing mp
-        # asburd call : should raise a ValueError 
+        # asburd call : should raise a ValueError
         badargs = (signals.Signal(np.zeros(signal_original.data.shape)),
                    dico, 50, 10)
-        
+
         self.assertRaises(ValueError, mp.mp, *badargs)
-    
+
         mp.mp(signal_original,
-                   dico, 50, 1,debug_iteration=0)
-    
-    def runTest(self):                
-        
+              dico, 50, 1, debug_iteration=0)
+
+    def runTest(self):
+
         self.badArgsTest()
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
@@ -387,47 +379,44 @@ class MPTest(unittest.TestCase):
         dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
                                    4096, 8192, 16384])
         dico1 = mp_mdct_dico.Dico([16384])
-        
-    
+
         # testing mp
-        # asburd call : should raise a ValueError 
+        # asburd call : should raise a ValueError
         badargs = (signals.Signal(np.zeros(signal_original.data.shape)),
                    dico2, 50, 10)
-        
+
         self.assertRaises(ValueError, mp.mp, *badargs)
-        
-        full_num = 100;
-        stop_num = 80;            
-        full_approx = mp.mp(signal_original, dico2, 50, full_num ,debug=0,
-                            pad=False)[0]  
-        
+
+        full_num = 100
+        stop_num = 80
+        full_approx = mp.mp(signal_original, dico2, 50, full_num, debug=0,
+                            pad=False)[0]
 
         self.assertEqual(full_approx.atom_number, full_num)
         # testing mp_continue
-        stopped_approx = mp.mp(signal_original, dico2, 50, stop_num ,debug=0,
-                            pad=False)[0]
+        stopped_approx = mp.mp(signal_original, dico2, 50, stop_num, debug=0,
+                               pad=False)[0]
 
-        # asburd call : should raise a ValueError 
-        badargs = (approx.Approx(dico1, [], 
-                                signal_original), 
+        # asburd call : should raise a ValueError
+        badargs = (approx.Approx(dico1, [],
+                                 signal_original),
                    signals.Signal(np.zeros(signal_original.data.shape)),
                    dico2, 50,
                    full_num - stop_num)
         self.assertRaises(ValueError, mp.mp_continue, *badargs)
-                                                    
-        # good call: should work and give same results                                                   
+
+        # good call: should work and give same results
         completed_approx = mp.mp_continue(stopped_approx, signal_original,
-                            dico2, 50, full_num - stop_num, debug=0, pad=False)[0]
-        
+                                          dico2, 50, full_num - stop_num, debug=0, pad=False)[0]
+
         self.assertEqual(full_approx.length, completed_approx.length)
         self.assertEqual(full_approx.atom_number, completed_approx.atom_number)
-        
+
         # now assert all atoms are the same in both decompositions
-        for i in range(full_num):            
+        for i in range(full_num):
             self.assertEqual(full_approx[i], completed_approx[i])
-        
+
 #        self.assertAlmostEqual(full_approx.srr, completed_approx.srr)
-        
 
         # profiling test
         print "Plain"
@@ -436,8 +425,6 @@ class MPTest(unittest.TestCase):
 
         cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
-        
-        
 
 
 class OMPTest(unittest.TestCase):
@@ -475,6 +462,7 @@ class OMPTest(unittest.TestCase):
         cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
 
+
 class SequenceDicoTest(unittest.TestCase):
 
     def runTest(self):
@@ -492,26 +480,28 @@ class SequenceDicoTest(unittest.TestCase):
                         'clean=True)', globals(), locals())
 
         # Comparing with MP and a fixed sequence
-        n_atoms = 10;
-        vary_dico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random')
-        
-        fake_fix_dico = random_dico.SequenceDico([256, 2048, 8192], seq_type='random', nbSame=n_atoms)
-        
-        
-        
-        real_fix_dico = mp_mdct_dico.Dico([256, 2048, 8192]);
+        n_atoms = 10
+        vary_dico = random_dico.SequenceDico(
+            [256, 2048, 8192], seq_type='random')
+
+        fake_fix_dico = random_dico.SequenceDico(
+            [256, 2048, 8192], seq_type='random', nbSame=n_atoms)
+
+        real_fix_dico = mp_mdct_dico.Dico([256, 2048, 8192])
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
-                                       normalize=True, mono=True)
+                                         normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
 
         signal_original.data += 0.01 * np.random.random(5 * 16384)
 
-        app, dec = mp.mp(signal_original, vary_dico, 20, 300, debug=0);
-        app_fake_fix, fake_fix_dec = mp.mp(signal_original, fake_fix_dico, 20, n_atoms, debug=0,pad=True);
+        app, dec = mp.mp(signal_original, vary_dico, 20, 300, debug=0)
+        app_fake_fix, fake_fix_dec = mp.mp(
+            signal_original, fake_fix_dico, 20, n_atoms, debug=0, pad=True)
         print [b.shift_list[0:5] for b in dico.blocks]
         print [b.shift_list[0:5] for b in fake_fix_dico.blocks]
         print [b.shift_list[0:5] for b in vary_dico.blocks]
-        app_real_fix, dec_real_fix = mp.mp(signal_original, real_fix_dico, 20, n_atoms, debug=0,pad=True);
+        app_real_fix, dec_real_fix = mp.mp(
+            signal_original, real_fix_dico, 20, n_atoms, debug=0, pad=True)
 
 #        plt.figure()
 #        plt.plot(dec)
@@ -519,9 +509,10 @@ class SequenceDicoTest(unittest.TestCase):
 #        plt.plot(dec_real_fix,':')
 #        plt.show()
 
+
 class ApproxTest(unittest.TestCase):
 
-    def runTest(self):        
+    def runTest(self):
 
         app = approx.Approx(debug_level=2)
         self.assertEqual(app.original_signal, None)
@@ -546,7 +537,7 @@ class ApproxTest(unittest.TestCase):
         # testing the remove method
         app.remove(pyAtom)
         self.assertEqual(app.atom_number, 0)
-        
+
         app.add(pyAtom)
 
         app.add(
@@ -576,13 +567,13 @@ class ApproxTest(unittest.TestCase):
 
         # test last case, with LOMP atoms
         approxSignal3 = app.synthesize(2)
-        
+
         # testing filtering
         self.assertEqual(
             pyAtom, app.filter_atoms(1024, None, None).atoms[0])
         self.assertEqual(pyAtom, app.filter_atoms(1024, [
             12000, 15000], None).atoms[0])
-        
+
         self.assertAlmostEqual(app.compute_srr(), -114.057441323)
         # TODO testing du SRR
 
@@ -591,7 +582,7 @@ class ApproxTest(unittest.TestCase):
         approx_LOmp = mp.mp(signal_original, pyCCDico, 10, 100, False)[0]
 
         sliceApprox = approx_LOmp[:10]
-        
+
         for i in range(10):
             self.assertEqual(approx_LOmp.atoms[i], sliceApprox.atoms[i])
 
@@ -601,7 +592,7 @@ class ApproxTest(unittest.TestCase):
         print sliceApprox
         sliceApprox.compute_srr()
         print sliceApprox
-        
+
         plt.figure()
         plt.subplot(121)
         approx_LOmp.plot_tf()
@@ -612,7 +603,6 @@ class ApproxTest(unittest.TestCase):
         # testing all the plot options
         plt.figure()
         sliceApprox.plot_3d(itStep=1)
-        
 
         del signal_original
 
@@ -628,11 +618,10 @@ class ApproxTest(unittest.TestCase):
         approximant = mp.mp(signal_original, dico, 10, 10, debug=2)[0]
 
         output_dump_path = os.path.abspath("approx_dump_test.pymp")
-        
+
         print "TESTING dump and load "
         approximant.dump(output_dump_path)
-        
-        
+
         # Test reading from the dumped file
         new_approx = approx.load(output_dump_path)
         self.assertEqual(new_approx.dico.sizes, approximant.dico.sizes)
@@ -645,9 +634,8 @@ class ApproxTest(unittest.TestCase):
         self.assertAlmostEquals(sum(approximant.recomposed_signal.
                                     data - new_approx.recomposed_signal.data), 0)
 
-
         del new_approx
-        
+
         # test writing with LOmp atoms
         lomp_dico = mp_mdct_dico.LODico([256, 2048, 8192])
         approx_LOmp = mp.mp(signal_original, lomp_dico, 10, 100, False)[0]
@@ -672,9 +660,8 @@ class ApproxTest(unittest.TestCase):
         print new_approx.to_array()
         print new_approx.to_dico()
         print new_approx.to_sparse_array()
-                
-        
-        del new_approx  
+
+        del new_approx
 
 
 class LOMPTest(unittest.TestCase):
@@ -876,7 +863,7 @@ class LOMPTest(unittest.TestCase):
 
 class SSMPTest(unittest.TestCase):
     def runTest(self):
-        
+
 #        ext = ".png"
 
         seq_dico = random_dico.SequenceDico([256, 2048, 8192], 'scale')
@@ -964,7 +951,7 @@ class SSMPTest(unittest.TestCase):
 
         del approx1, approx2
         del signal_original
-        print "comparing results and processing times for long decompositions of white gaussian noise"
+        # "comparing results and processing times for long decompositions of white gaussian noise"
         noise_signal = signals.Signal(
             0.5 * np.random.random(5 * 16384), 44100, False)
         noise_signal.pad(16384)
@@ -972,7 +959,8 @@ class SSMPTest(unittest.TestCase):
         approx1, decay = mp.mp(noise_signal, dico, 10, 500, False, True)
         t1 = time.clock()
 
-        print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
+        print " Approx Reached : ", approx1.compute_srr(), " dB in ",
+            approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
 
         rand_dico = random_dico.SequenceDico(
             [256, 2048, 8192], 'random', seed=seed)
@@ -980,11 +968,13 @@ class SSMPTest(unittest.TestCase):
         approx2 = mp.mp(noise_signal, rand_dico, 10, 500, False, True)[0]
         t3 = time.clock()
 
-        print " Approx Reached : ", approx2.compute_srr(), " dB in ", approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
+        print " Approx Reached : ", approx2.compute_srr(), " dB in ",
+            approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
 
 
 class MPlongTest(unittest.TestCase):
-    """ this time we decompose a longer signals with the mp_LongSignal : result in an enframed signals """
+    """ this time we decompose a longer signals with the mp_LongSignal :
+    result in an enframed signals """
     def runTest(self):
         filePath = op.join(audio_filepath, "Bach_prelude_4s.wav")
 
@@ -1022,6 +1012,32 @@ class MPlongTest(unittest.TestCase):
 #        plt.show()
 
 
+class WinServerTest(unittest.TestCase):
+
+    def runTest(self):
+        server1 = win_server.get_server()
+        print "Server first call"
+        cProfile.runctx('server1.get_waveform(4096, 2001)', globals(),
+                        locals())
+        print "Server second call should NOT call parallelProjections.get_atom"
+        cProfile.runctx('server1.get_waveform(4096, 2001)', globals(),
+                        locals())
+
+        # try to instantiate a new one: should not call
+        # PyMP.parallelProjections.get_atom
+        server2 = win_server.get_server()
+        print "Server third call should NOT call parallelProjections.get_atom "
+        cProfile.runctx('server2.get_waveform(4096, 2001)', globals(),
+                        locals())
+
+        # final test, create a block a get the waveform from it (instantiation
+        # from another scope
+        block = Block(4096, np.random.random((8000,)))
+        block.max_bin_idx = 2001
+        print "Fourth third call should NOT call parallelProjections.get_atom "
+        cProfile.runctx('block.synthesize_atom()', globals(), locals())
+
+
 if __name__ == '__main__':
     import matplotlib
     print matplotlib.__version__
@@ -1034,10 +1050,11 @@ if __name__ == '__main__':
 #    suite.addTest(MPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
-    suite.addTest(ApproxTest())
+#    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
-    suite.addTest(BlockTest())
+#    suite.addTest(BlockTest())
+    suite.addTest(WinServerTest())
 #    suite.addTest(Signaltest())
 #    suite.addTest(WaveletAtomTest())
 #

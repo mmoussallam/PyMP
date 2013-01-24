@@ -55,9 +55,9 @@ from . import atom
 
 
 # declare global PyWinServer shared by all MDCT blocks instances
-global _PyServer
+#global _PyServer
 #, _Logger
-_PyServer = win_server.PyServer()
+_PyServer = win_server.get_server()
 _Logger = log.Log('MDCTBlock', level=0)
 
 
@@ -318,7 +318,7 @@ class Block(BaseBlock):
         """ synthesizes the best atom through ifft computation (much faster than closed form)
             New version uses the PyWinServer to serve waveforms"""
         ###################" new version ############"
-        global _PyServer
+#        global _PyServer
 #        print len(_PyServer.Waveforms)
         if value is None:
             return self.max_value * _PyServer.get_waveform(self.scale, self.max_bin_idx)

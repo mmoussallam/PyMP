@@ -27,9 +27,9 @@ from ...mdct import block as mdct_block
 from ...mdct import atom as mdct_atom
 
 # declare global win_server shared by all MDCT blocks instances
-global _PyServer
+#global _PyServer
 # _Logger
-_PyServer = win_server.PyServer()
+_PyServer = win_server.get_server()
 _Logger = log.Log('JointBlocks', level=0)
 
 

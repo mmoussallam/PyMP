@@ -38,8 +38,8 @@ except ImportError:
     print ''' Failed to load the parallelProjections extension module'''
 # from MatchingPursuit.TwoD.py_pursuit_2DApprox import py_pursuit_2DApprox
 # declare gloabl waveform server
-global _PyServer
-_PyServer = win_server.PyServer()
+
+_PyServer = win_server.get_server()
 _Logger = log.Log('mp', noContext=True)
 
 
