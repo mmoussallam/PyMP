@@ -108,7 +108,7 @@ class Atom(BaseAtom):
         """ synthesizes the waveform
             Specifies the amplitude, otherwise it will be initialiazed as unit-normed """
 
-        global _PyServer
+#        global _PyServer
         binIndex = np.math.floor(self.reduced_frequency * self.length)
         if value is None:
             self.waveform = self.mdct_value * _PyServer.get_waveform(
@@ -136,44 +136,20 @@ class Atom(BaseAtom):
 
     def __repr__(self):
         if self.time_shift is None:
-            ts_str = 'No local adaptation'
+            ts_str = 'None'
         else:
             ts_str = str(self.time_shift)
         return '''
-    MDCT Atom :
-        length = %d
-        frame = %d
-        time Position = %d
-        time shift = %s
-        frequency Bin = %d
-        Frequency = %2.2f Hz
-        value = %2.2f ''' % (self.length,
+MDCT Atom : length = %d value = %2.2f
+frame = %d  time Position = %d   time shift = %s
+frequency Bin = %d   Frequency = %2.2f Hz''' % (self.length,
+                            self.mdct_value,
                              self.frame,
                              self.time_position,
                              ts_str,
                              self.freq_bin,
-                             self.reduced_frequency * self.fs,
-                             self.mdct_value)
+                             self.reduced_frequency * self.fs,)
 
-#    def to_xml(self, xmlDoc):
-#        ''' Useful routine to output the object as an XML node '''
-#        if not isinstance(xmlDoc, Document):
-#            raise TypeError('Xml document not provided')
-#
-#        atomNode = xmlDoc.createElement('Atom')
-#        atomNode.setAttribute('nature', str(self.nature))
-#        atomNode.setAttribute('length', str(self.length))
-#        atomNode.setAttribute('tP', str(int(self.time_position)))
-#        atomNode.setAttribute('fB', str(int(self.freq_bin)))
-#        atomNode.setAttribute('frame', str(int(self.frame)))
-#        atomNode.setAttribute('value', str(self.mdct_value))
-#        atomNode.setAttribute('Fs', str(self.fs))
-#
-#        if self.proj_score is not None:
-#            atomNode.setAttribute('time_shift', str(self.time_shift))
-#            atomNode.setAttribute('score', str(self.proj_score))
-#
-#        return atomNode
 
     def inner_prod(self, otherAtom):
         """ DEPRECATED returns the inner product between current atom and the other one

@@ -11,7 +11,6 @@ plt.switch_backend('Agg')  # to avoid display while testing
 
 import os
 import os.path as op
-import sys
 
 import unittest
 from PyMP.tools import mdct
@@ -80,29 +79,31 @@ class AtomTest(unittest.TestCase):
         mdct_value = 0.57
         timeShift = 144
         projection_score = -0.59
-        atom_LOmp = mdct_atom.Atom(1024, 1, 12432, 128, 44100, 0.57)
+        atom_LOmp = mdct_atom.Atom(1024, 1, 12432, 128, 44100, 1)
         atom_LOmp.time_shift = timeShift
+
         atom_LOmp.proj_score = projection_score
 
         # test 1 synthesis
-        atom_LOmp.synthesize_ifft()
+        atom_LOmp.synthesize(-(math.sqrt(abs(projection_score))))
         wf1 = atom_LOmp.waveform.copy()
 
-        wf2 = -(math.sqrt(abs(projection_score) / sum(wf1 ** 2))) * wf1
+        wf2 = (math.sqrt(abs(projection_score) / sum(wf1 ** 2))) * wf1
 
         mdctVec = np.zeros(3 * 1024)
-        mdctVec[1024 + 128] = projection_score
+        mdctVec[1024 + 128] = -(math.sqrt(abs(projection_score)))
         wf3 = mdct.imdct(mdctVec, 1024)[0.75 * 1024: 1.75 * 1024]
 
-        plt.figure()
-        plt.plot(wf1)
-        plt.plot(wf2)
-        plt.plot(wf3)
-        plt.legend(('1', '2', '3'))
-
+#        plt.figure()
+#        plt.plot(wf1)
+#        plt.plot(wf2)
+#        plt.plot(wf3)
+#        plt.legend(('1', '2', '3'))
+#
 #        plt.show()
-    def tearDown(self):
-        pass
+
+        np.testing.assert_array_almost_equal(wf1, wf2)
+        np.testing.assert_array_almost_equal(wf2, wf3)
 
 
 class WaveletAtomTest(unittest.TestCase):
@@ -934,10 +935,12 @@ class SSMPTest(unittest.TestCase):
         del approximant
         print "comparing results and processing times for long decompositions"
         t0 = time.clock()
-        approx1, decay = mp.mp(signal_original, dico, 20, 500, False)
+        approx1 = mp.mp(signal_original, dico, 20, 500, False)[0]
         t1 = time.clock()
 
-        print " Approx Reached : ", approx1.compute_srr(), " dB in ", approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
+        stri = 'Approx Reached %1.3f dB in %d iterations and %1.3f sec ' % (
+            approx1.compute_srr(), approx1.atom_number, t1 - t0)
+        print stri
         self.assertAlmostEqual(approx1.srr, 19.779705511708805)
         self.assertEqual(approx1.atom_number, 500)
 
@@ -945,22 +948,26 @@ class SSMPTest(unittest.TestCase):
         approx2 = mp.mp(signal_original, rand_dico, 20, 500, False, False)[0]
         t3 = time.clock()
 
-        print " Approx Reached : ", approx2.compute_srr(), " dB in ", approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
+        stri = " Approx Reached %1.3f dB in %d iterations and %1.3f sec " % (
+            approx2.compute_srr(), approx2.atom_number, t3 - t2)
+        print stri
         self.assertAlmostEqual(approx2.srr, 20.02389209197687)
         self.assertEqual(approx2.atom_number, 271)
 
         del approx1, approx2
         del signal_original
-        # "comparing results and processing times for long decompositions of white gaussian noise"
+        # "comparing results and processing times for long decompositions 
+        # of white gaussian noise"
         noise_signal = signals.Signal(
             0.5 * np.random.random(5 * 16384), 44100, False)
         noise_signal.pad(16384)
         t0 = time.clock()
-        approx1, decay = mp.mp(noise_signal, dico, 10, 500, False, True)
+        approx1 = mp.mp(noise_signal, dico, 10, 500, False, True)[0]
         t1 = time.clock()
 
-        print " Approx Reached : ", approx1.compute_srr(), " dB in ",
-            approx1.atom_number, " iteration and: ", t1 - t0, " seconds"
+        stri = " Approx Reached %1.3f dB in %d iterations and %1.3f sec " % (
+            approx1.compute_srr(), approx1.atom_number, t1 - t0)
+        print stri
 
         rand_dico = random_dico.SequenceDico(
             [256, 2048, 8192], 'random', seed=seed)
@@ -968,8 +975,9 @@ class SSMPTest(unittest.TestCase):
         approx2 = mp.mp(noise_signal, rand_dico, 10, 500, False, True)[0]
         t3 = time.clock()
 
-        print " Approx Reached : ", approx2.compute_srr(), " dB in ",
-            approx2.atom_number, " iteration and: ", t3 - t2, " seconds"
+        stri = 'Approx Reached %1.3f dB in %d iterations and %1.3f sec' % (
+            approx2.compute_srr(), approx2.atom_number, t3 - t2)
+        print stri
 
 
 class MPlongTest(unittest.TestCase):
@@ -1051,7 +1059,7 @@ if __name__ == '__main__':
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(ApproxTest())
-#    suite.addTest(AtomTest())
+    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
     suite.addTest(WinServerTest())

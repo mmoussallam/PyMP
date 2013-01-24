@@ -499,4 +499,4 @@ if __name__ == "__main__":
 #    suite.addTest(SymetryTest())
     unittest.TextTestRunner(verbosity=2).run(suite)
 
-    plt.show()
+#    plt.show()
