@@ -1006,7 +1006,7 @@ class MPlongTest(unittest.TestCase):
         approximants = mp.mp_long(
             original_signal, pyCCDico, 10, 100, False, True, xmlOutPutDir)[0]
 
-        self.assertEqual(len(approximants), original_signal.segmentNumber)
+        self.assertEqual(len(approximants), original_signal.n_seg)
 
         fusionned_approx = approx.fusion_approxs(approximants)
 
@@ -1057,12 +1057,12 @@ if __name__ == '__main__':
 #    suite.addTest(MPlongTest())
 #    suite.addTest(MPTest())
 #    suite.addTest(SequenceDicoTest())
-#    suite.addTest(SSMPTest())
+    suite.addTest(SSMPTest())
 #    suite.addTest(ApproxTest())
-    suite.addTest(AtomTest())
+#    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
-    suite.addTest(WinServerTest())
+#    suite.addTest(WinServerTest())
 #    suite.addTest(Signaltest())
 #    suite.addTest(WaveletAtomTest())
 #

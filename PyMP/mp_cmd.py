@@ -203,8 +203,8 @@ def main(argv):
 # /max(scales)) * max(scales); # increment in samples
 #
 #    # calcul of the number of segment needed
-#    segmentNumber = int(math.floor(originalSignal.length / segPad))
-    segmentNumber = longSignal.segmentNumber
+#    n_seg = int(math.floor(originalSignal.length / segPad))
+    segmentNumber = longSignal.n_seg
 
     if _debug > 0:
         print segmentNumber, " segments"
@@ -218,7 +218,7 @@ def main(argv):
     approxs = mp.mp_long(longSignal, dictionary, target_srr, max_it_num,
                                debug=_debug - 1, pad=pad, output_dir='', write=False)[0]
 
-#    for segidx in range(segmentNumber):
+#    for segidx in range(n_seg):
 #        if _debug >0:
 #            print "Starting work on segment " , segidx;
 #

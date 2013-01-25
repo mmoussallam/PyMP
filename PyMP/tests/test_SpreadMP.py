@@ -17,8 +17,8 @@ from PyMP import parallelProjections
 from PyMP.mdct import dico as mdct_dico
 from PyMP.mdct import block as mdct_block
 
-# audio_filepath= op.join(op.dirname(__file__), '..', '..', 'data')
-audio_filepath = '/sons/sqam/'
+audio_filepath= op.join(op.dirname(__file__), '..', '..', 'data')
+#audio_filepath = '/sons/sqam/'
 
 
 class blocksTest(unittest.TestCase):
@@ -147,7 +147,7 @@ class realTest2(unittest.TestCase):
 
     def runTest(self):
         name = 'orchestra'
-        pySig = Signal(op.join(audio_filepath, 'orchestra.wav'), mono=True, normalize=True)
+        pySig = Signal(op.join(audio_filepath, 'Bach_prelude_40s.wav'), mono=True, normalize=True)
         pySig.crop(0, 5 * pySig.fs)
         pySig.pad(16384)
         sigEnergy = np.sum(pySig.data ** 2)

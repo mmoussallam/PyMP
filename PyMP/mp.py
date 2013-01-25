@@ -126,6 +126,7 @@ def mp(orig_signal,
             debug = 3
             _Logger.set_level(3)
 
+
         best_atom = _mp_loop(dictionary, debug,
                              silent_fail, unpad, res_signal,
                              current_approx,
@@ -237,7 +238,7 @@ def mp_long(orig_longsignal,
     if not isinstance(dictionary, Dico):
         raise TypeError('Dico is not a py_pursuit_Dico object - TODO correct')
 
-    Nsegments = int(orig_longsignal.segmentNumber)
+    Nsegments = int(orig_longsignal.n_seg)
 
     # initialize output
     approximants = []
@@ -305,6 +306,7 @@ def _mp_loop(dictionary, debug, silent_fail,
         if not silent_fail:
             _Logger.error("Something wrong happened at iteration " + str(it_number) + " atom substraction abandonned")
             print "Atom Selected: ", best_atom
+            raise ValueError()            
         if debug > 1:
             plt.figure()
             plt.plot(res_signal.data[best_atom.time_position:best_atom.time_position + best_atom.length])
@@ -314,6 +316,7 @@ def _mp_loop(dictionary, debug, silent_fail,
             plt.title('Iteration ' + str(it_number))
             dictionary.best_current_block.plot_proj_matrix()
             plt.show()
+            
 #            return current_approx, res_energy
     if debug > 1:
         _Logger.debug("new residual energy of " + str(sum(res_signal.data ** 2)))

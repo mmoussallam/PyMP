@@ -27,7 +27,7 @@ int nb_threads;
 
 void sayHelloBastard(void){
 
-	printf("Hello Bastard: Lib fast Pursuit Version  %1.1f by M. Moussallam \n Contact moussall@telecom-paristech.fr \n",VERSION);
+	printf("Hello Dude: Lib fast Pursuit Version  %1.1f by M. Moussallam \n Contact moussall@telecom-paristech.fr \n",VERSION);
 
 
 }

@@ -445,15 +445,15 @@ class LongSignal(Signal):
 #    filetype = ''       # file extension : .wav or .mp3
 #    nframes = 0;        # number of
 #    sample_width = 0;    # bit width of each frame
-# segmentSize = 0;      # in 16-bits samples : different from nframes which is
+# segment_size = 0;      # in 16-bits samples : different from nframes which is
 # internal wav representation
-#    segmentNumber =0;     # numberof audio segments to be consideres
+#    n_seg =0;     # numberof audio segments to be consideres
 #    overlap = 0;         # overlapping rate between two consecutive segments
 
     # constructor
     def __init__(self, filepath, frame_size=16384 * 3, frame_duration=None, mono=False, Noverlap=0):
         self.location = filepath
-        self.segmentSize = frame_size
+        self.segment_size = frame_size
 
         # overlaps methods from SoundFile object
 #        if (filepath[-4:] =='.wav'):
@@ -471,23 +471,23 @@ class LongSignal(Signal):
         if frame_duration is not None:
             # optionally set the length in seconds, adapt to the sigbal
             # sampling frequency
-            self.segmentSize = math.floor(
+            self.segment_size = math.floor(
                 frame_duration * self.fs)
 
-        self.segmentNumber = math.floor(
-            self.nframes / (self.segmentSize * (1 - self.overlap)))
+        self.n_seg = int(math.floor(
+            self.nframes / (self.segment_size * (1 - self.overlap))))
 
         if self.overlap >= 1:
             raise ValueError('Overlap must be in [0..1[ ')
 
-        self.segmentNumber -= self.overlap / (1 - self.overlap)
+        self.n_seg -= int(math.floor(self.overlap / (1 - self.overlap)))
 
         _Logger.info('Loaded ' + filepath + ' , ' + str(
             self.nframes) + ' frames of ' + str(self.sample_width) + ' bytes')
         _Logger.info('Type is ' + self.filetype + ' , ' + str(self.
                                                               channel_num) + ' channels at ' + str(self.fs))
-        _Logger.info('Separated in ' + str(self.segmentNumber) + ' segments of size ' + str(self.segmentSize) + ' samples overlap of ' + str(self.overlap * self.segmentSize))
-        self.length = self.segmentNumber * frame_size
+        _Logger.info('Separated in ' + str(self.n_seg) + ' segments of size ' + str(self.segment_size) + ' samples overlap of ' + str(self.overlap * self.segment_size))
+        self.length = self.n_seg * frame_size
         wavfile.close()
 
 #    def readFrames(self , frameIndexes):
@@ -512,8 +512,8 @@ class LongSignal(Signal):
         """
 
         # convert frame into bytes positions
-        bFrame = start_seg * (self.segmentSize * (1 - self.overlap))
-        nFrames = int(seg_num * self.segmentSize)
+        bFrame = start_seg * (self.segment_size * (1 - self.overlap))
+        nFrames = int(seg_num * self.segment_size)
         file = wave.open(self.location, 'r')
         file.setpos(bFrame)
         str_bytestream = file.readframes(nFrames)

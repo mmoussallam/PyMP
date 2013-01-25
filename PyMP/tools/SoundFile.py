@@ -21,10 +21,11 @@ class SoundFile:
 
     # Constructor
     def __init__(self, filename):
-        import wave,numpy
+        import wave, numpy
+        print filename
         if not len(filename) >0:
             print "Invalid wavfile name"
-
+        
         elif filename[-3:] == 'raw':
             self.filename = filename[(filename.rfind('/'))+1:]
             self.filepath = filename[:(filename.rfind('/'))]
