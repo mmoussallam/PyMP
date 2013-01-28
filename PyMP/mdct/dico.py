@@ -71,7 +71,7 @@ class Dico(BaseDico):
         self.tolerances = [2]*len(self.sizes)
         self.use_c_optim = useC
         self.forceHF = forceHF
-        
+        self.touched_zone_width = max(self.sizes)
         _Logger.info('New dictionary created with sizes : ' + str(self.sizes))
 
     def find_block_by_scale(self, size):
@@ -147,11 +147,19 @@ class Dico(BaseDico):
 
         return self.best_current_block.get_max_atom()
 
-    def compute_touched_zone(self, previousBestAtom):
+    def compute_touched_zone(self, previousBestAtom, panic=False):
         ''' update zone computed from the previously selected atom '''
-        self.starting_touched_index = previousBestAtom.time_position  # - previousBestAtom.length/2
-        self.ending_touched_index = self.starting_touched_index + \
-            1.5 * previousBestAtom.length
+        self.starting_touched_index = previousBestAtom.time_position
+        self.ending_touched_index = self.starting_touched_index + 1.5 * previousBestAtom.length
+            
+        # PANIC VERSION: REMOVE PRUNING OF PROJ COMPUTATIONS
+        if panic:
+            self.starting_touched_index = 0
+            self.ending_touched_index = -1
+            
+#        self.starting_touched_index = previousBestAtom.time_position  - previousBestAtom.length/2
+#        self.ending_touched_index = self.starting_touched_index + \
+#            1.5 * previousBestAtom.length
 
 #    def to_xml(self, doc):
 #        ''' A routine to convert the dictionary to an XML node '''

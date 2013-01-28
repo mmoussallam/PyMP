@@ -306,17 +306,25 @@ def _mp_loop(dictionary, debug, silent_fail,
         if not silent_fail:
             _Logger.error("Something wrong happened at iteration " + str(it_number) + " atom substraction abandonned")
             print "Atom Selected: ", best_atom
-            raise ValueError()            
-        if debug > 1:
-            plt.figure()
-            plt.plot(res_signal.data[best_atom.time_position:best_atom.time_position + best_atom.length])
-            plt.plot(best_atom.waveform)
-            plt.plot(res_signal.data[best_atom.time_position:best_atom.time_position + best_atom.length] - best_atom.waveform, ':')
-            plt.legend(('Signal', 'Atom substracted', 'residual'))
-            plt.title('Iteration ' + str(it_number))
-            dictionary.best_current_block.plot_proj_matrix()
-            plt.show()
-            
+                  
+            if debug > 1:
+                plt.figure()
+                plt.plot(res_signal.data[best_atom.time_position:best_atom.time_position + best_atom.length])
+                plt.plot(best_atom.waveform)
+                plt.plot(res_signal.data[best_atom.time_position:best_atom.time_position + best_atom.length] - best_atom.waveform, ':')
+                plt.legend(('Signal', 'Atom substracted', 'residual'))
+                plt.title('Iteration ' + str(it_number))
+                dictionary.best_current_block.plot_proj_matrix()
+                plt.show()
+        
+            raise ValueError()
+        else:
+            _Logger.warning("Something wrong happened at iteration %d ATTEMPT TO CONTINUE"%it_number)
+            # attempt to continue after recomputing all projections
+            dictionary.compute_touched_zone(best_atom, panic=False)
+            SILENT_FAIL = False
+            return _mp_loop(dictionary, debug, SILENT_FAIL, unpad, res_signal, current_approx, res_energy, it_number)
+              
 #            return current_approx, res_energy
     if debug > 1:
         _Logger.debug("new residual energy of " + str(sum(res_signal.data ** 2)))

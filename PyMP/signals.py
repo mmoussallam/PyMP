@@ -471,16 +471,21 @@ class LongSignal(Signal):
         if frame_duration is not None:
             # optionally set the length in seconds, adapt to the sigbal
             # sampling frequency
-            self.segment_size = math.floor(
-                frame_duration * self.fs)
+            self.segment_size = int(math.floor(
+                frame_duration * self.fs))
+
+        if not (self.nframes % self.segment_size) == 0:
+            _Logger.warning("Not a round number of segment: cropping ")
+            self.nframes = (self.nframes / self.segment_size) * self.segment_size
 
         self.n_seg = int(math.floor(
-            self.nframes / (self.segment_size * (1 - self.overlap))))
+            float(self.nframes) / (float(self.segment_size) * (1.0 - self.overlap))))
 
         if self.overlap >= 1:
             raise ValueError('Overlap must be in [0..1[ ')
 
-        self.n_seg -= int(math.floor(self.overlap / (1 - self.overlap)))
+#        print self.nframes, (float(self.segment_size) * (1.0 - self.overlap))
+        self.n_seg -= int(math.ceil(self.overlap / (1.0 - self.overlap)))
 
         _Logger.info('Loaded ' + filepath + ' , ' + str(
             self.nframes) + ' frames of ' + str(self.sample_width) + ' bytes')
@@ -514,11 +519,12 @@ class LongSignal(Signal):
         # convert frame into bytes positions
         bFrame = start_seg * (self.segment_size * (1 - self.overlap))
         nFrames = int(seg_num * self.segment_size)
-        file = wave.open(self.location, 'r')
-        file.setpos(bFrame)
-        str_bytestream = file.readframes(nFrames)
+        wavfile = wave.open(self.location, 'r')
+        wavfile.setpos(bFrame)
+#        print "Reading ",bFrame, nFrames, wavfile._framesize
+        str_bytestream = wavfile.readframes(nFrames)
         data = np.fromstring(str_bytestream, 'h')
-        file.close()
+        wavfile.close()
 
         if self.channel_num > 1:
             reshapedData = data.reshape(nFrames, self.channel_num)
@@ -530,7 +536,7 @@ class LongSignal(Signal):
 
             reshapedData = reshapedData.reshape(nFrames, )
 
-        SubSignal = Signal(reshapedData, self.fs, normalize)
+        SubSignal = Signal(reshapedData, self.fs, normalize=normalize)
         SubSignal.location = self.location
 
         if pad != 0:
