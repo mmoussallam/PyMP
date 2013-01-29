@@ -97,6 +97,38 @@ i = 1
 j = 10
 takeReal = 1
 
+print "Testing Masked Gabor dictionary projections"
+print " ---Testing good call"
+input_data = 0.42 * np.random.random((N, 1))
+projectionMatrix_real = np.zeros((N, 1))
+projectionMatrix_comp = np.zeros((N, 1), complex)
+
+
+projectionMatrix_comp.real = np.random.random((N, 1))
+
+mask_data = np.ones(projectionMatrix_comp.shape)
+maskedindexes = [12,35,20]
+mask_data[maskedindexes] = 0;
+
+res = parallelProjections.project_masked_gabor(input_data, scoreTree,
+                    projectionMatrix_comp,
+                    mask_data, i, j, L)
+
+
+
+if res is not None:
+    print "Survived.."
+    if (np.sum(projectionMatrix_comp[maskedindexes]) != 0):
+        print".. but these should be zeroes..."
+        print projectionMatrix_comp[maskedindexes]
+        print mask_data
+    else:
+        print np.sum(projectionMatrix_comp)
+        print ".. and Succeed"
+else:
+    print "Died!"
+
+
 #print "Testing Bad call:"
 #computeMCLT.project(input_data )
 
@@ -318,6 +350,10 @@ print timeShift, score
 
 print sum(
     Atom_test.waveform * input1[scale / 2 - ts:scale / 2 - ts + Atom_test.length])
+
+
+
+
 #plt.figure()
 # plt.plot(np.concatenate( (np.concatenate((np.zeros(scale/2) , ref ) )
 # ,np.zeros(scale/2) ) ))

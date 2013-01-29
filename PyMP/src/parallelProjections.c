@@ -121,7 +121,7 @@ static PyObject * initialize_plans(PyObject *self, PyObject *args)
 	/* declarations */
 	PyArrayObject *in_data ,* in_tolerances;
 	
-	int dim2 ,size_number;
+	int dim2, size_number;
 	int * sizes , * tolerances;
 	/*int  threadIdx;*/
 	int res ;
@@ -377,6 +377,70 @@ project_mclt(PyObject *self, PyObject *args)
            		   cin_vecPreTwid , cin_vecPostTwid,
            		   start ,end ,L);
        
+       if (res < 0) return NULL;
+
+	  return Py_BuildValue("i", 1);
+}
+
+/* Simple STFT transform for Gabor dictionary projections (with possible masking)
+ Basically the same as above except some vectors are complex and the
+ * inner products are computed just a bit differently */
+static PyObject *
+project_masked_gabor(PyObject *self, PyObject *args)
+{
+
+	 /* Declarations */
+       PyArrayObject *in_data , *in_vecProj , *out_scoreTree, *in_mask;  // The python objects to be extracted from the args
+       double *cin_data  , *cout_scoreTree , *cin_mask;   // The C vectors to be created to point to the
+                                       //   python vectors, cin and cout point to the row
+                                       //   of vecin and vecout, respectively
+       fftw_complex  *cin_vecProj;
+       int start,  end , L;
+       int res;
+       /* Declarations -  end*/
+       int n_frames;
+        /*Parse tuples separately since args will differ between C fcns*/
+       if (!PyArg_ParseTuple(args, "O!O!O!O!iii", &PyArray_Type, &in_data,
+       												&PyArray_Type, &out_scoreTree,
+       											  &PyArray_Type, &in_vecProj,
+       											  &PyArray_Type, &in_mask,
+       											  &start,  &end , &L)){
+    	   printf("Failed to parse arguments");
+    	   return NULL;
+       }
+
+		/* Checking null pointers*/
+       if (NULL == in_data)  return NULL;
+       if (NULL == in_vecProj)  return NULL;
+       if (NULL == in_mask)  return NULL;
+       if (NULL == out_scoreTree)  return NULL;
+
+
+
+	   n_frames = out_scoreTree->dimensions[0];
+
+		// Check on maximum frame index search: force last frame index to be in the bounds
+	   if (end >= n_frames) {
+	   		//printf("Warning : asked frame end is out of bounds\n");
+	   		end = n_frames-1;
+	   }
+
+       /* Change contiguous arrays into C * arrays*/
+       cin_data=pyvector_to_Carrayptrs(in_data);
+       /*cin_vecProj=pyvector_to_complexCarrayptrs(in_vecProj);*/
+       cin_vecProj=pyvector_to_complexCarrayptrs(in_vecProj);
+
+       cin_mask=pyvector_to_Carrayptrs(in_mask);
+       cout_scoreTree=pyvector_to_Carrayptrs(out_scoreTree);
+
+       if(DEBUG) printf("calling projectGabor function");
+
+       res = projectMaskedGabor(cin_data ,
+				   cout_scoreTree,
+				   cin_vecProj ,
+           		   cin_mask,
+           		   start ,end ,L);
+
        if (res < 0) return NULL;
 
 	  return Py_BuildValue("i", 1);
@@ -865,6 +929,7 @@ static PyMethodDef AllMethods[] = {
     {"project",  project, METH_VARARGS,  "Loop of mdct computations."},
     {"subproject",  subproject, METH_VARARGS,  "Loop of mdct computations on a subsampled dictionary."},
     {"project_mclt",  project_mclt, METH_VARARGS,  "Loop of mdct computations."},
+    {"project_masked_gabor",  project_masked_gabor, METH_VARARGS,  "Loop of gabor computations."},
     {"project_mclt_set",  project_mclt_set, METH_VARARGS,  "Loop of mdct computations."},
     {"project_mclt_NLset",  project_mclt_NLset, METH_VARARGS,  "Loop of mdct computations."},
     {"project_atom",  project_atom, METH_VARARGS,  "Project atom and retrieve characteristics"},

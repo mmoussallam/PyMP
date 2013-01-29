@@ -14,7 +14,7 @@ Module mdct.dico
 
 This class inherits from :class:`.BaseDico` and is used to represent and manipulate multiscale MDCT dictionaries.
 Dictionaries are mostly implemented as a collection of :class:`pymp_MDCTBlock` of various kind, according to the
-type of pursuit that is seeked.
+nature of pursuit that is seeked.
 
 This module describes 3 kind of blocks:
     - :class:`Dico`  is a Dico based on the standard MDCT transform. Which means atoms localizations
@@ -308,24 +308,35 @@ class FullDico(Dico):
 
 class SpreadDico(Dico):
     # !!!!!!!!!!! UNDER DEVELOPPMENT DO NOT USE
-    def __init__(self , sizes=[] ,type = 'SpreadMDCT' ,debugLevel=None , useC = True,
-                 allBases = True , Spreadbases = [],penalty=0.5, maskSize = 2):
-        if debugLevel is not None:
-            _Logger.set_level(debugLevel)
-
-        self.useC = useC
+    def __init__(self , sizes=[] ,nature = 'SpreadMDCT' ,debug_level=None ,
+                 all_scales = True , spread_scales = [], penalty=0.5,
+                 maskSize = 1, 
+                 mask_time = -1, mask_freq = 1):
+        # TODO implement frequency masking settings
+        
+        if debug_level is not None:
+            _Logger.set_level(debug_level)
+        
         self.sizes = sizes
-        self.type = type
+        self.nature = nature
         self.penalty = penalty
-        self.maskSize =maskSize
-        if allBases:
+        self.maskSize = maskSize
+        
+        if mask_time > 0:
+            self.mask_times = max(sizes)*mask_time/array(sizes)
+        else:
+            self.mask_times = [self.maskSize]*len(sizes)
+        
+        self.mask_freq = mask_freq
+        
+        if all_scales:
             self.spreadScales = self.sizes
         else:
-            self.spreadScales = Spreadbases
+            self.spreadScales = spread_scales
 
         _Logger.info('New dictionary created with sizes : ' +str(self.sizes))
 
-    def initialize(self , residualSignal):
+    def initialize(self , res_signal):
         """ Initialize As many blocks as number of signals x number of window sizes
         """
         self.blocks = []
@@ -335,13 +346,27 @@ class SpreadDico(Dico):
         for mdctSize in self.sizes:
             if mdctSize in self.spreadScales:
                 self.blocks.append(block.SpreadBlock(
-                    mdctSize , residualSignal, useC=self.useC))
+                    mdctSize , res_signal))
             else:
                 self.blocks.append(block.Block(
-                    mdctSize , residualSignal, useC=self.useC))
+                    mdctSize , res_signal))
     
+    def get_best_atom(self, debug):
+        if self.best_current_block == None:
+            raise ValueError("no best block constructed, make sure inner product have been updated")
 
+        if debug > 2:
+            self.best_current_block.plot_proj_matrix()
 
+        best_atom = self.best_current_block.get_max_atom()
+        for blocki in range(len(self.blocks)):
+            if isinstance(self.blocks[blocki], block.SpreadBlock):
+                self.blocks[blocki].compute_mask(best_atom,                                                 
+                                                 self.mask_freq,
+                                                 self.mask_times[blocki],
+                                                 self.penalty)
+
+        return best_atom
 #def fromXml(xmlNode):
 #    ''' Export routine NOT FULLY TESTED '''
 #    if not isinstance(xmlNode, Element):

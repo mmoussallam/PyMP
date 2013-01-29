@@ -33,10 +33,10 @@ class blocksTest(unittest.TestCase):
             np.array([scale, ]), np.array([2, ]))
 
         classicBlock = mdct_block.Block(scale, pySig, 0,
-                                        debug_level=3, useC=False)
+                                        debug_level=3)
 
         spreadBlock = mdct_block.SpreadBlock(scale, pySig, 0,
-                                             debug_level=3, useC=False,
+                                             debug_level=3,
                                              penalty=0, maskSize=5)
 
         # compute the projections, should be equivalent
@@ -44,12 +44,27 @@ class blocksTest(unittest.TestCase):
         spreadBlock.update(pySig, 0, -1)
 
         maxClassicAtom1 = classicBlock.get_max_atom()
-        print maxClassicAtom1.length, maxClassicAtom1.frame, maxClassicAtom1.freq_bin, maxClassicAtom1.mdct_value
+        print maxClassicAtom1.length, maxClassicAtom1.frame, maxClassicAtom1.freq_bin, maxClassicAtom1.value
         maxSpreadcAtom1 = spreadBlock.get_max_atom()
-        print maxSpreadcAtom1.length, maxSpreadcAtom1.frame, maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.mdct_value
+        print maxSpreadcAtom1.length, maxSpreadcAtom1.frame, maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.value
         # assert equality using the inner comparison method of MDCT atoms
         self.assertEqual(maxClassicAtom1, maxSpreadcAtom1)
 
+        # verifying the masking index construction
+        mask_frame_width = 2
+        mask_bin_width = 1
+        spreadBlock.compute_mask(maxSpreadcAtom1, mask_bin_width, mask_frame_width, 0.5)
+             
+        c_frame = int(np.ceil(maxSpreadcAtom1.time_position / ( scale / 2)))
+        c_bin = int(maxSpreadcAtom1.reduced_frequency * scale ) 
+        
+        z1 = np.arange(int(c_frame - mask_frame_width), int(c_frame + mask_frame_width) +1)
+        z2 = np.arange(int(c_bin - mask_bin_width), int(c_bin + mask_bin_width) + 1)
+#        x, y = np.meshgrid(z1, z2)
+#        print spreadBlock.mask_index_x
+        np.testing.assert_array_equal(spreadBlock.mask_index_x, z1)   
+        np.testing.assert_array_equal(spreadBlock.mask_index_y, z2)   
+        
         pySig.subtract(maxSpreadcAtom1)
 
         # recompute the projections
@@ -58,9 +73,9 @@ class blocksTest(unittest.TestCase):
 
 #        plt.show()
         maxClassicAtom2 = classicBlock.get_max_atom()
-        print maxClassicAtom2.length, maxClassicAtom2.frame, maxClassicAtom2.freq_bin, maxClassicAtom2.mdct_value
+        print maxClassicAtom2.length, maxClassicAtom2.frame, maxClassicAtom2.freq_bin, maxClassicAtom2.value
         maxSpreadcAtom2 = spreadBlock.get_max_atom()
-        print maxSpreadcAtom2.length, maxSpreadcAtom2.frame, maxSpreadcAtom2.freq_bin, maxSpreadcAtom2.mdct_value
+        print maxSpreadcAtom2.length, maxSpreadcAtom2.frame, maxSpreadcAtom2.freq_bin, maxSpreadcAtom2.value
         self.assertNotEqual(maxClassicAtom2, maxSpreadcAtom2)
 
         parallelProjections.clean_plans()
@@ -79,10 +94,12 @@ class dicosTest(unittest.TestCase):
         parallelProjections.initialize_plans(
             np.array(dico), np.array([2] * len(dico)))
 
-        classicDIco = mdct_dico.Dico(dico, useC=False)
-        spreadDico = mdct_dico.SpreadDico(dico, useC=False,
-                                          allBases=True,
+        classicDIco = mdct_dico.Dico(dico)
+        spreadDico = mdct_dico.SpreadDico(dico,
+                                          all_scales=True,
                                           penalty=0, maskSize=3)
+
+        self.assertEqual(spreadDico.mask_times, [3,3,3])
 
         classicDIco.initialize(pySig)
         spreadDico.initialize(pySig)
@@ -92,7 +109,7 @@ class dicosTest(unittest.TestCase):
 
         classicAtom1 = classicDIco.get_best_atom(0)
         spreadAtom1 = spreadDico.get_best_atom(0)
-
+#        print classicAtom1, spreadAtom1
         self.assertEqual(classicAtom1, spreadAtom1)
 
         pySig.subtract(classicAtom1)
@@ -118,8 +135,8 @@ class realTest(unittest.TestCase):
 
         classicDIco = mdct_dico.Dico(dico, useC=False)
         spreadDico = mdct_dico.SpreadDico(
-            dico, useC=False, allBases=False, Spreadbases=[1024, 8192],
-            penalty=0.1, maskSize=3)
+            dico,all_scales=False, spread_scales=[1024, 8192],
+            penalty=0.1, mask_time = 2, mask_freq = 2)
 
         approxClassic, decayClassic = mp.mp(pySig, classicDIco, 20, nbAtoms)
         approxSpread, decaySpread = mp.mp(
@@ -142,6 +159,19 @@ class realTest(unittest.TestCase):
         plt.xlabel('Iteration')
 #        plt.savefig(name + '_decayTFMasking.eps')
 
+        plt.figure()
+        for blockI in range(1,3):
+            block = spreadDico.blocks[blockI]
+            plt.subplot(2, 2, blockI)
+            print block.mask.shape, block.mask.shape[0] / (block.scale/2), block.scale/2
+            plt.imshow(np.reshape(block.mask,(block.mask.shape[0] / (block.scale/2), block.scale/2)),
+                   interpolation='nearest',aspect='auto')
+            plt.colorbar()
+            plt.subplot(2, 2, blockI+2)
+#            print block.mask.shape, block.mask.shape[0] / (block.scale/2), block.scale/2
+            block.im_proj_matrix()
+            plt.colorbar()
+        
 
 class realTest2(unittest.TestCase):
 
@@ -154,9 +184,9 @@ class realTest2(unittest.TestCase):
         dico = [128, 1024, 8192]
         nbAtoms = 200
 
-        classicDIco = mdct_dico.Dico(dico, useC=False)
+        classicDIco = mdct_dico.Dico(dico)
         spreadDico = mdct_dico.SpreadDico(
-            dico, useC=False, allBases=True, penalty=0.1, maskSize=10)
+            dico, all_scales=True, penalty=0.1, maskSize=10)
 
         approxClassic, decayClassic = mp.mp(pySig, classicDIco, 20, nbAtoms)
         approxSpread, decaySpread = mp.mp(
@@ -179,15 +209,33 @@ class realTest2(unittest.TestCase):
         plt.xlabel('Iteration')
 #        plt.savefig(name + '_decayTFMasking.eps')
         
+
+class perfTest(unittest.TestCase):
+    
+    def runTest(self):
+        dico = [128, 1024, 8192]
+        nbAtoms = 100
+        pySig = Signal(op.join(audio_filepath,
+                               'Bach_prelude_40s.wav'),
+                               mono=True, normalize=True)
+        classicDIco = mdct_dico.Dico(dico)
+        spreadDico = mdct_dico.SpreadDico(
+            dico, all_scales=True, penalty=0.1, maskSize=10)
+
+        import cProfile
+        cProfile.runctx('mp.mp(pySig, classicDIco, 20, nbAtoms)', globals(), locals())
+        cProfile.runctx('mp.mp(pySig, spreadDico, 20, nbAtoms, pad=False)', globals(), locals())
+
         
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     suite = unittest.TestSuite()
 
-    suite.addTest(blocksTest())
-    suite.addTest(dicosTest())
-    suite.addTest(realTest())
-    suite.addTest(realTest2())
+#    suite.addTest(blocksTest())
+#    suite.addTest(dicosTest())
+#    suite.addTest(realTest())
+#    suite.addTest(realTest2())
+    suite.addTest(perfTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
     plt.show()

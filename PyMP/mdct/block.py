@@ -200,9 +200,9 @@ class Block(BaseBlock):
         Atom.frame = self.max_frame_idx
 #        print self.max_bin_idx, Atom.reducedFrequency
         if not HF:
-            Atom.mdct_value = self.max_value
+            Atom.value = self.max_value
         else:
-            Atom.mdct_value = self.maxHFValue
+            Atom.value = self.maxHFValue
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom()
@@ -364,6 +364,11 @@ class Block(BaseBlock):
         plt.title("Block-" + str(self.scale) + " best Score of" + str(self.max_value)
                   + " p :" + str(self.max_frame_idx) + " , k: " + str(self.max_bin_idx))
 
+    def im_proj_matrix(self):
+#        plt.figure()
+        plt.imshow(np.abs(self.projs_matrix.reshape((self.frame_num, self.frame_len))),
+                   aspect='auto',
+                   interpolation='nearest')
 
 class LOBlock(Block):
     """ Class that inherit classic MDCT block class and deals with local optimization
@@ -504,7 +509,7 @@ class LOBlock(Block):
 #        else:
 #            self.max_value = abs(self.max_value)
 
-        Atom.mdct_value = self.max_value
+        Atom.value = self.max_value
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom(value=1)
         Atom.time_shift = 0
@@ -751,7 +756,7 @@ class FullBlock(Block):
         Atom.frame = self.max_frame_idx
 
         # re-compute the atom amplitude for IMDCT
-        Atom.mdct_value = self.max_value
+        Atom.value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom()
@@ -816,28 +821,48 @@ class SpreadBlock(Block):
 
         self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
-        self.projs_matrix = np.zeros(len(self.framed_data_matrix))
+        
+        self.projs_matrix = np.zeros((self.frame_num* self.frame_len,))
+        
+        
         self.use_c_optim = useC
         self.HF = forceHF
         _Logger.info('new MDCT block constructed size : ' + str(self.scale))
 
         self.penalty = penalty
         # initialize the mask: so far no penalty
-        self.mask = np.ones(len(self.framed_data_matrix))
+        self.mask_index_x = np.array([], dtype=int, ndmin=1)
+        self.mask_index_y = np.array([], dtype=int, ndmin=1)
+        
+        self.mask = np.ones(self.projs_matrix.shape)
+        
+        self.mask_index = np.zeros(self.projs_matrix.shape)
         self.maskSize = maskSize
 
     def find_max(self, it=-1):
         ''' Apply the mask to the projection before choosing the maximum '''
 
-        # cannot use the tree indexing ant more... too bad
+        # cannot use the tree indexing any more... too bad
 #        treeMaxIdx = self.best_score_tree.argmax()
-        self.projs_matrix *= self.mask
+#        print self.mask_index_x, self.mask_index_y
+#        indices = (self.mask_index_x * self.scale/2) + self.mask_index_y
+#        for z in self.mask_index_x:            
+#            self.projs_matrix[(z*self.scale/2) + self.mask_index_y] *= self.mask[(z*self.scale/2) + self.mask_index_y]
 #        print self.framed_data_matrix.shape, self.mask.shape
+#        np.ma.masked_equal(self.mask, 1)
 
+#        self.mask_index = (self.mask < 1)
+
+#        newImage = np.where(np.logical_and(image1, image2), (image1 + image2) / 2, 0)
+
+#        self.projs_matrix = np.where(np.logical_and(self.projs_matrix, self.mask), self.projs_matrix * self.mask, self.projs_matrix)        
+        self.projs_matrix *= self.mask
+        
+#        for x,y in zip(self.mask_index_x, self.mask_index_y):
+#            self.projs_matrix[x*self.scale/2 + y] *= self.mask[x*self.scale/2 + y]
 #        plt.figure()
-# plt.imshow(reshape(self.mask,(self.frameNumber,self.scale/2)),interpolation='
-# nearest',aspect='auto')
-        self.maxIdx = np.argmax(abs(self.projs_matrix))
+#        plt.imshow(reshape(self.mask,(self.frameNumber,self.scale/2)),interpolation='nearest',aspect='auto')
+        self.maxIdx = np.abs(self.projs_matrix).argmax()
 
 #        print self.maxIdx
 
@@ -849,19 +874,44 @@ class SpreadBlock(Block):
     def get_max_atom(self, HF=False):
         self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
-
-        # update the mask : penalize the choice of an atom overlapping in time
-        # and or frequency
-        for i in range(-self.maskSize, self.maskSize + 1, 1):
-            self.mask[((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx - self.maskSize): ((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx + self.maskSize)] = self.penalty
-
+     
         # proceed as usual
         Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
 
-        Atom.mdct_value = self.max_value
+        Atom.value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom()
 
         return Atom
+
+    def compute_mask(self, best_atom, mask_bin_width, mask_frame_width, penalty):
+        ''' update the mask, centering of the best current atom
+        with specified Frequency and time width ''' 
+        # update the mask : penalize the choice of an atom overlapping in time
+        # and or frequency
+        c_frame = int(np.ceil(best_atom.time_position / (self.scale / 2)))
+        c_bin = int(best_atom.reduced_frequency * self.scale )        
+        
+#        print best_atom
+#        print "Evaluating: ", self.scale, c_frame, c_bin
+        
+#        z1 = np.arange(int(c_frame - mask_frame_width), int(c_frame + mask_frame_width) +1,1)
+#        z2 = np.arange(int(c_bin - mask_bin_width), int(c_bin + mask_bin_width) + 1,1)
+#        x, y = np.meshgrid(z1, z2)
+#        print self.mask_index_x, x
+#        print x.shape 
+#        self.mask_index_x = np.concatenate((self.mask_index_x, z1))
+#        self.mask_index_y = np.concatenate((self.mask_index_y, z2))
+#        for z in z1:
+#            self.mask[(z*self.scale/2) + z2] *= penalty
+#        self.mask_index.append()
+        for i in range(-mask_frame_width, mask_frame_width + 1, 1):
+#            self.mask_index.append()
+#            self.mask_index[((c_frame + i) * self.scale / 2) + (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + (c_bin + mask_bin_width)] = 1
+            self.mask[((c_frame + i) * self.scale / 2) + (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + (c_bin + mask_bin_width)] *= self.penalty
+
+        
+#            self.mask[((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx - self.maskSize): ((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx + self.maskSize)] = self.penalty
+#       

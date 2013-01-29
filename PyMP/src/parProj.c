@@ -991,6 +991,115 @@ int subprojectMDCT(double * cin_data ,
 	return 0;
 }
 
+/* Gabor Dictionary projections computed using FFTS */
+int projectMaskedGabor(double * cin_data,
+                 double * cout_scoreTree,
+                 fftw_complex * cin_vecProj,
+                 double *penalty_mask,
+                 int   start,
+                 int   end,
+                 int L) {
+
+    /* Declarations */
+    int i, j;  /* Loop indexes*/
+    int K, T , blockIndex, threadIdx;
+    double norm;
+
+    /*omp_set_num_threads(omp_get_max_threads());*/
+
+
+    fftw_complex *fftw_private_input , *fftw_private_output;  /* FFTW input and output vectors*/
+    fftw_plan fftw_private_plan;						/* FFTW Plan*/
+    double max , absoluteMax;
+    /* Declarations -  end */
+
+    /* initialize some constants*/
+    K = L/2;
+    T = 0;
+
+	/*  Retrieve inputs and outputs vector from global variables*/
+    blockIndex = -1;
+
+	for (i=0 ; i < size_number ; i++){
+		if (L == fft_sizes[i])
+		{	blockIndex =i;
+		break;
+		}
+	}
+	if (blockIndex <0) {
+		printf("Warning: FFTW has not been properly initiated\n");
+		return(-1);
+	}
+
+/*    window = (double*) mxMalloc(sizeof(double) * L);
+    for(i=0; i<L; i++){
+        window[i] = 0.5*(1 - cos( ((double)2.0*PI*j) / ((double)L) ));
+    }*/
+
+    /* Norm compensation of the signal windowing*/
+    norm = (double)(sqrt(8.0/(3.0*(double)K)));
+
+    absoluteMax = 0.0;
+
+    if(DEBUG) printf("DEBUG : Projecting frames from %d to %d \n" , start, end);
+    /* LOOP ON signal frames */
+/*     #pragma omp parallel for private(i, max, threadIdx, j, fftw_private_input, fftw_private_output, fftw_private_plan) shared(absoluteMax,start, end, cin_data , K, T, L, cin_vecProj , norm, cout_scoreTree , blockIndex, size_number , ThreadPool_inputs , ThreadPool_outputs , ThreadPool_plans)*/
+
+     #pragma omp parallel for default(none) private(i,j,fftw_private_input,fftw_private_output, fftw_private_plan, threadIdx,max) shared(cout_scoreTree,absoluteMax,penalty_mask,cin_data,K,T,L,cin_vecProj,norm,start,end,ThreadPool_inputs,ThreadPool_outputs,ThreadPool_plans,size_number,blockIndex)
+    for(i=start; i < end+1 ; i++){
+
+        threadIdx = omp_get_thread_num();
+
+        /* Allocate FFTW vector for current thread : Already instantiated and available in ThreadPools*/
+        fftw_private_input = ThreadPool_inputs[(threadIdx*size_number)+blockIndex];
+        fftw_private_output = ThreadPool_outputs[(threadIdx*size_number)+blockIndex];
+
+        fftw_private_plan = ThreadPool_plans[(threadIdx*size_number)+blockIndex];
+
+        /* Populate input data and windowing        */
+        for(j=0; j < L; j++){
+
+            /* UPDATE with no C99 complex type : need to separate real and imaginary parts +  windowing of the signal*/
+				fftw_private_input[j][0] = (double) (cin_data[j + i*K - T]) *(0.5*(1 - cos( ((double)2.0*PI*j) / ((double)L) )));
+				fftw_private_input[j][1] = 0 ;
+
+        }
+
+        /* perform FFT*/
+        fftw_execute(fftw_private_plan);
+        /* post-twiddle and assignement to projection vector
+        // simultaneous max search and storage in the score Tree*/
+
+
+        /* BUGFIX : do not allow for zero frequency*/
+        cin_vecProj[i*K][0] = 0;
+        cin_vecProj[i*K][1] = 0;
+        max = 0.0;
+        for(j=1; j < K; j++){
+
+            /* NEW VERSION : not C99 compliant*/
+				cin_vecProj[j + i*K][0] = penalty_mask[j + i*K] * norm * fftw_private_output[j][0];
+				cin_vecProj[j + i*K][1] = penalty_mask[j + i*K] * norm * fftw_private_output[j][1];
+
+                /* BUGFIX here - search is conducted on real values*/
+                /* CHANGES : penalization by current mask before selecting the maximum*/
+                if (( modulus(cin_vecProj[j + i*K])) > max) {
+					max = ( modulus(cin_vecProj[j + i*K]));
+					cout_scoreTree[i] = max;
+                    if(DEBUG) printf("DEBUG found new value of %2.2f at frame %d located at %d \n" , max , i , j);
+				}
+
+        }
+        /*if(max > absoluteMax){
+            absoluteMax = max;
+        }*/
+    }/* END loop on signal frames */
+    /*mxFree(window);*/
+
+
+    return (1);
+
+}
 
 /* Routine for complex product calculation with fftw_complex types */
 void product( fftw_complex c1 , fftw_complex c2 , fftw_complex prod){

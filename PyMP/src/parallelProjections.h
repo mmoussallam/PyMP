@@ -61,6 +61,8 @@ static PyObject * subproject(PyObject *self, PyObject *args);
 
 static PyObject * project_mclt(PyObject *self, PyObject *args);
 
+static PyObject * project_masked_gabor(PyObject *self, PyObject *args);
+
 static PyObject * project_mclt_set(PyObject *self, PyObject *args);
 
 

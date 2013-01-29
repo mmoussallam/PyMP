@@ -79,6 +79,15 @@
  		fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
  		int start , int end , int L);
 
+
+ int projectMaskedGabor(double * cin_data,
+                  double * cout_scoreTree,
+                  fftw_complex * cin_vecProj,
+                  double *penalty_mask,
+                  int   start,
+                  int   end,
+                  int L);
+
  int projectSet(double * cin_data ,
 		 double * cin_vecProj , double * cout_scoreTree,
  		fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
