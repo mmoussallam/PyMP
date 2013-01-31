@@ -301,11 +301,21 @@ class Signaltest(unittest.TestCase):
 
         # Final test: play utility
         print "Playing Short excerpt from Bach Prelude"
-        real_signal = signals.Signal(op.join(audio_filepath, "glocs.wav"),
+        real_signal = signals.Signal(op.join(audio_filepath, "Bach_prelude_4s.wav"),
                                 normalize=False, mono=True)
         real_signal.play()
 
-
+        print "Testing too long excerpt: SHOULD NOT work"
+        l_sig = signals.Signal(op.join(audio_filepath, "Bach_prelude_40s.wav"),
+                                normalize=False, mono=True)
+        self.assertRaises(ValueError, l_sig.play)
+        
+        
+        print "However This should work"
+        l_sig[16*l_sig.fs:19*l_sig.fs].play()
+        
+        
+        
 #        plt.show()
 class BlockTest(unittest.TestCase):
     def runTest(self):

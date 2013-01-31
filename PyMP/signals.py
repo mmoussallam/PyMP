@@ -145,7 +145,8 @@ class Signal(object):
         number of channels %d''' % (self.location, self.length, self.energy, self.fs, self.channel_num)
 
     def normalize(self):
-        ''' makes sure all values of the array are between -1 and 1 '''
+        ''' makes sure all values of the array are between -1 and 1 
+            CAUTION: this is an amplitude normalization not an energy one'''
         _Logger.info('Normalizing Signal')
         normaFact = abs(self.data).max()
         self.data = self.data.astype(float) / float(normaFact)
@@ -159,18 +160,26 @@ class Signal(object):
             plt.legend((legend))
         plt.show()
 
-    def play(self, prevent_too_long=True):
+    def play(self, prevent_too_long=True, int_type=np.uint16):
         '''EXPERIMENTAL: routine to play the signal using wave and pyaudio'''
         import pyaudio
         p = pyaudio.PyAudio()
-        p.get_format_from_width(self.sample_width)
-        stream = p.open(format=p.get_format_from_width(self.sample_width),
+                
+        # TODO: allow other types of integers      
+#        p.get_format_from_width(2)        
+        stream = p.open(format=8,
                         channels=self.channel_num,
                         rate=self.fs,
                         output=True)
-        
+            
         #data = wf.readframes(CHUNK)
-        data = self.data.tostring()
+        # Warning: check whether the flow has been normalized
+        # in which case we need to remultiply it
+        
+        if self.is_normalized:
+            data = (self.data * 16384).astype(int_type).tostring()
+        else:                
+            data = self.data.astype(int_type).tostring()
         
         # TODO : check the size of the input
         if (self.length/self.fs > 10) and prevent_too_long:
