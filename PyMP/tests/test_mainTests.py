@@ -105,6 +105,8 @@ class AtomTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(wf1, wf2)
         np.testing.assert_array_almost_equal(wf2, wf3)
 
+        
+
 
 class WaveletAtomTest(unittest.TestCase):
     def runTest(self):
@@ -296,6 +298,12 @@ class Signaltest(unittest.TestCase):
                      fs, noverlap=128)
 
         shortSignal.write('downsampled.wav')
+
+        # Final test: play utility
+        print "Playing Short excerpt from Bach Prelude"
+        real_signal = signals.Signal(op.join(audio_filepath, "glocs.wav"),
+                                normalize=False, mono=True)
+        real_signal.play()
 
 
 #        plt.show()
