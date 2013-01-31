@@ -107,7 +107,15 @@ class Signal(object):
 
             Fs = Sf.sampleRate
         else:
+                        
             self.data = np.array(data)
+            if len(self.data.shape)>2:
+                raise ValueError("Cannot process more than 2D arrays")
+            
+            if len(self.data.shape)>1:
+                if self.data.shape[0] < self.data.shape[1]:
+                    # by convention we store channels as columns...
+                    self.data = self.data.transpose()  
 
         if debug_level is not None:
             _Logger.set_level(debug_level)

@@ -200,9 +200,9 @@ class Block(BaseBlock):
         Atom.frame = self.max_frame_idx
 #        print self.max_bin_idx, Atom.reducedFrequency
         if not HF:
-            Atom.value = self.max_value
+            Atom.mdct_value = self.max_value
         else:
-            Atom.value = self.maxHFValue
+            Atom.mdct_value = self.maxHFValue
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom()
@@ -509,7 +509,7 @@ class LOBlock(Block):
 #        else:
 #            self.max_value = abs(self.max_value)
 
-        Atom.value = self.max_value
+        Atom.mdct_value = self.max_value
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom(value=1)
         Atom.time_shift = 0
@@ -756,7 +756,7 @@ class FullBlock(Block):
         Atom.frame = self.max_frame_idx
 
         # re-compute the atom amplitude for IMDCT
-        Atom.value = self.max_value
+        Atom.mdct_value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom()
@@ -879,7 +879,7 @@ class SpreadBlock(Block):
         Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
 
-        Atom.value = self.max_value
+        Atom.mdct_value = self.max_value
 
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom()
