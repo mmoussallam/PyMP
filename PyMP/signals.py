@@ -159,6 +159,28 @@ class Signal(object):
             plt.legend((legend))
         plt.show()
 
+    def play(self, prevent_too_long=True):
+        '''EXPERIMENTAL: routine to play the signal using wave and pyaudio'''
+        import pyaudio
+        p = pyaudio.PyAudio()
+        p.get_format_from_width(self.sample_width)
+        stream = p.open(format=p.get_format_from_width(self.sample_width),
+                        channels=self.channel_num,
+                        rate=self.fs,
+                        output=True)
+        
+        #data = wf.readframes(CHUNK)
+        data = self.data.tostring()
+        
+        # TODO : check the size of the input
+        if (self.length/self.fs > 10) and prevent_too_long:
+            raise ValueError("File is longer than 10 secs, please call with prevent_too_long=False")
+        stream.write(data)
+        
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+
     # cropping routine
     def crop(self, startIndex=0, stopIndex=None):
         ''' cropping routine, usage is quite obvious '''
