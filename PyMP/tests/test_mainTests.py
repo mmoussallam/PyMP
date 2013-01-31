@@ -455,6 +455,7 @@ class MPTest(unittest.TestCase):
         # good call: should work and give same results
         completed_approx = mp.mp_continue(stopped_approx, signal_original,
                                           dico2, 50, full_num - stop_num, debug=0, pad=False)[0]
+        
 
         self.assertEqual(full_approx.length, completed_approx.length)
         self.assertEqual(full_approx.atom_number, completed_approx.atom_number)
@@ -473,6 +474,14 @@ class MPTest(unittest.TestCase):
         cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
 
+        print "Comparing MP and MP_continue"
+        
+        cProfile.runctx('mp.mp(signal_original, dico1, 20, 100 ,debug=0 , pad=False)', globals(), locals())
+        
+        curr_approx = mp.mp(signal_original, dico1, 20, 100,
+                            debug=0 ,clean=False, pad=False)[0]
+        
+        cProfile.runctx('mp.mp_continue(curr_approx, signal_original, dico1, 20, 100 ,debug=0 , pad=False)', globals(), locals())
 
 class OMPTest(unittest.TestCase):
     def runTest(self):
@@ -1111,7 +1120,7 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
 #    suite.addTest(MPlongTest())
-#    suite.addTest(MPTest())
+    suite.addTest(MPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(LOMPTest())
@@ -1120,7 +1129,7 @@ if __name__ == '__main__':
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
 #    suite.addTest(WinServerTest())
-    suite.addTest(Signaltest())
+#    suite.addTest(Signaltest())
 #    suite.addTest(WaveletAtomTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)

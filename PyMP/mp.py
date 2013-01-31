@@ -202,11 +202,11 @@ def mp_continue(current_approx,
                  res_energy_list, it_num)
     
         # compute new SRR and increment iteration Number
-        approx_srr = current_approx.compute_srr()
+        current_srr = current_approx.compute_srr(res_signal)
         it_num += 1
     
         if debug > 0:
-            print "SRR reached of ", approx_srr, " at iteration ", it_num
+            print "SRR reached of ", current_srr, " at iteration ", it_num
 
     # VERY IMPORTANT CLEANING STAGE!
     _clean_fftw()
