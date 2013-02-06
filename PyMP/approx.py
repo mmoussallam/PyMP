@@ -612,21 +612,21 @@ def load(inputFilePath):
     return cPickle.load(file_obj)
 
 
-#def read_from_mat_struct(matl_struct):
-#    """ retrieve the python object from a saved version in matlab format
-#    This is useful if you saved an approx object using the scipy.io.savemat
-#    routine and you loaded it back using scipy.io.loadmat"""
-#
-#    # Convert to object struct
-#    appObject = matl_struct[0, 0]
-#    dico = appObject.dico[0, 0]
-#    # TODO proper lecture of dictionary objects
-#
-#    # So far we only read the parameters
-#
-#    approx = Approx(None, [], None, appObject.length[0, 0], appObject.
-#                    fs[0, 0])
-#    return approx
+def read_from_mat_struct(matl_struct):
+    """ retrieve the python object from a saved version in matlab format
+    This is useful if you saved an approx object using the scipy.io.savemat
+    routine and you loaded it back using scipy.io.loadmat"""
+
+    # Convert to object struct
+    appObject = matl_struct[0, 0]
+    dico = appObject.dico[0, 0]
+    # TODO proper lecture of dictionary objects
+
+    # So far we only read the parameters
+
+    approx = Approx(None, [], None, appObject.length[0, 0], appObject.
+                    fs[0, 0])
+    return approx
 
 
 def fusion_approxs(approxCollection, unPad=True):

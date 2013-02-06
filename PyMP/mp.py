@@ -321,7 +321,7 @@ def _mp_loop(dictionary, debug, silent_fail,
         else:
             _Logger.warning("Something wrong happened at iteration %d ATTEMPT TO CONTINUE"%it_number)
             # attempt to continue after recomputing all projections
-            dictionary.compute_touched_zone(best_atom, panic=False)
+            dictionary.compute_touched_zone(best_atom, panic=True)
             SILENT_FAIL = False
             return _mp_loop(dictionary, debug, SILENT_FAIL, unpad, res_signal, current_approx, res_energy, it_number)
               

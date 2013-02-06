@@ -556,7 +556,7 @@ class LongSignal(Signal):
         """
 
         # convert frame into bytes positions
-        bFrame = start_seg * (self.segment_size * (1 - self.overlap))
+        bFrame = int(start_seg * (self.segment_size * (1 - self.overlap)))
         nFrames = int(seg_num * self.segment_size)
         wavfile = wave.open(self.location, 'r')
         wavfile.setpos(bFrame)
