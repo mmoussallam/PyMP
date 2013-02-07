@@ -323,6 +323,10 @@ class Signal(object):
             _Logger.error(
                 "Wrong dimension number %s" % str(self.data.shape))
 
+    def get_duration(self):
+        ''' returns the duration in seconds '''
+        return float(self.length)/float(self.fs)
+
     def depad(self, zero_pad):
         ''' Remove zeroes from the edges WARNING: no test on the deleted data: make sure these are zeroes! '''
         try:
@@ -563,12 +567,17 @@ class LongSignal(Signal):
 #        print "Reading ",bFrame, nFrames, wavfile._framesize
         str_bytestream = wavfile.readframes(nFrames)
         data = np.fromstring(str_bytestream, 'h')
-        wavfile.close()
+        wavfile.close()                      
+              
 
         if self.channel_num > 1:
             reshapedData = data.reshape(nFrames, self.channel_num)
         else:
+            if max(data.shape)>nFrames:
+                nFrames = sum(data.shape)
+            
             reshapedData = data.reshape(nFrames, )
+
         if mono:
             if len(reshapedData.shape) > 1:
                 reshapedData = reshapedData[:, channel]
