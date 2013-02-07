@@ -101,9 +101,7 @@ class Signal(object):
             self.location = data
             Sf = SoundFile.SoundFile(data)
             self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
-            self.sample_width = Sf.sample_width
-            if mono:
-                self.data = self.data[:, 0]
+            self.sample_width = Sf.sample_width            
 
             Fs = Sf.sampleRate
         else:
@@ -117,6 +115,10 @@ class Signal(object):
                     # by convention we store channels as columns...
                     self.data = self.data.transpose()  
 
+        # keeping only the left channel
+        if mono and len(self.data.shape)>1:
+            self.data = self.data[:, 0]
+        
         if debug_level is not None:
             _Logger.set_level(debug_level)
 
