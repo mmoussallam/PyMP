@@ -507,16 +507,44 @@ class OMPTest(unittest.TestCase):
                                          normalize=True, mono=True)
 
         # last test - decomposition profonde
-        dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
-                                   4096, 8192, 16384])
-        dico1 = mp_mdct_dico.Dico([16384])
+#        dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
+#                                   4096, 8192, 16384])
+#        dico1 = mp_mdct_dico.Dico([16384])
+#        dico1 = mp_mdct_dico.Dico([256, 2048, 8192])
+        best_atom = mdct_atom.Atom(4096, amp=1, timePos=10000,
+                               freqBin=12, Fs=8000, mdctCoeff=3.0)
+        
+        t_interv = [best_atom.time_position - dico.get_pad(),
+                best_atom.time_position + best_atom.length]
+        
+        subdico = np.zeros((t_interv[1]-t_interv[0], 2))
+        
+        
+        subdico[best_atom.time_position - t_interv[0]:
+                best_atom.time_position - t_interv[0] + best_atom.length,
+                -1] = best_atom.get_waveform()/np.sqrt(np.sum(best_atom.waveform**2))
+        
+        # now add a second one
+        existing_atom = mdct_atom.Atom(4096, amp=1, timePos=9000,
+                               freqBin=45, Fs=8000, mdctCoeff=2.0)
+        
+        subdico[existing_atom.time_position - t_interv[0]:
+                existing_atom.time_position - t_interv[0] + existing_atom.length,
+                0] = existing_atom.get_waveform()/np.sqrt(np.sum(existing_atom.get_waveform()**2))
+         
+        weights = np.dot(np.linalg.pinv(subdico),signal_original.data[t_interv[0]:t_interv[1]])
+        print weights
+        app_mp, dec_mp = mp.mp(signal_original, dico, 20, 5 ,debug=2 ,pad=True, clean=True)
+        app_locomp, dec_locomp = mp.locomp(signal_original, dico, 5, 100 ,debug=2 ,pad=False, clean=True)
+        
+        print app_mp
+        print app_locomp
         # profiling test
-        print "Plain"
-        cProfile.runctx('mp.mp(signal_original, dico1, 20, 1000 ,debug=0 , '
-                        'clean=True)', globals(), locals())
-
-        cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
-                        'clean=True)', globals(), locals())
+#        print "Plain"
+#        cProfile.runctx('', globals(), locals())
+#
+#        cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
+#                        'clean=True)', globals(), locals())
 
 
 class SequenceDicoTest(unittest.TestCase):
@@ -600,6 +628,24 @@ class ApproxTest(unittest.TestCase):
             mdct_atom.Atom(8192, 1, 4096 - 2048, 32, 44100, -0.24))
         approxSignal1 = app.synthesize(0)
 
+        # testing the update method
+        app_update = approx.Approx(dico, [], signal_original)
+        app_update.add(
+            mdct_atom.Atom(8192, 1, 4096 - 2048, 32, 44100, -0.24))
+        old_array = app_update.synthesize(0).data.copy()
+        
+        self.assertAlmostEqual(np.sqrt(np.sum(old_array**2)), 0.24)
+        
+        app_update.update([0], [0.80])
+        new_array = app_update.synthesize(0).data.copy()
+        
+        self.assertAlmostEqual(np.sqrt(np.sum(new_array**2)), 0.80)
+        
+#        plt.figure()
+#        plt.plot(old_array)
+#        plt.plot(new_array)
+#        plt.show()
+
         plt.figure()
         plt.subplot(121)
         app.plot_tf()
@@ -662,7 +708,39 @@ class ApproxTest(unittest.TestCase):
 
         del signal_original
 
+        self.neighborTesting()
+
         self.ioTesting()
+    
+    def neighborTesting(self):
+        dico = mp_mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
+                                         mono=True)
+        app = approx.Approx(dico, [], signal_original)
+
+        # fill with two atoms in 10000 and 12000
+        app.add(mdct_atom.Atom(1024, amp=1, timePos=10000,
+                               freqBin=12, Fs=8000, mdctCoeff=0.57))
+        
+        app.add(mdct_atom.Atom(1024, amp=1, timePos=12000,
+                               freqBin=12, Fs=8000, mdctCoeff=0.57))
+        
+        app.add(mdct_atom.Atom(1024, amp=1, timePos=9000,
+                               freqBin=12, Fs=8000, mdctCoeff=0.57))
+        
+        # now look for neighbors:
+        two_neigh = app.get_neighbors(mdct_atom.Atom(1024, amp=1, timePos=11000,
+                                               freqBin=12, Fs=8000, mdctCoeff=0.57))
+        
+        
+        self.assertEqual(app.get_neighbors(mdct_atom.Atom(1024, 1, 11000,12, 8000, 0.57)),
+                         [0,1])
+        self.assertEqual(app.get_neighbors(mdct_atom.Atom(1024, 1, 11025,12, 8000, 0.57)),
+                         [1])        
+        self.assertEqual(app.get_neighbors(mdct_atom.Atom(1024, 1, 8500,12, 8000, 0.57)),
+                         [2])
+        self.assertEqual(app.get_neighbors(mdct_atom.Atom(8192, 1, 7000,12, 8000, 0.57)),
+                         [0,1,2])
 
     def ioTesting(self):
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
@@ -1120,11 +1198,12 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
 #    suite.addTest(MPlongTest())
-    suite.addTest(MPTest())
+#    suite.addTest(MPTest())
+#    suite.addTest(OMPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(LOMPTest())
-#    suite.addTest(ApproxTest())
+    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())

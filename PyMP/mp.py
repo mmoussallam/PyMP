@@ -1,3 +1,5 @@
+# This Python file uses the following encoding: utf-8
+
 #*****************************************************************************/
 #                                                                            */
 #                               mp.py                                        */
@@ -25,7 +27,7 @@ import os.path
 
 # PyMP object imports
 import approx as Approx
-from base import BaseDico as Dico
+from .base import BaseDico as Dico
 import signals as Signal
 import log
 import win_server
@@ -87,11 +89,10 @@ def mp(orig_signal,
     # CHECKING INPUTS
     if not isinstance(orig_signal, Signal.Signal):
         raise TypeError("MP will only accept objects inheriting from PyMP.signals.Signal as input signals")
-    
-    
+
     if not isinstance(dictionary, Dico):
         raise TypeError("MP will only accept objects inheriting from PyMP.base.BaseDico as dictionaries")
-    
+
     # optional add zeroes to the edge
     if pad:
         orig_signal.pad(dictionary.get_pad())
@@ -99,7 +100,7 @@ def mp(orig_signal,
 
     # FFTW Optimization for C code: initialize module global variables
     _initialize_fftw(dictionary)
-    
+
     # initialize blocks
     dictionary.initialize(res_signal)
 
@@ -116,7 +117,7 @@ def mp(orig_signal,
     # check if signal has null energy
     if res_signal.energy == 0:
         raise ValueError(" Null signal energy ")
-        
+
     res_energy_list.append(res_signal.energy)
 
     # Decomposition loop: stopping criteria is either SNR or iteration number
@@ -125,7 +126,6 @@ def mp(orig_signal,
         if (it_number == debug_iteration):
             debug = 3
             _Logger.set_level(3)
-
 
         best_atom = _mp_loop(dictionary, debug,
                              silent_fail, unpad, res_signal,
@@ -148,6 +148,7 @@ def mp(orig_signal,
     _clean_fftw()
 
     return current_approx, res_energy_list
+
 
 def mp_continue(current_approx,
                 orig_signal,
@@ -187,24 +188,23 @@ def mp_continue(current_approx,
 
     it_num = 0
     current_srr = current_approx.compute_srr()
-        
-    
-    while (current_srr < target_srr) & (it_num < max_it_num): 
-        
+
+    while (current_srr < target_srr) & (it_num < max_it_num):
+
         # lauches a mp loop: update projection, retrieve best atom and subtract from residual
 #        _mp_loop(dictionary, current_approx,
 #              res_signal, res_energy_list,
 #              it_num, debug)
-        
-        _mp_loop(dictionary, debug, 
-                 silent_fail, unpad, 
-                 res_signal, current_approx, 
+
+        _mp_loop(dictionary, debug,
+                 silent_fail, unpad,
+                 res_signal, current_approx,
                  res_energy_list, it_num)
-    
+
         # compute new SRR and increment iteration Number
         current_srr = current_approx.compute_srr(res_signal)
         it_num += 1
-    
+
         if debug > 0:
             print "SRR reached of ", current_srr, " at iteration ", it_num
 
@@ -212,6 +212,7 @@ def mp_continue(current_approx,
     _clean_fftw()
 
     return current_approx, res_energy_list
+
 
 def mp_long(orig_longsignal,
             dictionary,
@@ -260,7 +261,8 @@ def mp_long(orig_longsignal,
         # save the output in xml formatting
         if write:
             approximants[segIdx].write_to_xml('Srr' + str(target_srr) +
-                                              '_Seg' + str(segIdx) + '_Over_' + str(Nsegments) + '.xml', output_dir)
+                                              '_Seg' + str(segIdx) +
+                                              '_Over_' + str(Nsegments) + '.xml', output_dir)
 
     return approximants, decays
 
@@ -268,16 +270,17 @@ def mp_long(orig_longsignal,
 def _itprint_(it_num, best_atom):
     """ debug printing"""
     strO = ("It: " + str(it_num) + " Selected atom" + str(best_atom))
-    print strO
+#    print strO
+    return strO
 
 
 def _plot_proj(best_atom, residual_sig):
     plt.figure()
     plt.plot(residual_sig.data[best_atom.
-                                 time_position: best_atom.time_position + best_atom.length])
+                               time_position: best_atom.time_position + best_atom.length])
     plt.plot(best_atom.waveform)
     plt.plot(residual_sig.data[best_atom.time_position: best_atom.time_position +
-                                 best_atom.length] - best_atom.waveform, ':')
+                               best_atom.length] - best_atom.waveform, ':')
     plt.legend(('Signal', 'Atom substracted', 'residual'))
     plt.show()
 
@@ -287,8 +290,8 @@ def _mp_loop(dictionary, debug, silent_fail,
              res_energy, it_number):
     #===========================================================================
     # # Internal MP loop
-    #===========================================================================
-    
+    #=========================================================================
+
     # Compute inner products and selects the best atom
     dictionary.update(res_signal, it_number)
     # retrieve the best correlated atom
@@ -297,113 +300,160 @@ def _mp_loop(dictionary, debug, silent_fail,
         print 'No atom selected anymore'
 #            return current_approx, res_energy
     if debug > 0:
-        print _itprint_(it_number, best_atom)
-        
+        _Logger.debug(_itprint_(it_number, best_atom))
     try:
         res_signal.subtract(best_atom, debug)
         dictionary.compute_touched_zone(best_atom)
     except ValueError:
         if not silent_fail:
-            _Logger.error("Something wrong happened at iteration " + str(it_number) + " atom substraction abandonned")
+            _Logger.error("Something wrong happened at iteration " +
+                          str(it_number) + " atom substraction abandonned")
             print "Atom Selected: ", best_atom
-                  
+
             if debug > 1:
                 plt.figure()
-                plt.plot(res_signal.data[best_atom.time_position:best_atom.time_position + best_atom.length])
+                plt.plot(res_signal.data[best_atom.time_position:
+                         best_atom.time_position + best_atom.length])
                 plt.plot(best_atom.waveform)
-                plt.plot(res_signal.data[best_atom.time_position:best_atom.time_position + best_atom.length] - best_atom.waveform, ':')
+                plt.plot(res_signal.data[best_atom.time_position:
+                                         best_atom.time_position + best_atom.length] - best_atom.waveform, ':')
                 plt.legend(('Signal', 'Atom substracted', 'residual'))
                 plt.title('Iteration ' + str(it_number))
                 dictionary.best_current_block.plot_proj_matrix()
                 plt.show()
-        
+
             raise ValueError()
         else:
-            _Logger.warning("Something wrong happened at iteration %d ATTEMPT TO CONTINUE"%it_number)
+            _Logger.warning("Something wrong happened at iteration %d ATTEMPT TO CONTINUE" % it_number)
             # attempt to continue after recomputing all projections
             dictionary.compute_touched_zone(best_atom, panic=True)
             SILENT_FAIL = False
-            return _mp_loop(dictionary, debug, SILENT_FAIL, unpad, res_signal, current_approx, res_energy, it_number)
-              
+            return _mp_loop(dictionary, debug, SILENT_FAIL, unpad,
+                            res_signal, current_approx, res_energy, it_number)
+
 #            return current_approx, res_energy
     if debug > 1:
-        _Logger.debug("new residual energy of " + str(sum(res_signal.data ** 2)))
+        _Logger.debug(
+            "new residual energy of " + str(sum(res_signal.data ** 2)))
     if not unpad:
         res_energy.append(res_signal.energy)
     else:
         padd = dictionary.get_pad()
         # assume padding is max dictionaty size
-        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2)) # only compute the energy without the padded borders where
+        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))  
+        # only compute the energy without the padded borders where
     # eventually energy has been created
     # add atom to dictionary
     current_approx.add(best_atom)
     return best_atom
 
-#def _loop(dictionary, current_approx,
-#          residual_sig, res_energy_list,
-#          it_num, debug):
-#            
-#        # Compute inner products and selects the best atom
-#        dictionary.update(residual_sig)
-#    
-#        # Retrieve best atom among candidates
-#        bestAtom = dictionary.get_best_atom(debug)
-#    
-#        if bestAtom is None:
-#            print 'No atom selected anymore'            
-#    
-#        if debug > 0:
-#            _itprint_(it_num, bestAtom)
-#    
-#        try:
-#            residual_sig.subtract(bestAtom, debug)
-#            dictionary.compute_touched_zone(bestAtom)
-#        
-#        except ValueError:
-#            print "Something wrong happened at iteration ", it_num, " atom substraction abandonned"
-#            if debug > 1:
-#                _plot_proj(bestAtom, residual_sig)
-#                
-#            approxPath = "currentApprox_failed_iteration_" + str(
-#                it_num) + ".pymp"
-#            signalPath = "currentApproxRecomposedSignal_failed_iteration_" + str(
-#                it_num) + ".wav"
-#            current_approx.dump(approxPath)
-#            current_approx.recomposed_signal.write(signalPath)
-#            print " approx saved to ", approxPath
-#            print " recomposed signal saved to ", signalPath
-#            return current_approx, res_energy_list
-#    
-#        if debug > 0:
-#            print "new residual energy of ", sum(residual_sig.data ** 2)
-#    
-#        # BUGFIX?
-#        res_energy_list.append(residual_sig.energy)
-#    #        res_energy_list.append(sum(residual_sig.dataVec **2))
-#    
-#        # add atom to dictionary
-#        current_approx.add(bestAtom)
-#            
-#        # cleaning
-#        del bestAtom.waveform
+def _get_local_subdico(best_atom, current_approx, dictionary):
+    # THIS IS CRITICAL STEP
+    # The interval is defined so that any atom that overlaps the selected one is selected
+    t_interv = [best_atom.time_position - dictionary.get_pad(),
+                best_atom.time_position + best_atom.length]
+    t_interv[0] = max(t_interv[0],0)
+#    ov_sel_atoms = current_approx.filter_atoms(time_interv=t_interv, index=True)
+    ov_sel_atoms = current_approx.get_neighbors(best_atom)
+    
+    _Logger.debug("%d neighbouring atoms selected in [%d - %d]"%(len(ov_sel_atoms),
+                                                             t_interv[0],
+                                                             t_interv[1]))
+    
+    # now build the subdictionary matrix
+    subdico = np.zeros((t_interv[1] + dictionary.get_pad() - t_interv[0], len(ov_sel_atoms)+1))
+    subdico[best_atom.time_position - t_interv[0]:
+            best_atom.time_position - t_interv[0] + best_atom.length,
+                -1] = best_atom.waveform/np.sqrt(np.sum(best_atom.waveform**2))
+    
+    
+    
+    for atomidx in range(len(ov_sel_atoms)):    
+        at =  current_approx.atoms[ov_sel_atoms[atomidx]] 
+        
+        wf = at.get_waveform()/np.sqrt(np.sum(at.get_waveform()**2))
+
+        subdico[at.time_position - t_interv[0]: at.time_position - t_interv[0] + at.length,
+                atomidx] = wf
+    
+    return subdico, t_interv, ov_sel_atoms
 
 
-def _initialize_fftw(dictionary):    
-    if parallelProjections.initialize_plans(np.array(dictionary.sizes), np.array([2]*len(dictionary.sizes))) != 1:
+def _locomp_loop(dictionary, debug, silent_fail,
+             unpad, res_signal, current_approx,
+             res_energy, it_number):
+    #===========================================================================
+    # # Internal OMP loop with local least squares projection
+    #=========================================================================
+
+    # Compute inner products and selects the best atom
+    # SAME AS MP
+    dictionary.update(res_signal, it_number)
+    # retrieve the best correlated atom
+    best_atom = dictionary.get_best_atom(debug)
+    if best_atom is None:
+        _Logger.info('No atom selected anymore')
+
+    if debug > 0:
+         _Logger.debug(_itprint_(it_number, best_atom))
+        
+    # This is where things change a little:
+    # first we need to retrieve all atoms previsously
+    # selected that overlaps with the selected one
+    subdico, t_interv, ov_sel_atoms = _get_local_subdico(best_atom, current_approx, dictionary)
+
+    # recompute the weights by least squares on the residual signal    
+    weights = np.dot(np.linalg.pinv(subdico), res_signal.data[t_interv[0]:t_interv[1] + dictionary.get_pad()])        
+        
+    # update the approximant: change atom values 
+    current_approx.update(ov_sel_atoms, weights)    
+    
+    # update the approximant waveform, locally
+    current_approx.recomposed_signal.data[t_interv[0]:
+                                          t_interv[1] + dictionary.get_pad()] += np.dot(subdico,weights) 
+    
+
+    
+    
+    # TODO remove or optimize 
+    current_approx.recomposed_signal.energy = np.sum(current_approx.recomposed_signal.data**2) 
+    
+    # add atom to dictionary: but not the waveform, already taken care of
+    current_approx.add(best_atom, noWf=True)
+    
+    # update the residual, locally
+    res_signal.data = current_approx.original_signal.data - current_approx.recomposed_signal.data    
+    res_signal.energy =  np.sum(res_signal.data ** 2)
+    
+    # compute the touched zone to accelerate further processings
+    dictionary.compute_touched_zone(best_atom)
+    
+
+    if debug > 1:
+        _Logger.debug(
+            "new residual energy of " + str(np.sum(res_signal.data ** 2)))
+    if not unpad:
+        res_energy.append(res_signal.energy)
+    else:
+        padd = dictionary.get_pad()
+        # assume padding is max dictionaty size
+        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))  
+        # only compute the energy without the padded borders where
+    
+    return best_atom
+
+
+def _initialize_fftw(dictionary):
+    if parallelProjections.initialize_plans(np.array(dictionary.sizes), np.array([2] * len(dictionary.sizes))) != 1:
         raise ValueError("Something failed during FFTW initialization step ")
+
 
 def _clean_fftw():
     if parallelProjections.clean_plans() != 1:
         raise ValueError("Something failed during FFTW cleaning stage ")
 
 
-
-
-
-
 # Experimental
-
-
 # def GP(originalSignal,
 #        dictionary,
 #        target_srr,
@@ -574,139 +624,97 @@ def _clean_fftw():
 ##        atom.mdct_value = gains[i];
 #
 #    return currentApprox, resEnergy
-
 # def substract(residualSignal , alpha , c):
 #    residualSignal.dataVec -= alpha*c;
 #    return residualSignal
+def locomp(original_signal,
+           dictionary,
+           target_srr,
+           max_it_num,
+           debug=0,
+           pad=True,
+           clean=False,
+           silent_fail=False,
+           unpad=False):
+    """
+    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
+    # Orthogonal Matching Pursuit Loop
 
+    We try try to implement the Localized OMP described by Mailhe et al in:
+    Mailhé, B., Gribonval, R., Vandergheynst, P., & Bimbot, F. (2011).
+    Fast orthogonal sparse approximation algorithms over local dictionaries.
+    published in Signal Processing.
 
-# def OMP(originalSignal,
-#        dictionary,
-#        target_srr,
-#        max_it_num,
-#        debug=0,
-#        pad=True,
-#        itClean=False):
-#    # EXPERIMENTAL: NOT TESTED! AND DEPRECATED USE AT YOUR OWN RISKS
-#    # Orthogonal Matching Pursuit Loop """
-#
-#    # back compatibility - use debug levels now
-#    if not debug:
-#        debug = 0
-#
-#    # optional add zeroes to the edge
-#    if pad:
-#        originalSignal.pad(dictionary.get_pad())
-#    residualSignal = originalSignal.copy()
-#
-#    # FFTW C code optimization
-#    if parallelProjections.initialize_plans(np.array(dictionary.sizes)) != 1:
-#            raise ValueError(
-#                "Something failed during FFTW initialization step ")
-#
-#    # initialize blocks
-#    dictionary.initialize(residualSignal)
-#
-#    # initialize approximant
-#    currentApprox = Approx.Approx(dictionary, [], originalSignal)
-#
-#    # residualEnergy
-#    resEnergy = []
-#
-#    iterationNumber = 0
-#    approxSRR = currentApprox.compute_srr()
-#
-##    projMatrix = np.zeros((originalSignal.length,1))
+    This means that least square is only performed on a local subdictionary
+    in order to accelerate computation
+
+    """
+
+    # back compatibility - use debug levels now
+    if debug is not None:
+        _Logger.set_level(debug)
+    
+    
+    # optional add zeroes to the edge
+    if pad:
+        original_signal.pad(dictionary.get_pad())
+    res_signal = original_signal.copy()
+
+    # FFTW C code optimization
+    _initialize_fftw(dictionary)
+    
+    # initialize blocks
+    dictionary.initialize(res_signal)
+
+    # initialize approximant
+    current_approx = Approx.Approx(dictionary, [], original_signal)
+
+    # residualEnergy
+    res_energy_list = []
+
+    it_number = 0
+    current_srr = current_approx.compute_srr()
+
+#    projMatrix = np.zeros((original_signal.length,1))
 #    projMatrix = []
 #    atomKeys = []
-#    # loop is same as mp except for orthogonal projection of the atom on the
-#    # residual
-#    while (approxSRR < target_srr) & (iterationNumber < max_it_num):
-#        maxBlockScore = 0
-#        bestBlock = None
-#
-#        # Compute inner products and selects the best atom
-#        dictionary.update(residualSignal, iterationNumber)
-#
-#        bestAtom = dictionary.get_best_atom(debug)
-#
-#        if bestAtom is None:
-#            print 'No atom selected anymore'
-#            return currentApprox, resEnergy
-#
-#        if debug > 0:
-#            strO = ("It: " + str(iterationNumber) + " Selected atom of scale " + str(bestAtom.length) + " frequency bin " + str(bestAtom.frequencyBin)
-#                                            + " at " + str(
-#                                                bestAtom.timePosition)
-#                                            + " value : " + str(
-#                                                bestAtom.mdct_value)
-#                                            + " time shift : " + str(bestAtom.timeShift))
-#            print strO
-#
-#        # need to recompute all the atoms projection scores to orthogonalise
-#        # residual
-#        # approximate with moore-penrose inverse
-#        # add atom to projection matrix
-#        vec1 = np.concatenate((np.zeros((bestAtom.timePosition, 1)), bestAtom.
-#            waveform.reshape(bestAtom.length, 1) / bestAtom.mdct_value))
-#        vec2 = np.zeros((originalSignal.length - bestAtom.
-#            timePosition - bestAtom.length, 1))
-#        atomVec = np.concatenate((vec1, vec2))
-#
-##        atomVec = atomVec/math.sqrt(sum(atomVec**2))
-#        atomKey = (
-#            bestAtom.length, bestAtom.timePosition, bestAtom.frequencyBin)
-#
-#        if iterationNumber > 0:
-#            if atomKey not in atomKeys:
-#                projMatrix = np.concatenate((projMatrix, atomVec), axis=1)
-#                atomKeys.append(atomKey)
-#        else:
-#            projMatrix = atomVec
-#            atomKeys.append(atomKey)
-#
-#        # Orthogonal projection via pseudo inverse calculation
-#        ProjectedScores = np.dot(np.linalg.pinv(projMatrix),
-#            original_signal.data.reshape(originalSignal.length, 1))
-#
-#        # update residual
-#        currentApprox.recomposed_signal.data = np.dot(
-#            projMatrix, ProjectedScores)[:, 0]
-#
-#        residualSignal.data = originalSignal.data - currentApprox.recomposed_signal.data
-#
-##        # add atom to dictionary
-##        currentApprox.add(bestAtom , dictionary.bestCurrentBlock.wLong)
-##
-## for atom,i in zip(currentApprox.atoms , range(currentApprox.atomNumber)):
-##            atom.projectionScore = ProjectedScores[i];
-## atom.waveform = (ProjectedScores[i]/math.sqrt(sum(atom.waveform**2))) *
-## atom.waveform;
-#
-##        residualSignal.subtract(bestAtom , debug)
-##        dictionary.compute_touched_zone(bestAtom)
-#        resEnergy.append(
-#            np.dot(residualSignal.data.T, residualSignal.data))
-#        recomposedEnergy = np.dot(currentApprox.recomposed_signal.
-#            data.T, currentApprox.recomposed_signal.data)
-#
-#        # compute new SRR and increment iteration Number
-#        approxSRR = 10 * math.log10(recomposedEnergy / resEnergy[-1])
-##        approxSRR = currentApprox.compute_srr();
-#        if debug > 0:
-#            print "SRR reached of ", approxSRR, " at iteration ", iterationNumber
-#
-#        iterationNumber += 1
-#
-#        # cleaning
-#        if itClean:
-#            del bestAtom.waveform
-#
-#    # VERY IMPORTANT CLEANING STAGE!
-#    if parallelProjections.clean_plans(np.array(dictionary.sizes)) != 1:
-#        raise ValueError("Something failed during FFTW cleaning stage ")
-#
-#    return currentApprox, resEnergy
+    # loop is same as mp except for orthogonal projection of the atom on the
+    # residual
+    # Decomposition loop: stopping criteria is either SNR or iteration number
+    # check if signal has null energy
+    if res_signal.energy == 0:
+        raise ValueError(" Null signal energy ")
+
+    res_energy_list.append(res_signal.energy)
+    
+    while (current_srr < target_srr) & (it_number < max_it_num):
+        
+#        if (it_number == debug_iteration):
+#            debug = 3
+#            _Logger.set_level(3)
+
+        best_atom = _locomp_loop(dictionary, debug,
+                                 silent_fail, unpad, res_signal,
+                                 current_approx,
+                                 res_energy_list, it_number)
+
+        # compute new SRR and increment iteration Number
+#        print np.sum(res_signal.data**2), np.sum(current_approx.recomposed_signal.data**2)
+        current_srr = current_approx.compute_srr(res_signal)
+
+        _Logger.debug("SRR reached of " + str(current_srr) +
+                      " at iteration " + str(it_number))
+
+        it_number += 1
+
+        # cleaning for memory consumption control
+        if clean:
+            del best_atom.waveform
+
+    # VERY IMPORTANT CLEANING STAGE!
+    _clean_fftw()
+
+    return current_approx, res_energy_list
 
 
 def mp_joint(orig_sig_list,
@@ -878,11 +886,13 @@ def mp_joint(orig_sig_list,
                     res_sig_list[
                         sigIdx].subtract(best_atom_list[sigIdx], debug)
 
-                    dictionary.compute_touched_zone(sigIdx, best_atom_list[sigIdx])
+                    dictionary.compute_touched_zone(
+                        sigIdx, best_atom_list[sigIdx])
 
                 else:
                     _Logger.debug("Atom not subtracted in this signal")
-                    dictionary.compute_touched_zone(sigIdx, best_atom_list[sigIdx])
+                    dictionary.compute_touched_zone(
+                        sigIdx, best_atom_list[sigIdx])
 
             # update energy decay curves
             res_energy_list[sigIdx].append(res_sig_list[sigIdx].energy)

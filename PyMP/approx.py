@@ -205,30 +205,42 @@ class Approx:
     def __repr__(self):        
         return 'Approx Object: %d atoms, SRR of %2.2f dB' % (self.atom_number, self.srr)
 
+    def get_neighbors(self, atom):
+        """ returns the atom neighbor indexes """
+        t_interv = [atom.time_position - self.dico.get_pad(),
+                atom.time_position + atom.length]
+        
+        return [i for i in range(self.atom_number) if
+                (self.atoms[i].time_position >=  t_interv[0]) and
+                (self.atoms[i].time_position <  t_interv[1]) and
+                (self.atoms[i].time_position + self.atoms[i].length >  atom.time_position)]
+
     # Filter the atom list by the given criterion
-    def filter_atoms(self, mdctSize=0, posInterv=None, freqInterv=None):
+    def filter_atoms(self, scale=0, time_interv=None, freq_interv=None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
         filteredApprox = Approx(self.dico, [], self.original_signal,
                                 self.length, self.fs)
-        doAppend = True
+        
+        # TODO: change to a list sorting: will be much faster
         for atom in self.atoms:
-#            if atom.length == mdctSize:
+            doAppend = True
+#            if atom.length == scale:
 ##                print  atom.length , " appended "
 #                filteredApprox.add(atom)
 
-            if atom.length == mdctSize:
+            if atom.length == scale:
                 doAppend &= True
             else:
                 doAppend &= False
 
-            if(posInterv != None):
-                if (min(posInterv) < atom.time_position <= max(posInterv)):
-                    doAppend &= True
+            if(time_interv != None):
+                if (time_interv[0] < atom.time_position) and (atom.time_position<= time_interv[1]):
+                    doAppend = True
                 else:
-                    doAppend &= False
+                    doAppend = False
 
-            if(freqInterv != None):
-                if (min(freqInterv) < atom.reduced_frequency <= max(freqInterv)):
+            if(freq_interv != None):
+                if (min(freq_interv) < atom.reduced_frequency <= max(freq_interv)):
                     doAppend &= True
                 else:
                     doAppend &= False
@@ -259,13 +271,33 @@ class Approx:
             if clean:
                 del newAtom.waveform
 
-    #
+        # otherwise recompute ?
 
-    def remove(self, atom):
+    #
+    
+    def update(self, atom_indexes, new_weights):
+        """ update atom values (e.g. after projection) and the 
+            recomposed_signal instance """
+        for i in range(len(atom_indexes)):
+            ind  = atom_indexes[i]
+            atom = self.atoms[ind]
+            self.remove(atom, position=ind)
+            atom.mdct_value = new_weights[i]
+#            atom.waveform = None
+#            atom.synthesize(value=atom.mdct_value)
+                        
+            self.add(atom)
+
+#        self.synthesize(method=2)
+
+    def remove(self, atom, position=None):
         ''' We need a routine to remove an atom , by default the last atom is removed '''
         if not isinstance(atom, BaseAtom):
             raise TypeError("add need a BaseAtom as parameter ")
-        self.atoms.remove(atom)
+        if position is None:
+            self.atoms.remove(atom)
+        else:
+            self.atoms.pop(position)
         self.atom_number -= 1
 
         if self.recomposed_signal != None:
@@ -289,7 +321,7 @@ class Approx:
             return np.NINF
 
         if residual is None:
-            resEnergy = sum((self.original_signal.data -
+            resEnergy = np.sum((self.original_signal.data -
                              self.recomposed_signal.data) ** 2)
         else:
             resEnergy = residual.energy
