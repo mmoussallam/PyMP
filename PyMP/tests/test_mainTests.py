@@ -487,7 +487,7 @@ class OMPTest(unittest.TestCase):
     def runTest(self):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
-        dico = mp_mdct_dico.Dico([256, 2048, 8192])
+        dico = mp_mdct_dico.LODico([256, 2048, 8192])
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
         signal_original.crop(0, 5 * 16384)
@@ -505,40 +505,19 @@ class OMPTest(unittest.TestCase):
         # second test
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
+        
 
-        # last test - decomposition profonde
-#        dico2 = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
-#                                   4096, 8192, 16384])
-#        dico1 = mp_mdct_dico.Dico([16384])
-#        dico1 = mp_mdct_dico.Dico([256, 2048, 8192])
-        best_atom = mdct_atom.Atom(4096, amp=1, timePos=10000,
-                               freqBin=12, Fs=8000, mdctCoeff=3.0)
-        
-        t_interv = [best_atom.time_position - dico.get_pad(),
-                best_atom.time_position + best_atom.length]
-        
-        subdico = np.zeros((t_interv[1]-t_interv[0], 2))
-        
-        
-        subdico[best_atom.time_position - t_interv[0]:
-                best_atom.time_position - t_interv[0] + best_atom.length,
-                -1] = best_atom.get_waveform()/np.sqrt(np.sum(best_atom.waveform**2))
-        
-        # now add a second one
-        existing_atom = mdct_atom.Atom(4096, amp=1, timePos=9000,
-                               freqBin=45, Fs=8000, mdctCoeff=2.0)
-        
-        subdico[existing_atom.time_position - t_interv[0]:
-                existing_atom.time_position - t_interv[0] + existing_atom.length,
-                0] = existing_atom.get_waveform()/np.sqrt(np.sum(existing_atom.get_waveform()**2))
-         
-        weights = np.dot(np.linalg.pinv(subdico),signal_original.data[t_interv[0]:t_interv[1]])
-        print weights
-        app_mp, dec_mp = mp.mp(signal_original, dico, 20, 5 ,debug=2 ,pad=True, clean=True)
-        app_locomp, dec_locomp = mp.locomp(signal_original, dico, 5, 100 ,debug=2 ,pad=False, clean=True)
+        app_mp, dec_mp = mp.mp(signal_original, dico, 10, 100 ,debug=0 ,pad=True, clean=True)
+        app_locomp, dec_locomp = mp.locomp(signal_original, dico, 10, 100 ,debug=0 ,pad=False, clean=True)
         
         print app_mp
         print app_locomp
+        
+        plt.figure()    
+        plt.plot(dec_mp,'b')
+        plt.plot(dec_locomp,'r--')    
+        plt.show()
+        
         # profiling test
 #        print "Plain"
 #        cProfile.runctx('', globals(), locals())
@@ -1199,11 +1178,11 @@ if __name__ == '__main__':
 
 #    suite.addTest(MPlongTest())
 #    suite.addTest(MPTest())
-#    suite.addTest(OMPTest())
+    suite.addTest(OMPTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(LOMPTest())
-    suite.addTest(ApproxTest())
+#    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())

@@ -159,7 +159,8 @@ def mp_continue(current_approx,
                 pad=True,
                 silent_fail=False,
                 unpad=False):
-    """ routine that restarts a decomposition from an existing, incomplete approximation """
+    """ routine that restarts a decomposition from an existing,
+    incomplete approximation """
 
     if not isinstance(current_approx, Approx.Approx):
         raise TypeError("provided object is not a py_pursuit_Approx")
@@ -191,10 +192,8 @@ def mp_continue(current_approx,
 
     while (current_srr < target_srr) & (it_num < max_it_num):
 
-        # lauches a mp loop: update projection, retrieve best atom and subtract from residual
-#        _mp_loop(dictionary, current_approx,
-#              res_signal, res_energy_list,
-#              it_num, debug)
+        # lauches a mp loop: update projection, 
+        # retrieve best atom and subtract from residual
 
         _mp_loop(dictionary, debug,
                  silent_fail, unpad,
@@ -222,9 +221,10 @@ def mp_long(orig_longsignal,
             pad=True,
             output_dir='',
             write=False):
-    """NOT FULLY TESTED treats long signals , return a collection of approximants , one by segment
-        You can use the FusionApprox method of the Approx class to recover a single approx object from this
-        collection"""
+    """NOT FULLY TESTED treats long signals , return a collection of approximants ,
+        one by segment
+        You can use the FusionApprox method of the Approx class to recover a 
+        single approx object from this collection"""
 
     output_dir = output_dir + str(target_srr) + '/'
 
@@ -234,10 +234,10 @@ def mp_long(orig_longsignal,
     # test inputs
     if not isinstance(orig_longsignal, Signal.LongSignal):
         raise TypeError(
-            'Signal is not a py_pursuitLongSignal object - TODO correct')
+            'Signal is not a LongSignal object ')
 
     if not isinstance(dictionary, Dico):
-        raise TypeError('Dico is not a py_pursuit_Dico object - TODO correct')
+        raise TypeError('Dico is not a Dico object')
 
     Nsegments = int(orig_longsignal.n_seg)
 
@@ -249,8 +249,7 @@ def mp_long(orig_longsignal,
         if debug > 0:
             print 'Starting work on segment ' + str(
                 segIdx) + ' over ' + str(Nsegments)
-# subSignal = orig_longsignal.get_sub_signal( segIdx , 1 ,forceMono=True,
-# doNormalize=False , pad = (dictionary.get_pad())/2)
+
         subSignal = orig_longsignal.get_sub_signal(
             segIdx, 1, True, False, 0, 0)
         approx, decay = mp(subSignal, dictionary, target_srr,
@@ -262,7 +261,8 @@ def mp_long(orig_longsignal,
         if write:
             approximants[segIdx].write_to_xml('Srr' + str(target_srr) +
                                               '_Seg' + str(segIdx) +
-                                              '_Over_' + str(Nsegments) + '.xml', output_dir)
+                                              '_Over_' + str(Nsegments) +
+                                              '.xml', output_dir)
 
     return approximants, decays
 
@@ -340,48 +340,52 @@ def _mp_loop(dictionary, debug, silent_fail,
     else:
         padd = dictionary.get_pad()
         # assume padding is max dictionaty size
-        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))  
+        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))
         # only compute the energy without the padded borders where
     # eventually energy has been created
     # add atom to dictionary
     current_approx.add(best_atom)
     return best_atom
 
+
 def _get_local_subdico(best_atom, current_approx, dictionary):
     # THIS IS CRITICAL STEP
-    # The interval is defined so that any atom that overlaps the selected one is selected
+    # The interval is defined so that any atom that overlaps the selected one
+    # is selected
     t_interv = [best_atom.time_position - dictionary.get_pad(),
                 best_atom.time_position + best_atom.length]
-    t_interv[0] = max(t_interv[0],0)
-#    ov_sel_atoms = current_approx.filter_atoms(time_interv=t_interv, index=True)
+    t_interv[0] = max(t_interv[0], 0)
+# ov_sel_atoms = current_approx.filter_atoms(time_interv=t_interv,
+# index=True)
     ov_sel_atoms = current_approx.get_neighbors(best_atom)
-    
-    _Logger.debug("%d neighbouring atoms selected in [%d - %d]"%(len(ov_sel_atoms),
-                                                             t_interv[0],
-                                                             t_interv[1]))
-    
+
+    _Logger.debug(
+        "%d neighbouring atoms selected in [%d - %d]" % (len(ov_sel_atoms),
+                                                         t_interv[0],
+                                                         t_interv[1]))
+
     # now build the subdictionary matrix
-    subdico = np.zeros((t_interv[1] + dictionary.get_pad() - t_interv[0], len(ov_sel_atoms)+1))
+    subdico = np.zeros((t_interv[1] + dictionary.get_pad(
+    ) - t_interv[0], len(ov_sel_atoms) + 1))
     subdico[best_atom.time_position - t_interv[0]:
             best_atom.time_position - t_interv[0] + best_atom.length,
-                -1] = best_atom.waveform/np.sqrt(np.sum(best_atom.waveform**2))
-    
-    
-    
-    for atomidx in range(len(ov_sel_atoms)):    
-        at =  current_approx.atoms[ov_sel_atoms[atomidx]] 
-        
-        wf = at.get_waveform()/np.sqrt(np.sum(at.get_waveform()**2))
+            -1] = best_atom.waveform / np.sqrt(np.sum(best_atom.waveform ** 2))
 
-        subdico[at.time_position - t_interv[0]: at.time_position - t_interv[0] + at.length,
-                atomidx] = wf
-    
+    for atomidx in range(len(ov_sel_atoms)):
+        at = current_approx.atoms[ov_sel_atoms[atomidx]]
+
+        wf = at.get_waveform() / np.sqrt(np.sum(at.get_waveform() ** 2))
+
+        subdico[
+            at.time_position - t_interv[0]: at.time_position - t_interv[0] + at.length,
+            atomidx] = wf
+
     return subdico, t_interv, ov_sel_atoms
 
 
 def _locomp_loop(dictionary, debug, silent_fail,
-             unpad, res_signal, current_approx,
-             res_energy, it_number):
+                 unpad, res_signal, current_approx,
+                 res_energy, it_number):
     #===========================================================================
     # # Internal OMP loop with local least squares projection
     #=========================================================================
@@ -395,39 +399,39 @@ def _locomp_loop(dictionary, debug, silent_fail,
         _Logger.info('No atom selected anymore')
 
     if debug > 0:
-         _Logger.debug(_itprint_(it_number, best_atom))
-        
+        _Logger.debug(_itprint_(it_number, best_atom))
+
     # This is where things change a little:
     # first we need to retrieve all atoms previsously
     # selected that overlaps with the selected one
-    subdico, t_interv, ov_sel_atoms = _get_local_subdico(best_atom, current_approx, dictionary)
+    subdico, t_interv, ov_sel_atoms = _get_local_subdico(
+        best_atom, current_approx, dictionary)
 
-    # recompute the weights by least squares on the residual signal    
-    weights = np.dot(np.linalg.pinv(subdico), res_signal.data[t_interv[0]:t_interv[1] + dictionary.get_pad()])        
-        
-    # update the approximant: change atom values 
-    current_approx.update(ov_sel_atoms, weights)    
-    
+    # recompute the weights by least squares on the residual signal
+    weights = np.dot(np.linalg.pinv(subdico), res_signal.data[t_interv[
+                     0]:t_interv[1] + dictionary.get_pad()])
+
+    # update the approximant: change atom values
+    current_approx.update(ov_sel_atoms, weights)
+
     # update the approximant waveform, locally
     current_approx.recomposed_signal.data[t_interv[0]:
-                                          t_interv[1] + dictionary.get_pad()] += np.dot(subdico,weights) 
-    
+                                          t_interv[1] + dictionary.get_pad()] += np.dot(subdico, weights)
 
-    
-    
-    # TODO remove or optimize 
-    current_approx.recomposed_signal.energy = np.sum(current_approx.recomposed_signal.data**2) 
-    
+    # TODO remove or optimize
+    current_approx.recomposed_signal.energy = np.sum(
+        current_approx.recomposed_signal.data ** 2)
+
     # add atom to dictionary: but not the waveform, already taken care of
     current_approx.add(best_atom, noWf=True)
-    
+
     # update the residual, locally
-    res_signal.data = current_approx.original_signal.data - current_approx.recomposed_signal.data    
-    res_signal.energy =  np.sum(res_signal.data ** 2)
-    
+    res_signal.data = current_approx.original_signal.data - \
+        current_approx.recomposed_signal.data
+    res_signal.energy = np.sum(res_signal.data ** 2)
+
     # compute the touched zone to accelerate further processings
     dictionary.compute_touched_zone(best_atom)
-    
 
     if debug > 1:
         _Logger.debug(
@@ -437,9 +441,9 @@ def _locomp_loop(dictionary, debug, silent_fail,
     else:
         padd = dictionary.get_pad()
         # assume padding is max dictionaty size
-        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))  
+        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))
         # only compute the energy without the padded borders where
-    
+
     return best_atom
 
 
@@ -653,8 +657,7 @@ def locomp(original_signal,
     # back compatibility - use debug levels now
     if debug is not None:
         _Logger.set_level(debug)
-    
-    
+
     # optional add zeroes to the edge
     if pad:
         original_signal.pad(dictionary.get_pad())
@@ -662,7 +665,7 @@ def locomp(original_signal,
 
     # FFTW C code optimization
     _initialize_fftw(dictionary)
-    
+
     # initialize blocks
     dictionary.initialize(res_signal)
 
@@ -686,9 +689,9 @@ def locomp(original_signal,
         raise ValueError(" Null signal energy ")
 
     res_energy_list.append(res_signal.energy)
-    
+
     while (current_srr < target_srr) & (it_number < max_it_num):
-        
+
 #        if (it_number == debug_iteration):
 #            debug = 3
 #            _Logger.set_level(3)
@@ -699,7 +702,8 @@ def locomp(original_signal,
                                  res_energy_list, it_number)
 
         # compute new SRR and increment iteration Number
-#        print np.sum(res_signal.data**2), np.sum(current_approx.recomposed_signal.data**2)
+# print np.sum(res_signal.data**2),
+# np.sum(current_approx.recomposed_signal.data**2)
         current_srr = current_approx.compute_srr(res_signal)
 
         _Logger.debug("SRR reached of " + str(current_srr) +
