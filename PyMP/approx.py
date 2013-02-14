@@ -275,20 +275,22 @@ class Approx:
 
     #
     
-    def update(self, atom_indexes, new_weights):
+    def update(self, atom_indexes, new_weights, update_rec=False):
         """ update atom values (e.g. after projection) and the 
-            recomposed_signal instance """
-        for i in range(len(atom_indexes)):
-            ind  = atom_indexes[i]
-            atom = self.atoms[ind]
-            self.remove(atom, position=ind)
-            atom.mdct_value = new_weights[i]
-#            atom.waveform = None
-#            atom.synthesize(value=atom.mdct_value)
-                        
-            self.add(atom)
-
-#        self.synthesize(method=2)
+            recomposed_signal instance 
+            
+            """
+        if update_rec:
+            for i in range(len(atom_indexes)):
+                ind  = atom_indexes[i]
+                atom = self.atoms[ind]
+                self.remove(atom, position=ind)
+                atom.mdct_value = new_weights[i]
+                            
+                self.add(atom)
+        else:
+            for i in range(len(atom_indexes)):
+                self.atoms[atom_indexes[i]].mdct_value = new_weights[i]
 
     def remove(self, atom, position=None):
         ''' We need a routine to remove an atom , by default the last atom is removed '''

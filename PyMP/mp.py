@@ -20,7 +20,7 @@ A Simple mp algorithm using the pymp objects
 '''
 import math
 import numpy as np
-
+import scipy.sparse
 # these imports are for debugging purposes
 import matplotlib.pyplot as plt
 import os.path
@@ -580,8 +580,8 @@ def _get_local_subdico(best_atom, current_approx, dictionary):
     # THIS IS CRITICAL STEP
     # The interval is defined so that any atom that overlaps the selected one
     # is selected
-    t_interv = [best_atom.time_position - dictionary.get_pad(),
-                best_atom.time_position + best_atom.length]
+    t_interv = [int(best_atom.time_position - dictionary.get_pad()),
+                int(best_atom.time_position + best_atom.length)]
     t_interv[0] = max(t_interv[0], 0)
 # ov_sel_atoms = current_approx.filter_atoms(time_interv=t_interv,
 # index=True)
@@ -593,6 +593,8 @@ def _get_local_subdico(best_atom, current_approx, dictionary):
                                                          t_interv[1]))
 
     # now build the subdictionary matrix
+#    subdico = scipy.sparse.csr_matrix((t_interv[1] + dictionary.get_pad(
+#    ) - t_interv[0], len(ov_sel_atoms) + 1))
     subdico = np.zeros((t_interv[1] + dictionary.get_pad(
     ) - t_interv[0], len(ov_sel_atoms) + 1))
     
@@ -611,6 +613,28 @@ def _get_local_subdico(best_atom, current_approx, dictionary):
 
     return subdico, t_interv, ov_sel_atoms
 
+#def _grad_proj(locproj, ov_sel_atoms, best_atom, t_interv, dict, current_approx):
+#    """ avoids the numpy dot product, slow when numpy is not parallelized
+#        also there are a lot of zeroes in the subdictionary, no need to take them 
+#        into account"""
+#    # initialize output
+#    outvec =  np.zeros((t_interv[1] + dict.get_pad() - t_interv[0], ))
+#    
+#    # projection loop
+#    for at_i in range(len(ov_sel_atoms)):
+#        at = current_approx[ov_sel_atoms[at_i]]
+#        wf = _PyServer.get_waveform( at.length, at.freq_bin)
+#        slice = range(int(at.time_position - t_interv[0]),
+#                      int(at.time_position - t_interv[0] + at.length))
+#        outvec[slice] += locproj[at_i]*wf
+#
+#    # don't forget the last atom
+#    wf = _PyServer.get_waveform( best_atom.length, best_atom.freq_bin)
+#    slice = range(int(best_atom.time_position - t_interv[0]),
+#                  int(best_atom.time_position - t_interv[0] + best_atom.length))
+#    outvec[slice] += locproj[-1]*wf
+#    
+#    return outvec
 
 def _locomp_loop(dictionary, debug, silent_fail,
                  unpad, res_signal, current_approx,
@@ -701,26 +725,31 @@ def _locgp_loop(dictionary, debug, silent_fail,
 
     # recompute the weights by least squares on the residual signal
     # Replace the pseudo-inverse by a gradient descent step
-#    sigslice = res_signal.data[t_interv[0]:t_interv[1] + dictionary.get_pad()]
+    if 'LO' in dictionary.nature:
+        sigslice = res_signal.data[t_interv[0]:t_interv[1] + dictionary.get_pad()]
+        
+#         @TODO can we replace this step by a projection using fftw?
+#         We don't have to do that, we already calculated them!!
+#         the projection score are all stored in the projection_matrix of the dictionary
+        locProj = np.dot(subdico.T, sigslice)        
     
-    # @TODO can we replace this step by a projection using fftw?
-    # We don't have to do that, we already calculated them!!
-    # the projection score are all stored in the projection_matrix of the dictionary
-#    locProj = np.dot(subdico.T, sigslice)        
+    # HACK faster if weights have already been computed
+    else:
+        loc_projs2 = []
+        for at_i in ov_sel_atoms:
+            at = current_approx[at_i]
+            block = dictionary.blocks[dictionary.find_block_by_scale(at.length)]    
+            loc_projs2.append(block.projs_matrix[at.frame*at.length/2 + at.freq_bin])    
+        loc_projs2.append(best_atom.mdct_value)
+        locProj = np.array(loc_projs2)
     
-    # HACK
-    loc_projs2 = []
-    for at_i in ov_sel_atoms:
-        at = current_approx[at_i]
-        block = dictionary.blocks[dictionary.find_block_by_scale(at.length)]    
-        loc_projs2.append(block.projs_matrix[at.frame*at.length/2 + at.freq_bin])    
-    loc_projs2.append(best_atom.mdct_value)
-    locProj = np.array(loc_projs2)
-    
+#    grad_proj = _grad_proj(locProj, ov_sel_atoms,
+#                           best_atom, t_interv, dictionary, current_approx)
 #    print subdico.shape, locProj.shape
-
-    step = np.sum(locProj**2)/ np.sum( np.dot(subdico,locProj)**2)
-    
+    # projection 
+    grad_proj = np.dot(subdico,locProj)
+#    step = np.sum(locProj**2)/ np.sum( np.dot(subdico,locProj)**2)
+    step = np.sum(locProj**2)/ np.sum(grad_proj**2)
     # compute new weights
     weights = step * locProj
 
@@ -728,9 +757,9 @@ def _locgp_loop(dictionary, debug, silent_fail,
     # @TODO optimize here: this is bringing serious overhead
     current_approx.update(ov_sel_atoms, weights)
 
-    # update the approximant waveform, locally
+    # update the approximant waveform, locally: np.dot(subdico,weights)
     current_approx.recomposed_signal.data[t_interv[0]:
-                                          t_interv[1] + dictionary.get_pad()] += np.dot(subdico, weights)
+                                          t_interv[1] + dictionary.get_pad()] += step * grad_proj
 
     # @TODO remove or optimize
     current_approx.recomposed_signal.energy = np.sum(
