@@ -474,6 +474,14 @@ class MPTest(unittest.TestCase):
         cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
                         'clean=True)', globals(), locals())
 
+        print "Comparing with legacy implementation"
+        n_atoms = 300
+        app_1 , dec1 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update='mp')
+        app_2 , dec2 = mp.mp(signal_original, dico, 100, n_atoms ,debug=0, pad=False)
+        np.testing.assert_almost_equal(dec1, dec2)
+        for i in range(n_atoms):
+            self.assertEquals(app_1[i],app_2[i])
+
         print "Comparing MP and MP_continue"
         
         cProfile.runctx('mp.mp(signal_original, dico1, 20, 100 ,debug=0 , pad=False)', globals(), locals())
@@ -482,6 +490,53 @@ class MPTest(unittest.TestCase):
                             debug=0 ,clean=False, pad=False)[0]
         
         cProfile.runctx('mp.mp_continue(curr_approx, signal_original, dico1, 20, 100 ,debug=0 , pad=False)', globals(), locals())
+
+class GreedyTest(unittest.TestCase):
+    
+    
+    def badArgsTest(self):
+        print "TESTING BAD CALLS"
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+        dico = mp_mdct_dico.Dico([128, 256, 512, 1024, 2048,
+                                  4096, 8192, 16384])
+
+        # testing mp with empty signal
+        badargs = (None, dico, 50, 10)
+        self.assertRaises(TypeError, mp.greedy, *badargs)
+
+        # testing mp with empty dictionary
+        badargs = (signal_original, None, 50, 10)
+        self.assertRaises(TypeError, mp.greedy, *badargs)
+
+        # testing mp with unknown update rule
+        badargs = (signal_original, dico, 50, 10)
+        badkwargs = { 'update':'nothing'}
+        self.assertRaises(ValueError, mp.greedy, *badargs, **badkwargs)
+        
+        # testing mp
+        # asburd call : should raise a ValueError
+        badargs = (signals.Signal(np.zeros(signal_original.data.shape)),
+                   dico, 50, 10)
+
+        self.assertRaises(ValueError, mp.greedy, *badargs)
+        print "------ OK -------"
+    
+    def runTest(self):
+        
+        self.badArgsTest()
+        
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+        
+        dico = mp_mdct_dico.Dico([128, 1024, 8192], debug_level=0)
+        print "Comparing with legacy implementation"
+        n_atoms = 300
+        app_1 , dec1 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update='mp')
+        app_2 , dec2 = mp.mp(signal_original, dico, 100, n_atoms ,debug=0, pad=False)
+        np.testing.assert_almost_equal(dec1, dec2)
+        for i in range(n_atoms):
+            self.assertEquals(app_1[i],app_2[i])
 
 class OMPTest(unittest.TestCase):
     def runTest(self):
@@ -507,16 +562,28 @@ class OMPTest(unittest.TestCase):
                                          normalize=True, mono=True)
         
 
-        app_mp, dec_mp = mp.mp(signal_original, dico, 10, 100 ,debug=0 ,pad=True, clean=True)
-        app_locomp, dec_locomp = mp.locomp(signal_original, dico, 10, 100 ,debug=0 ,pad=False, clean=True)
+        app_mp, dec_mp = mp.mp(signal_original, dico, 10, 200 ,debug=0 ,pad=True, clean=True)
+        app_locomp, dec_locomp = mp.locomp(signal_original, dico, 10, 200 ,debug=0 ,pad=False, clean=True)
+        
+        #  Ok test also the local GP implementation
+        app_locgp, dec_locgp = mp.locomp(signal_original, dico, 10, 200 ,debug=0
+                                           ,pad=False, approximate=True)
         
         print app_mp
         print app_locomp
+        print app_locgp
         
         plt.figure()    
-        plt.plot(dec_mp,'b')
-        plt.plot(dec_locomp,'r--')    
-        plt.show()
+        plt.plot(10.0*np.log10(dec_mp/dec_mp[0]),'b')
+        plt.plot(10.0*np.log10(dec_locomp/dec_locomp[0]),'r--')
+        plt.plot(10.0*np.log10(dec_locgp/dec_locgp[0]),'k-.')     
+        plt.legend(('MP','LocOMP','LocGP'))   
+#        plt.show()
+        
+        
+        self.assertGreater(dec_mp[-1], dec_locomp[-1])
+        self.assertGreater(dec_mp[-1], dec_locgp[-1])
+        self.assertEqual(int(dec_locgp[-1]),int(dec_locomp[-1]))
         
         # profiling test
 #        print "Plain"
@@ -1178,7 +1245,8 @@ if __name__ == '__main__':
 
 #    suite.addTest(MPlongTest())
 #    suite.addTest(MPTest())
-    suite.addTest(OMPTest())
+#    suite.addTest(OMPTest())
+    suite.addTest(GreedyTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(LOMPTest())

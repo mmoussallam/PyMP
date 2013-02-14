@@ -107,7 +107,9 @@ class Block(BaseBlock):
     HFlimit = 0.1
 
     windowType = None
-
+    
+    # @TODO REMOVE: ONLY FOR BENCHMARKING
+    nb_up_frame = 0
     # constructor - initialize residual signal and projection matrix
     def __init__(self, length=0, resSignal=None, frameLen=0, useC=True, forceHF=False, debug_level=None):
         if debug_level is not None:
@@ -244,6 +246,8 @@ class Block(BaseBlock):
         if startingFrame < 1:
             startingFrame = 1
 
+        # @TODO REMOVE: ONLY FOR BENCHMARKING
+        self.nb_up_frame += endFrame-startingFrame
         # Wrapping C code call for fast implementation
 #        if self.use_c_optim:
         try:
