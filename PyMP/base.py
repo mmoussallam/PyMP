@@ -85,9 +85,9 @@ class BaseDico(object):
     # attributes:
     sizes = None
     tolerances = None
-    blocks = None
-    overlap = 0.5
+    blocks = None    
     nature = 'Abstract'
+    matrix = None
 
     def __init__(self):
         """ default constructor doesn't do anything"""

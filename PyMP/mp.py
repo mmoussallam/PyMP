@@ -14,8 +14,8 @@
 Module mp
 =========
 
-A Simple mp algorithm using the pymp objects
---------------------------------------------
+Greedy algorithms using the pymp objects
+----------------------------------------
 
 '''
 import math
@@ -393,7 +393,7 @@ def greedy(orig_signal,
     
      `max_it_num`:   maximum number of iteration allowed
      
-     `update`    :   plain for MP, orthogonal for OMP, gradient for GP
+     `update`    :   mp for MP, orthogonal for OMP, gradient for GP
 
     Returns
     -------
@@ -448,7 +448,7 @@ def greedy(orig_signal,
 
     res_energy_list.append(res_signal.energy)
 
-    if update not in ['mp','locomp','locgp']:
+    if update not in ['mp','locomp','locgp','omp']:
         raise ValueError('Unrecognized update rule')
 
     loop_str = '_%s_loop'%update
@@ -467,6 +467,11 @@ def greedy(orig_signal,
                              res_energy_list, it_number)
         elif update == 'locomp':
             best_atom = _locomp_loop(dictionary, debug,
+                             silent_fail, unpad, res_signal,
+                             current_approx,
+                             res_energy_list, it_number)
+        elif update == 'omp':
+            best_atom = _omp_loop(dictionary, debug,
                              silent_fail, unpad, res_signal,
                              current_approx,
                              res_energy_list, it_number)
@@ -583,6 +588,7 @@ def _get_local_subdico(best_atom, current_approx, dictionary):
     t_interv = [int(best_atom.time_position - dictionary.get_pad()),
                 int(best_atom.time_position + best_atom.length)]
     t_interv[0] = max(t_interv[0], 0)
+    t_interv[1] = min(t_interv[1], current_approx.length -dictionary.get_pad() )
 # ov_sel_atoms = current_approx.filter_atoms(time_interv=t_interv,
 # index=True)
     ov_sel_atoms = current_approx.get_neighbors(best_atom)
@@ -747,17 +753,26 @@ def _locgp_loop(dictionary, debug, silent_fail,
 #                           best_atom, t_interv, dictionary, current_approx)
 #    print subdico.shape, locProj.shape
     # projection 
+    
     grad_proj = np.dot(subdico,locProj)
-#    step = np.sum(locProj**2)/ np.sum( np.dot(subdico,locProj)**2)
+    # refactoring: replace by a broadcasted computation since 
+    # all we need is the energy of the projected array
+#    grad_proj_en = np.sum(np.sum((subdico*locProj),axis=1)**2)
+    
+#    print grad_proj_en - np.sum(grad_proj**2)
+    
+#    step = np.sum(locProj**2)/ np.sum(np.sum((subdico*locProj),axis=1)**2)
     step = np.sum(locProj**2)/ np.sum(grad_proj**2)
+#    print step
     # compute new weights
     weights = step * locProj
 
     # update the approximant: change atom values
-    # @TODO optimize here: this is bringing serious overhead
+    # @TODO optimize here: this is bringing serious overhead : DONE
     current_approx.update(ov_sel_atoms, weights)
 
     # update the approximant waveform, locally: np.dot(subdico,weights)
+    # REFACTORED, no need to recompute dot product
     current_approx.recomposed_signal.data[t_interv[0]:
                                           t_interv[1] + dictionary.get_pad()] += step * grad_proj
 
@@ -788,6 +803,85 @@ def _locgp_loop(dictionary, debug, silent_fail,
         # only compute the energy without the padded borders where
 
     return best_atom
+
+def _omp_loop(dictionary, debug, silent_fail,
+                 unpad, res_signal, current_approx,
+                 res_energy, it_number):
+    #===========================================================================
+    # # Internal OMP loop with local gradient updates 
+    # BEWARE: VERY MEMORY CONSUMING!
+    #=========================================================================
+
+    # Compute inner products and selects the best atom
+    # SAME AS MP
+    dictionary.update(res_signal, it_number)
+    # retrieve the best correlated atom
+    best_atom = dictionary.get_best_atom(debug)
+    if best_atom is None:
+        _Logger.info('No atom selected anymore')
+
+    if debug > 0:
+        _Logger.debug(_itprint_(it_number, best_atom))
+
+    if it_number==0:
+        dictionary.matrix = np.zeros((current_approx.length,1))
+    else:
+        # add the current waveform to the subdictionary:
+        dictionary.matrix = np.concatenate((dictionary.matrix,
+                                        np.zeros((dictionary.matrix.shape[0],1))),axis=1)
+    
+    t_interv = [int(best_atom.time_position - dictionary.get_pad()),
+                int(best_atom.time_position + best_atom.length)]
+    t_interv[0] = max(t_interv[0], 0)
+    t_interv[1] = min(t_interv[1], current_approx.length -dictionary.get_pad() )
+    # fill the new column with new waveform
+    dictionary.matrix[best_atom.time_position:
+                      best_atom.time_position+
+                      best_atom.length,-1] = _PyServer.get_waveform(best_atom.length,
+                                                                    best_atom.freq_bin)
+
+    
+    subdico = dictionary.matrix[:,0:it_number+1]        
+
+    # recompute the weights by least squares on the residual signal
+#    print subdico.shape, res_signal.data.shape
+    weights = np.dot(np.linalg.pinv(subdico), res_signal.data)
+
+    # update the approximant: change atom values
+    current_approx.update(range(it_number), weights)
+
+    # update the approximant waveform, locally
+    current_approx.recomposed_signal.data += np.dot(subdico, weights)
+
+    # TODO remove or optimize
+    current_approx.recomposed_signal.energy = np.sum(
+        current_approx.recomposed_signal.data ** 2)
+
+    # add atom to dictionary: but not the waveform, already taken care of
+    current_approx.add(best_atom, noWf=True)
+
+
+    # update the residual, locally
+    res_signal.data = current_approx.original_signal.data - \
+        current_approx.recomposed_signal.data
+    res_signal.energy = np.sum(res_signal.data ** 2)
+
+    # compute the touched zone to accelerate further processings
+    dictionary.compute_touched_zone(best_atom)
+
+    if debug > 1:
+        _Logger.debug(
+            "new residual energy of " + str(np.sum(res_signal.data ** 2)))
+    if not unpad:
+        res_energy.append(res_signal.energy)
+    else:
+        padd = dictionary.get_pad()
+        # assume padding is max dictionaty size
+        res_energy.append(np.sum(res_signal.data[padd:-padd] ** 2))
+        # only compute the energy without the padded borders where
+
+    return best_atom
+
 
 def _initialize_fftw(dictionary):
     if parproj.initialize_plans(np.array(dictionary.sizes),

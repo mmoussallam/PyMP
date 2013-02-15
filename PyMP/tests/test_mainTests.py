@@ -537,6 +537,49 @@ class GreedyTest(unittest.TestCase):
         np.testing.assert_almost_equal(dec1, dec2)
         for i in range(n_atoms):
             self.assertEquals(app_1[i],app_2[i])
+        
+        print "Running MP, OMP and local versions on synthetic k-sparse"
+        dico = mp_mdct_dico.LODico([16, 64])
+        L = 16*300
+        data = np.zeros(L,)
+        # create a 2*k-sparse signal
+        K = 50
+        for k in range(K):
+            
+            at = mdct_atom.Atom(16, 1,int((L-64)*np.random.rand(1)[0]),
+                                       int(8*np.random.rand(1)[0]),
+                                       Fs=8000, mdctCoeff=np.random.rand(1)[0])
+            at.synthesize()
+            data[at.time_position: at.time_position + at.length] += at.waveform
+            at = mdct_atom.Atom(64, 1, int((L-64)*np.random.rand(1)[0]),
+                                       freqBin=32*np.random.rand(1)[0],
+                                       Fs=8000, mdctCoeff=np.random.rand(1)[0])
+            at.synthesize()
+            data[at.time_position: at.time_position + at.length] += at.waveform
+        
+        
+        
+        signal_original = signals.Signal(data,Fs=8000, mono=True, normalize=True)
+        signal_original.data += 0.01*np.random.random(L,)
+
+        
+        n_atoms = 2*K
+        cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update=\'mp\')', globals(), locals())
+        cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update=\'locgp\')', globals(), locals())
+        cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update=\'locomp\')', globals(), locals())
+        cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update=\'omp\')', globals(), locals())
+        
+        app_1 , dec1 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update='mp')
+        app_2 , dec2 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update='locgp')
+        app_3 , dec3 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update='omp')
+        
+        plt.figure()
+        plt.plot(10.0*np.log10(dec1/dec1[0]))
+        plt.plot(10.0*np.log10(dec2/dec2[0]))
+        plt.plot(10.0*np.log10(dec3/dec3[0]))
+        plt.legend(('MP','LocGP','OMP'))
+        plt.show()
+        
 
 class OMPTest(unittest.TestCase):
     def runTest(self):
@@ -571,7 +614,8 @@ class OMPTest(unittest.TestCase):
         
         print app_mp
         print app_locomp
-        print app_locgp
+        print app_locgp        
+        
         
         plt.figure()    
         plt.plot(10.0*np.log10(dec_mp/dec_mp[0]),'b')
@@ -1245,7 +1289,7 @@ if __name__ == '__main__':
 
 #    suite.addTest(MPlongTest())
 #    suite.addTest(MPTest())
-#    suite.addTest(OMPTest())
+    suite.addTest(OMPTest())
     suite.addTest(GreedyTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
