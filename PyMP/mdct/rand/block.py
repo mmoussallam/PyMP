@@ -10,7 +10,6 @@ from ... import parallelProjections
 from .. import block as mdct_block
 from .. import atom as mdct_atom
 
-
 # declare global win_server shared by all MDCT blocks instances
 #global _PyServer
 # _Logger
@@ -184,3 +183,75 @@ class SequenceBlock(mdct_block.Block):
         Atom.time_position -= Atom.time_shift
 
         return Atom
+
+
+class StochasticBlock(mdct_block.Block):
+    """ Block implementing the stochastic MP:
+        atom selection is probabilistic """
+        
+    def __init__(self, length=0, resSignal=None, frameLen=0, 
+                 randomType='proba',
+                 windowType=None,
+                 seed=None,
+                 sigma = 1):
+        
+        self.scale = length
+        self.residual_signal = resSignal
+        self.seed = seed
+
+        np.random.seed(self.seed)
+
+        if frameLen == 0:
+            self.frame_len = length / 2
+        else:
+            self.frame_len = frameLen
+        if self.residual_signal == None:
+            raise ValueError("no signal given")
+
+        self.framed_data_matrix = self.residual_signal.data
+        self.frame_num = len(self.framed_data_matrix) / self.frame_len
+        self.projs_matrix = np.zeros(len(self.framed_data_matrix))
+
+        self.randomType = randomType
+        
+        self.windowType = windowType
+    
+        self.sigma= sigma
+    
+    def find_max(self):
+        """ the selection step is probabilistic: the max
+            index is taken at random with a probability proportionnal to
+            the projections 
+            
+            values are chosen with probability linearly proportionnal 
+            to exp(sigma * projection)
+            """
+        
+        # draw a new index vector whose weights are poduct of
+        # a random variable and the projection matrix
+        probabilities = np.exp(self.sigma * np.abs(self.projs_matrix))
+        # normalize so it adds to 1
+        probabilities /= np.sum(probabilities)
+        # create the bins
+        bins = np.add.accumulate(probabilities)
+        
+        # now draw an index at random: use it as the selected atom
+        self.maxIdx = np.digitize(np.random.random_sample(1), bins)[0]
+        
+        _Logger.debug("Chose index %d at random"%self.maxIdx)
+        # deduce the value of the selected atom
+        self.max_value = self.projs_matrix[self.maxIdx]
+    
+    def get_max_atom(self):
+        self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
+        self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
+        Atom = mdct_atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
+        Atom.frame = self.max_frame_idx
+        Atom.mdct_value = self.max_value
+
+        # new version : compute also its waveform through inverse MDCT
+        Atom.waveform = self.synthesize_atom()
+
+
+        return Atom
+    
