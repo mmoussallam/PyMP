@@ -107,6 +107,10 @@ class Signal(object):
         else:
                         
             self.data = np.array(data)
+            # remove any nans or infs data
+            self.data[np.isnan(self.data)] = 0
+            self.data[np.isinf(self.data)] = 0
+            
             if len(self.data.shape)>2:
                 raise ValueError("Cannot process more than 2D arrays")
             
@@ -170,7 +174,7 @@ class Signal(object):
             plt.legend((legend))
         plt.show()
 
-    def play(self, prevent_too_long=True, int_type=np.uint16):
+    def play(self, prevent_too_long=True, int_type=np.int16):
         '''EXPERIMENTAL: routine to play the signal using wave and pyaudio'''
         import pyaudio
         p = pyaudio.PyAudio()
