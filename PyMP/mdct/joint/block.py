@@ -896,7 +896,7 @@ class RandomSetBlock(SetBlock):
 
 
 class SetNLLOBlock(SetLOBlock):
-    """ Same as a CC block except that atom selection is based on Non Linear Criterias such as median or K-order element
+    """ Same as a LO block except that atom selection is based on Non Linear Criterias such as median or K-order element
     This implies some structural changes since all the signals projections must be computed before the selection while
     it was performed on the fly in the linear case. Mainly the compute_transform method is different"""
 
@@ -1070,32 +1070,23 @@ class SetNLLOBlock(SetLOBlock):
             return Atom
 
         # retrieve optimal timeShift
-        if self.use_c_optim:
-            scoreVec = np.array([0.0])
+        
+        scoreVec = np.array([0.0])
 #            Atom.timeShift = computeMCLT.project_atom(input1,input2 , scoreVec )
 #            print "Is it here?"
-            # Atom.timeShift = parallelProjections.project_atom(input1,input2 ,
-            # scoreVec , self.scale)
-            Atom.time_shift = parallelProjections.project_atom_set(
-                input1, input2, fftVec, scoreVec, self.scale, sigIdx)
+        # Atom.timeShift = parallelProjections.project_atom(input1,input2 ,
+        # scoreVec , self.scale)
+        Atom.time_shift = parallelProjections.project_atom_set(
+            input1, input2, fftVec, scoreVec, self.scale, sigIdx)
 
-#            print "Found " ,Atom.timeShift
-#            if abs(Atom.timeShift) > ((self.tolerance-1) * Atom.length)/2:
-#                print "out of limits: found time shift of" , Atom.timeShift
-#                Atom.timeShift = 0
-#                return Atom
+        self.maxTimeShift = Atom.time_shift
+        Atom.time_position += Atom.time_shift
 
-            self.maxTimeShift = Atom.time_shift
-            Atom.time_position += Atom.time_shift
+        # retrieve newly projected waveform
+        Atom.proj_score = scoreVec[0]
+        Atom.mdct_value = Atom.proj_score
+        Atom.waveform *= Atom.proj_score
 
-            # retrieve newly projected waveform
-            Atom.proj_score = scoreVec[0]
-            Atom.mdct_value = Atom.proj_score
-            Atom.waveform *= Atom.proj_score
-
-        else:
-            print "Block 1722 : Not Implemented !"
-            return None
 
 #        print " Reaching here"
         return Atom
