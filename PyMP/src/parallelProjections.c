@@ -121,7 +121,7 @@ static PyObject * initialize_plans(PyObject *self, PyObject *args)
 	/* declarations */
 	PyArrayObject *in_data ,* in_tolerances;
 	
-	int dim2, size_number;
+	int size_number;
 	int * sizes , * tolerances;
 	/*int  threadIdx;*/
 	int res ;
@@ -138,7 +138,6 @@ static PyObject * initialize_plans(PyObject *self, PyObject *args)
 
        /* convert to integer vectors */
     size_number = in_data->dimensions[0];
-    dim2 = in_data->dimensions[1];
 
     if (!(size_number == in_tolerances->dimensions[0])){
     	printf("ERROR in initialization: tolerance tab size %d is not the same as fft_sizes %d?\n",(int)in_tolerances->dimensions[0], (int)size_number);
@@ -256,7 +255,7 @@ subproject(PyObject *self, PyObject *args)
                                        //   of vecin and vecout, respectively
        
        fftw_complex * cin_vecPreTwid, *cin_vecPostTwid; // complex twiddling coefficients       
-       int start,  end , L ,n_data, n_frames; // touched frame indexes, size and potential offsets
+       int start,  end , L , n_frames; // touched frame indexes, size and potential offsets
        int Ts, subFactor , res;
 
 	   	       	  
@@ -297,8 +296,8 @@ subproject(PyObject *self, PyObject *args)
        cin_vecPreTwid=pyvector_to_complexCarrayptrs(in_vecPreTwid);
        cin_vecPostTwid=pyvector_to_complexCarrayptrs(in_vecPostTwid);
        
-       /* Get input data dimension.*/
-       n_data=in_data->dimensions[0];
+       /* Get input data dimension.
+       n_data=in_data->dimensions[0];*/
 
    	    /*retrieve maximum frame number*/
    	   n_frames = out_scoreTree->dimensions[0];
@@ -463,7 +462,7 @@ project_mclt_set(PyObject *self, PyObject *args)
 
        fftw_complex * cin_vecPreTwid, *cin_vecPostTwid ;//, *cin_vecProj; // complex twiddling coefficients
        int start,  end , L, res;
-       int n_data, n_frames;
+       int n_frames;
        int type; // 0 for summation, 1 for multiplying , 2 for taking the minimum
 
 	   //fftw_complex prod;
@@ -495,8 +494,8 @@ project_mclt_set(PyObject *self, PyObject *args)
        cin_vecPostTwid=pyvector_to_complexCarrayptrs(in_vecPostTwid);
        cout_scoreTree=pyvector_to_Carrayptrs(out_scoreTree);
 
-       /* Get input data dimension.*/
-       n_data=in_data->dimensions[0];
+       /* Get input data dimension.
+       n_data=in_data->dimensions[0];*/
 
 	   /* retrieve maximum frame number*/
 	   n_frames = out_scoreTree->dimensions[0];
@@ -547,7 +546,7 @@ project_mclt_NLset(PyObject *self, PyObject *args)
        if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!iiii", &PyArray_Type, &in_data,
        												&PyArray_Type, &out_scoreTree,
        											  &PyArray_Type, &in_vecProj,
-       											  &PyArray_Type, &out_vecProj,
+       											&PyArray_Type, &out_vecProj,
        											  &PyArray_Type, &in_vecPreTwid,
        											  &PyArray_Type, &in_vecPostTwid,
        											  &start,  &end , &L , &type))  return NULL;
@@ -681,7 +680,7 @@ project_mclt_NLset(PyObject *self, PyObject *args)
 
 	   		   break;
 	   default:
-		   printf("parallelFFT.c: line 618 : Unrecognized Type");
+		   printf("parallelProjection.c: line 683 : Unrecognized Type");
 		   return NULL;
 	   }
 	   /*printf("MAx search %d , %d, %d\n", start,end,K);*/
@@ -698,6 +697,145 @@ project_mclt_NLset(PyObject *self, PyObject *args)
 				   }
 	   }
 	   free(localArray);
+	  return Py_BuildValue("i", 1);
+}
+
+/* projection of 3D data on 1D dictionary then combination of the
+ * other dimensions to build the scores
+ */
+static PyObject *
+project_mclt_3Dset(PyObject *self, PyObject *args)
+{
+
+	 /*Declarations*/
+       PyArrayObject *in_data , *in_vecProj, *out_vecProj , *in_vecPreTwid, *in_vecPostTwid, *out_scoreTree;  // The python objects to be extracted from the args
+       double *cin_data  , *cout_scoreTree , *cin_vecProj, *cout_vecProj;   // The C vectors to be created to point to the
+                                       //   python vectors, cin and cout point to the row
+                                       //   of vecin and vecout, respectively
+
+       fftw_complex * cin_vecPreTwid, *cin_vecPostTwid ;//, *cin_vecProj; // complex twiddling coefficients
+       int start,  end , L, res,K;
+       int trialIdx, sensorIdx;
+       int n_trial, n_sensor,n_data, n_frames;
+       int type; // 0 for summation, 1 for multiplying , 2 for taking the minimum
+       int n_sig , sigIdx, i,j;
+       double max;
+       /*double geoMean, arithMean,ratio,max;*/
+	   //fftw_complex prod;
+        /*Declarations -  end*/
+
+       /* Parse tuples separately since args will differ between C fcns*/
+       if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!iiii", &PyArray_Type, &in_data,
+       												&PyArray_Type, &out_scoreTree,
+       											  &PyArray_Type, &in_vecProj,
+       											  &PyArray_Type, &out_vecProj,
+       											  &PyArray_Type, &in_vecPreTwid,
+       											  &PyArray_Type, &in_vecPostTwid,
+       											  &start,  &end , &L , &type))  return NULL;
+
+		/* Checking null pointers*/
+       if (NULL == in_data)  return NULL;
+       if (NULL == in_vecProj)  return NULL;
+       if (NULL == out_vecProj)  return NULL;
+       if (NULL == in_vecPreTwid)  return NULL;
+       if (NULL == in_vecPostTwid)  return NULL;
+       if (NULL == out_scoreTree)  return NULL;
+
+
+       /* The changes are here, we need to perform the projection for each signal before calculating the scores        */
+       /* Change contiguous arrays into C * arrays*/
+
+       /*printf("Array Dimensions : %d - %d\n", n,m);*/
+       cin_data=pyvector_to_Carrayptrs(in_data);
+
+       /*cin_vecProj=pyvector_to_complexCarrayptrs(in_vecProj);*/
+       cin_vecProj=pyvector_to_Carrayptrs(in_vecProj);
+
+       /* The difference here is that we compute the projections on each signal before calculating
+        * the desired function (e.g sum or median or penalized or weighted..)
+        * The resulting vector containing the score is here cout_vecProj
+        */
+       cout_vecProj = pyvector_to_Carrayptrs(out_vecProj);
+
+       cin_vecPreTwid=pyvector_to_complexCarrayptrs(in_vecPreTwid);
+       cin_vecPostTwid=pyvector_to_complexCarrayptrs(in_vecPostTwid);
+       cout_scoreTree=pyvector_to_Carrayptrs(out_scoreTree);
+
+       /* Get input data dimension.*/
+       n_trial = in_data->dimensions[0];
+       n_sensor = in_data->dimensions[1];
+       n_data  = in_data->dimensions[2];
+
+       n_sig = n_sensor*n_trial;
+
+       if(DEBUG) printf("%d Signals in %d by %d by %d matrix\n",n_sig,n_data,n_sensor,n_trial);
+
+	   /* retrieve maximum frame number*/
+	   n_frames = out_scoreTree->dimensions[0];
+
+	   /*printf("n_data:%d ; n_sig:%d ; n_frames:%d",n_data,n_sig,n_frames);*/
+	   /*printf("Projection matrix of %d frames and %d samples\n" ,n_frames, n_data);*/
+
+		// Check on maximum frame index search
+	   if (end >= n_frames) {
+	   		//printf("Warning : asked frame end is out of bounds\n");
+	   		end = n_frames-1;
+	   }
+	   /* Now for each signal we compute the projection */
+	   for(trialIdx=0; trialIdx<n_trial ; trialIdx++){
+
+		   for(sensorIdx=0; sensorIdx<n_sensor ; sensorIdx++){
+			   /*printf("Computing proj for trial %d sensor starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
+			   res = projectMCLT(&cin_data[trialIdx*n_data*n_sensor + sensorIdx*n_data] ,
+					   &cin_vecProj[trialIdx*n_data*n_sensor + sensorIdx*n_data] ,
+					   cout_scoreTree,
+					   cin_vecPreTwid ,
+					   cin_vecPostTwid,
+					   start ,end ,L);
+
+		   	   if (res < 0) {
+		   		   printf("Something just fucked\n");
+		   		   return NULL;
+		   	   }
+		   }
+	   }
+
+	   K = L/2;
+	   /* We can now combine all the projections to process the selection critera */
+	   switch(type){
+	   case 0:
+		   /* The simplest kind: sum all the contributions*/
+		   for(i=start*K;i<end*K;i++){
+			   /* reinitialise the score */
+
+			   cout_vecProj[i] = 0;
+			   for(trialIdx=0; trialIdx<n_trial ; trialIdx++){
+
+			   		   for(sensorIdx=0; sensorIdx<n_sensor ; sensorIdx++){
+			   			/* Then adds all necessary contributions */
+			   			cout_vecProj[i] += cin_vecProj[trialIdx*n_data*n_sensor + sensorIdx*n_data + i] * cin_vecProj[trialIdx*n_data*n_sensor + sensorIdx*n_data + i];
+			   		   }
+			   	   }
+			   }
+
+		   	break;
+	   default:
+		   printf("parallelProjection.c: line 815 : Unrecognized Type");
+		   return NULL;
+	   }
+	   /*printf("MAx search %d , %d, %d\n", start,end,K);*/
+	   /* before quiting let us populate the scoreTree */
+	   for(i=start; i < end ; i++){
+		   max = 0;
+		   for(j=0; j < K; j++){
+			   /*printf("vecProj frame %d k %d: %2.2f\n",i,j,cout_vecProj[j + i*K]);*/
+			   if (cout_vecProj[j + i*K] > max) {
+				   max = cout_vecProj[j + i*K];
+				   cout_scoreTree[i] = max;
+				   /*printf("Score frame %d : %2.2f \n",i,cout_scoreTree[i]);*/
+			   }
+		   }
+	   }
 	  return Py_BuildValue("i", 1);
 }
 
@@ -842,7 +980,7 @@ static PyObject * get_real_gabor_atom(PyObject *self, PyObject *args){
 	PyArrayObject * py_out;
     int length , i ;
     double *waveform , phase, freqBin ;
-    double L, K , fact ,  f;
+    double L, fact ,  f;
     npy_intp dimensions[1];
 
     /* End of declarations */
@@ -861,7 +999,7 @@ static PyObject * get_real_gabor_atom(PyObject *self, PyObject *args){
 
     /* Do the calculation of the waveform */
     L = ((double) length);
-    K = L/2;
+
     /*fact = sqrt(16.0/(3.0*L)) ;*/
 	fact = 0.0;
 
@@ -908,7 +1046,7 @@ fftw_complex *pyvector_to_complexCarrayptrs(PyArrayObject *arrayin)  {
 
 
 
-
+/*
 static PyObject * test(PyObject *self, PyObject *args)
   {
     const int size = 16384;
@@ -922,7 +1060,7 @@ static PyObject * test(PyObject *self, PyObject *args)
   	return Py_BuildValue("i", 1);
     // the table is now initialized
   }
-
+*/
 // Listing the methods
 static PyMethodDef AllMethods[] = {
         
@@ -932,13 +1070,14 @@ static PyMethodDef AllMethods[] = {
     {"project_masked_gabor",  project_masked_gabor, METH_VARARGS,  "Loop of gabor computations."},
     {"project_mclt_set",  project_mclt_set, METH_VARARGS,  "Loop of mdct computations."},
     {"project_mclt_NLset",  project_mclt_NLset, METH_VARARGS,  "Loop of mdct computations."},
+    {"project_mclt_3Dset",  project_mclt_3Dset, METH_VARARGS,  "Loop of mdct computations."},
     {"project_atom",  project_atom, METH_VARARGS,  "Project atom and retrieve characteristics"},
     {"project_atom_set",  project_atom_set, METH_VARARGS,  "Project atom and retrieve characteristics and reusing atom transform"},
     {"get_atom",  get_atom, METH_VARARGS,  "computes an atom waveform"},
     {"get_real_gabor_atom",  get_real_gabor_atom, METH_VARARGS,  "computes an atom waveform"},
     {"initialize_plans",  initialize_plans, METH_VARARGS,  "routine to initialize fftw plans"},
     {"clean_plans",  clean_plans, METH_VARARGS,  "The cleaning stage: must be called after computations"},  
-    {"test",  test, METH_VARARGS,  "testing the parallelization."},
+    /*{"test",  test, METH_VARARGS,  "testing the parallelization."},*/
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

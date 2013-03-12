@@ -364,7 +364,9 @@ int projectMCLT(double * cin_data ,
 
 			if ((cin_vecProj[j + (i*K)]) > max) {
 				max = (cin_vecProj[j + (i*K)]);
+
 				cout_scoreTree[i] = max;
+
 			}
 
 			/* Change the sign if real part is negative */
@@ -378,7 +380,6 @@ int projectMCLT(double * cin_data ,
 		}
 
 	}/* END loop on signal frames*/
-
 	return(1);
 }
 
