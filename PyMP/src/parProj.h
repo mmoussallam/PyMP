@@ -39,7 +39,7 @@
 
 /*#define DEBUG 1
  #define X 2
- /* modify if 32 bit detected 
+// modify if 32 bit detected
  #ifdef _M_X86
  #define X 1
  #endif */

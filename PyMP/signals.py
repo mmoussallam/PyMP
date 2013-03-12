@@ -101,28 +101,28 @@ class Signal(object):
             self.location = data
             Sf = SoundFile.SoundFile(data)
             self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
-            self.sample_width = Sf.sample_width            
+            self.sample_width = Sf.sample_width
 
             Fs = Sf.sampleRate
         else:
-                        
+
             self.data = np.array(data)
             # remove any nans or infs data
             self.data[np.isnan(self.data)] = 0
             self.data[np.isinf(self.data)] = 0
-            
-            if len(self.data.shape)>2:
+
+            if len(self.data.shape) > 2:
                 raise ValueError("Cannot process more than 2D arrays")
-            
-            if len(self.data.shape)>1:
+
+            if len(self.data.shape) > 1:
                 if self.data.shape[0] < self.data.shape[1]:
                     # by convention we store channels as columns...
-                    self.data = self.data.transpose()  
+                    self.data = self.data.transpose()
 
         # keeping only the left channel
-        if mono and len(self.data.shape)>1:
+        if mono and len(self.data.shape) > 1:
             self.data = self.data[:, 0]
-        
+
         if debug_level is not None:
             _Logger.set_level(debug_level)
 
@@ -159,7 +159,7 @@ class Signal(object):
         number of channels %d''' % (self.location, self.length, self.energy, self.fs, self.channel_num)
 
     def normalize(self):
-        ''' makes sure all values of the array are between -1 and 1 
+        ''' makes sure all values of the array are between -1 and 1
             CAUTION: this is an amplitude normalization not an energy one'''
         _Logger.info('Normalizing Signal')
         normaFact = abs(self.data).max()
@@ -169,7 +169,7 @@ class Signal(object):
 
     def plot(self, pltStr='b-', legend=None):
         ''' DEPRECATED plot the array using matplotlib '''
-        plt.plot(self.data,pltStr)
+        plt.plot(self.data, pltStr)
         if legend != None:
             plt.legend((legend))
         plt.show()
@@ -178,28 +178,28 @@ class Signal(object):
         '''EXPERIMENTAL: routine to play the signal using wave and pyaudio'''
         import pyaudio
         p = pyaudio.PyAudio()
-                
-        # TODO: allow other types of integers      
-#        p.get_format_from_width(2)        
+
+        # TODO: allow other types of integers
+#        p.get_format_from_width(2)
         stream = p.open(format=8,
                         channels=self.channel_num,
                         rate=self.fs,
                         output=True)
-            
-        #data = wf.readframes(CHUNK)
+
+        # data = wf.readframes(CHUNK)
         # Warning: check whether the flow has been normalized
         # in which case we need to remultiply it
-        
+
         if self.is_normalized:
             data = (self.data * 16384).astype(int_type).tostring()
-        else:                
+        else:
             data = self.data.astype(int_type).tostring()
-        
+
         # TODO : check the size of the input
-        if (self.length/self.fs > 10) and prevent_too_long:
+        if (self.length / self.fs > 10) and prevent_too_long:
             raise ValueError("File is longer than 10 secs, please call with prevent_too_long=False")
         stream.write(data)
-        
+
         stream.stop_stream()
         stream.close()
         p.terminate()
@@ -226,9 +226,11 @@ class Signal(object):
 
     def window(self, K):
         """ apply a sine window on norders """
-        if K>0:
-            self.data[0:K] *= np.sin((np.arange(K).astype(float))*np.pi/(2*K));
-            self.data[-K:] *= np.sin((np.arange(K).astype(float))*np.pi/(2*K) + np.pi/2);
+        if K > 0:
+            self.data[0:K] *= np.sin((np.arange(K).astype(float)
+                                      ) * np.pi / (2 * K))
+            self.data[-K:] *= np.sin(
+                (np.arange(K).astype(float)) * np.pi / (2 * K) + np.pi / 2)
 
     def copy(self):
         copiedSignal = Signal(self.data.copy(), self.fs)
@@ -274,8 +276,10 @@ class Signal(object):
             self.data[atom.time_position: atom.
                       time_position + atom.length] += atom.waveform
             # get out of here
-            _Logger.error('Warning : Substracted Atom created energy '
-                          + str(atom) +' from ' + str(oldEnergy) + ' to ' + str(newEnergy))
+            err_str = """"Warning : Substracted Atom created energy:
+                          from %1.6f to from %1.6f :
+%s""" % (oldEnergy, newEnergy, atom)
+            _Logger.error(err_str)
             raise ValueError('see Logger')
 
         self.energy = self.energy - oldEnergy + newEnergy
@@ -331,7 +335,7 @@ class Signal(object):
 
     def get_duration(self):
         ''' returns the duration in seconds '''
-        return float(self.length)/float(self.fs)
+        return float(self.length) / float(self.fs)
 
     def depad(self, zero_pad):
         ''' Remove zeroes from the edges WARNING: no test on the deleted data: make sure these are zeroes! '''
@@ -341,7 +345,7 @@ class Signal(object):
         except ValueError:
             print(self.data.shape)
             _Logger.error(
-                "Wrong dimension number %s" % str(self.data.shape))            
+                "Wrong dimension number %s" % str(self.data.shape))
 
 #    def doWindow(self, K):
 #        ''' DEPRECATED '''
@@ -525,7 +529,8 @@ class LongSignal(Signal):
 
         if not (self.nframes % self.segment_size) == 0:
             _Logger.warning("Not a round number of segment: cropping ")
-            self.nframes = (self.nframes / self.segment_size) * self.segment_size
+            self.nframes = (
+                self.nframes / self.segment_size) * self.segment_size
 
         self.n_seg = int(math.floor(
             float(self.nframes) / (float(self.segment_size) * (1.0 - self.overlap))))
@@ -573,15 +578,14 @@ class LongSignal(Signal):
 #        print "Reading ",bFrame, nFrames, wavfile._framesize
         str_bytestream = wavfile.readframes(nFrames)
         data = np.fromstring(str_bytestream, 'h')
-        wavfile.close()                      
-              
+        wavfile.close()
 
         if self.channel_num > 1:
             reshapedData = data.reshape(nFrames, self.channel_num)
         else:
-            if max(data.shape)>nFrames:
+            if max(data.shape) > nFrames:
                 nFrames = sum(data.shape)
-            
+
             reshapedData = data.reshape(nFrames, )
 
         if mono:

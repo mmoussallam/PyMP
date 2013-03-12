@@ -40,7 +40,7 @@
 /* Basic feature 64  bits platform 
 #define X 2
 
-/* modify if 32 bit detected 
+// modify if 32 bit detected
 #ifdef _M_X86
 #define X 1
 #endif*/
@@ -78,7 +78,7 @@ fftw_complex *pyvector_to_complexCarrayptrs(PyArrayObject *arrayin);
 
 int *pyvector_to_intCarrayptrs(PyArrayObject *arrayin);
 
-static PyObject * test(PyObject *self, PyObject *args);
+/*static PyObject * test(PyObject *self, PyObject *args);*/
 
 /* Multi-Threaded plan initialization */
 static PyObject *  initialize_plans(PyObject *self, PyObject *args);

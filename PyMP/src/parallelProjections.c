@@ -718,7 +718,7 @@ project_mclt_3Dset(PyObject *self, PyObject *args)
        int trialIdx, sensorIdx;
        int n_trial, n_sensor,n_data, n_frames;
        int type; // 0 for summation, 1 for multiplying , 2 for taking the minimum
-       int n_sig , sigIdx, i,j;
+       int n_sig , i,j;
        double max;
        /*double geoMean, arithMean,ratio,max;*/
 	   //fftw_complex prod;
@@ -762,9 +762,9 @@ project_mclt_3Dset(PyObject *self, PyObject *args)
        cout_scoreTree=pyvector_to_Carrayptrs(out_scoreTree);
 
        /* Get input data dimension.*/
-       n_trial = in_data->dimensions[0];
-       n_sensor = in_data->dimensions[1];
-       n_data  = in_data->dimensions[2];
+       n_trial = in_vecProj->dimensions[0];
+       n_sensor = in_vecProj->dimensions[1];
+       n_data  = in_vecProj->dimensions[2];
 
        n_sig = n_sensor*n_trial;
 
@@ -786,12 +786,12 @@ project_mclt_3Dset(PyObject *self, PyObject *args)
 
 		   for(sensorIdx=0; sensorIdx<n_sensor ; sensorIdx++){
 			   /*printf("Computing proj for trial %d sensor starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
-			   res = projectMCLT(&cin_data[trialIdx*n_data*n_sensor + sensorIdx*n_data] ,
+			   res = projectMDCT(&cin_data[trialIdx*n_data*n_sensor + sensorIdx*n_data] ,
 					   &cin_vecProj[trialIdx*n_data*n_sensor + sensorIdx*n_data] ,
 					   cout_scoreTree,
 					   cin_vecPreTwid ,
 					   cin_vecPostTwid,
-					   start ,end ,L);
+					   start ,end ,L,0);
 
 		   	   if (res < 0) {
 		   		   printf("Something just fucked\n");

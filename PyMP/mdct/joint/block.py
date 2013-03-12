@@ -27,7 +27,7 @@ from ...mdct import block as mdct_block
 from ...mdct import atom as mdct_atom
 
 # declare global win_server shared by all MDCT blocks instances
-#global _PyServer
+# global _PyServer
 # _Logger
 _PyServer = win_server.get_server()
 _Logger = log.Log('JointBlocks', level=0)
@@ -1070,7 +1070,7 @@ class SetNLLOBlock(SetLOBlock):
             return Atom
 
         # retrieve optimal timeShift
-        
+
         scoreVec = np.array([0.0])
 #            Atom.timeShift = computeMCLT.project_atom(input1,input2 , scoreVec )
 #            print "Is it here?"
@@ -1086,7 +1086,6 @@ class SetNLLOBlock(SetLOBlock):
         Atom.proj_score = scoreVec[0]
         Atom.mdct_value = Atom.proj_score
         Atom.waveform *= Atom.proj_score
-
 
 #        print " Reaching here"
         return Atom

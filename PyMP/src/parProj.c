@@ -549,7 +549,7 @@ int projectAtom(double *cin_sigData,
 	/* Declaration */
 	fftw_complex * cin_sigfft, *cin_atomfft ; // fftw variables
 
-	int out_atomTS , maxLag , j , halfOffsetWidth;
+	int out_atomTS , j , halfOffsetWidth;
 	double atomEnergy , fact ;
 	fftw_complex prod;
 	fftw_complex *fftw_input , *fftw_output;  // FFTW input and output vectors
@@ -590,7 +590,7 @@ int projectAtom(double *cin_sigData,
 	/*scale = fft_sizes[size];*/
 
 	halfOffsetWidth = (int) (L - scale)/2;
-	maxLag = L/2;
+
 	if(DEBUG>1)printf("Scale found of %d hal offset of %d , Total L : %d\n", scale,halfOffsetWidth,L);
 	/* allocate FFTW vectors*/
 	/* Faster: grab an available plan from the threadpool*/
@@ -748,7 +748,7 @@ int reprojectAtom(double *cin_sigData,
 	/* Declaration */
 	fftw_complex * cin_sigfft; // fftw variables
 
-	int out_atomTS , maxLag , j , halfOffsetWidth;
+	int out_atomTS , j , halfOffsetWidth;
 	double fact , atomEnergy;
 	fftw_complex prod;
 	fftw_complex *fftw_input , *fftw_output;  // FFTW input and output vectors
@@ -780,7 +780,7 @@ int reprojectAtom(double *cin_sigData,
 
 	/*We have retrieved the correct total length, the corresponding atom length is scale*/
 	halfOffsetWidth = (int) (L - scale)/2;
-	maxLag = L/2;
+
 	if(DEBUG>1)printf("Scale found of %d hal offset of %d , Total L : %d\n", scale,halfOffsetWidth,L);
 	/* allocate FFTW vectors*/
 	/* Faster: grab an available plan from the threadpool*/
@@ -1012,7 +1012,7 @@ int projectMaskedGabor(double * cin_data,
 
     fftw_complex *fftw_private_input , *fftw_private_output;  /* FFTW input and output vectors*/
     fftw_plan fftw_private_plan;						/* FFTW Plan*/
-    double max , absoluteMax;
+    double max;
     /* Declarations -  end */
 
     /* initialize some constants*/
@@ -1041,13 +1041,11 @@ int projectMaskedGabor(double * cin_data,
     /* Norm compensation of the signal windowing*/
     norm = (double)(sqrt(8.0/(3.0*(double)K)));
 
-    absoluteMax = 0.0;
-
     if(DEBUG) printf("DEBUG : Projecting frames from %d to %d \n" , start, end);
     /* LOOP ON signal frames */
 /*     #pragma omp parallel for private(i, max, threadIdx, j, fftw_private_input, fftw_private_output, fftw_private_plan) shared(absoluteMax,start, end, cin_data , K, T, L, cin_vecProj , norm, cout_scoreTree , blockIndex, size_number , ThreadPool_inputs , ThreadPool_outputs , ThreadPool_plans)*/
 
-     #pragma omp parallel for default(none) private(i,j,fftw_private_input,fftw_private_output, fftw_private_plan, threadIdx,max) shared(cout_scoreTree,absoluteMax,penalty_mask,cin_data,K,T,L,cin_vecProj,norm,start,end,ThreadPool_inputs,ThreadPool_outputs,ThreadPool_plans,size_number,blockIndex)
+     #pragma omp parallel for default(none) private(i,j,fftw_private_input,fftw_private_output, fftw_private_plan, threadIdx,max) shared(cout_scoreTree,penalty_mask,cin_data,K,T,L,cin_vecProj,norm,start,end,ThreadPool_inputs,ThreadPool_outputs,ThreadPool_plans,size_number,blockIndex)
     for(i=start; i < end+1 ; i++){
 
         threadIdx = omp_get_thread_num();
