@@ -106,7 +106,7 @@
  		double *cin_atomData,
  		fftw_complex *cin_atomfft ,
  		double *cout_score,
- 		int L, int scale,int sigIdx);
+ 		int L, int scale,int sigIdx, int maj);
 
  int subprojectMDCT(double * cin_data ,
  		double * cin_vecProj , double * cout_scoreTree,

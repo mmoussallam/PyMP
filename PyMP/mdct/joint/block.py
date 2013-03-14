@@ -644,7 +644,7 @@ class SetLOBlock(mdct_block.Block):
             Atom.waveform *= Atom.proj_score
 
         else:
-            print "Block 1345 : Not Implemented !"
+            print "Not Implemented !"
             return None
 
 #        print " Reaching here"

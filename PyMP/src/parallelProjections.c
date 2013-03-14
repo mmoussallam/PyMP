@@ -922,13 +922,139 @@ project_atom_set(PyObject *self, PyObject *args){
 	   out_atomTS  = reprojectAtom(cin_sigData ,
 								   cin_atomData,
 								   cin_atomfft ,
-								   cout_score, L , scale, sigIdx);
+								   cout_score, L , scale, sigIdx,1);
 
 	   /*printf("found %d - %d\n", out_atomTS, L);*/
 
         // return value of evaluated time shift
         return Py_BuildValue("i", out_atomTS);
 
+}
+
+/* Routine to perform mult-dimensionnal atom projection */
+static PyObject * project_multidimatom(PyObject *self, PyObject *args){
+		/*Declarations*/
+	   PyArrayObject *in_sigData , *in_atomData , *in_atomfft, *in_atomTimePos, *in_atomWeights;  // The python objects to be extracted from the args
+	   double *cin_sigData, *cin_atomData ,*cin_atomWeights ;   // The C vectors to be created to point to the
+									   //   python vectors, cin and cout point to the row
+									   //   of vecin and vecout, respectively
+	   double *input_data, *input_wf;
+	   fftw_complex *cin_atomfft;
+	   int *cin_atomTimePos;
+	   int scale, sigIdx,strategy, trialIdx, sensorIdx;
+	   int n_trial,n_sensor,n_data,n_sig, i,L_atom;
+	   double proj_score;
+	   int tp, dec,startPos;
+	   if (!PyArg_ParseTuple(args, "O!O!O!O!O!ii", &PyArray_Type, &in_sigData,
+												&PyArray_Type, &in_atomData,
+												&PyArray_Type, &in_atomfft ,
+												&PyArray_Type, &in_atomTimePos,
+												&PyArray_Type, &in_atomWeights,
+												&scale, &strategy))  return NULL;
+
+	   if (NULL == in_sigData)  return NULL;
+	   if (NULL == in_atomData)  return NULL;
+	   if (NULL == in_atomTimePos)  return NULL;
+	   if (NULL == in_atomWeights)  return NULL;
+	   if (NULL == in_atomfft)  return NULL;
+
+	   /* Change contiguous arrays into C * arrays*/
+	   cin_sigData  =pyvector_to_Carrayptrs(in_sigData);
+	   cin_atomData =pyvector_to_Carrayptrs(in_atomData);
+	   cin_atomTimePos = pyvector_to_intCarrayptrs(in_atomTimePos);
+	   cin_atomWeights = pyvector_to_Carrayptrs(in_atomWeights);
+	   cin_atomfft = pyvector_to_complexCarrayptrs(in_atomfft);
+	   /* Get input data dimension.*/
+	  n_trial = (int)in_sigData->dimensions[0];
+	  n_sensor = (int)in_sigData->dimensions[1];
+	  n_data  = (int)in_sigData->dimensions[2];
+
+	  n_sig = n_sensor*n_trial;
+
+	  /* checking dimension compatibilities */
+	  if (in_atomTimePos->dimensions[0] != n_trial){
+		   printf("ERROR: in_atomTimePos hasn't same trial size %d as %d\n",(int)in_atomTimePos->dimensions[0], n_trial);
+		   return NULL;
+	  }
+	  if (in_atomWeights->dimensions[0] != n_trial){
+		   printf("ERROR: in_atomWeights hasn't same trial size %d as %d\n",(int)in_atomWeights->dimensions[0], n_trial);
+		   return NULL;
+	  }
+	  if (in_atomTimePos->dimensions[1] != n_sensor){
+		   printf("ERROR: in_atomTimePos hasn't same sensor size %d as %d\n",(int)in_atomTimePos->dimensions[1], n_sensor);
+		   return NULL;
+	  }
+	  if (in_atomWeights->dimensions[1] != n_sensor){
+		   printf("ERROR: cin_atomWeights hasn't same sensor size %d as %d\n",(int)in_atomWeights->dimensions[1], n_sensor);
+		   return NULL;
+	  	  }
+	   switch(strategy){
+	   case 0:
+		   /* check that the dimensions agree */
+		   L_atom = in_atomData->dimensions[0];
+		   if (L_atom != scale){
+			   printf("ERROR: waveform hasn't same size as the requested scale and strategy 0 asked\n");
+			   return NULL;
+		   }
+		   /* In this mode: no time adaptation is performed: only the projection values are set*/
+		   for(trialIdx=0; trialIdx<n_trial ; trialIdx++){
+
+		   		   for(sensorIdx=0; sensorIdx<n_sensor ; sensorIdx++){
+		   			   /*printf("Computing proj for trial %d sensor %d starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
+		   			   proj_score = 0;
+		   			   tp = cin_atomTimePos[trialIdx*n_sensor + sensorIdx];
+		   			   /*printf("time position retrieved of %d\n", tp);*/
+		   			   for (i=0; i<L_atom;i++){
+		   				   proj_score += cin_sigData[trialIdx*n_data*n_sensor + sensorIdx*n_data + tp + i]*cin_atomData[i];
+		   			   }
+		   			   cin_atomWeights[trialIdx*n_sensor + sensorIdx] = proj_score;
+
+		   		   }
+		   }
+		   break;
+	     case 1:
+	   		   /* check that the dimensions agree */
+	   		   L_atom = in_atomData->dimensions[0];
+	   		   if (L_atom != 2*scale){
+	   			   printf("ERROR: waveform hasn't same double size as the requested scale and strategy 0 asked\n");
+	   			   return NULL;
+	   		   }
+	   		   sigIdx = 0;
+	   		   /* In this mode: time adaptation is performed independantly on each signal*/
+	   		   for(trialIdx=0; trialIdx<n_trial ; trialIdx++){
+
+	   		   		   for(sensorIdx=0; sensorIdx<n_sensor ; sensorIdx++){
+	   		   			   /*printf("Computing proj for trial %d sensor %d starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
+
+	   		   			   startPos = (int)(trialIdx*n_data*n_sensor + sensorIdx*n_data + cin_atomTimePos[trialIdx*n_sensor + sensorIdx] - scale/2);
+	   		   			   printf("Starting at %d with a L of %d\n",startPos, (int)scale*2);
+	   		   			   input_data = &cin_sigData[startPos];
+	   		   			   input_wf   = cin_atomData;
+	   		   			   dec  = reprojectAtom(input_data ,
+												input_wf,
+												cin_atomfft ,
+												&cin_atomWeights[trialIdx*n_sensor + sensorIdx],
+												(int)scale*2, scale, sigIdx,0);
+
+/*	   		   			   dec = projectAtom_noUpdate(input_data,
+ 	   	   	   	   	   	   	   	   	   	   	   	 input_wf,
+ 	   	   	   	   	   	   	   	   	   	   	   	 &cin_atomWeights[trialIdx*n_sensor + sensorIdx],
+ 	   	   	   	   	   	   	   	   	   	   	   	 (int)scale*2 , scale);*/
+
+	   		   			   cin_atomTimePos[trialIdx*n_sensor + sensorIdx] += dec;
+	   		   			   sigIdx++;
+	   		   			   printf("Trial %d - Sensor %d New tp of %d - dec of %d new weight of %1.6f \n",trialIdx,sensorIdx,
+								cin_atomTimePos[trialIdx*n_sensor + sensorIdx],dec,
+								cin_atomWeights[trialIdx*n_sensor + sensorIdx]);
+	   		   		   }
+	   		   }
+	   		   break;
+	   default:
+		   printf("ERROR: strategy %d not implemented\n",strategy);
+		   return NULL;
+	   }
+
+	   return Py_BuildValue("i", 1);
 }
 
 
@@ -1034,7 +1160,7 @@ static PyObject * get_real_gabor_atom(PyObject *self, PyObject *args){
 
 /*     Assumes PyArray is contiguous in memory.             */
  int *pyvector_to_intCarrayptrs(PyArrayObject *arrayin)  {
-    return (int *) arrayin->data;  /* pointer to arrayin data as double */
+    return (int *) arrayin->data;  /* pointer to arrayin data as int */
 }
 
   /* ==== Create 1D Complex Carray from PyArray ======================
@@ -1064,13 +1190,14 @@ static PyObject * test(PyObject *self, PyObject *args)
 // Listing the methods
 static PyMethodDef AllMethods[] = {
         
-    {"project",  project, METH_VARARGS,  "Loop of mdct computations."},
-    {"subproject",  subproject, METH_VARARGS,  "Loop of mdct computations on a subsampled dictionary."},
-    {"project_mclt",  project_mclt, METH_VARARGS,  "Loop of mdct computations."},
+    {"project",  project, METH_VARARGS,  "Perform the MDCT computations.\n FFTW objects must havve been initialized"},
+    {"subproject",  subproject, METH_VARARGS,  "Same as project but for subsampled dictionary."},
+    {"project_mclt",  project_mclt, METH_VARARGS,  "Perform the MCLT computations.\n FFTW objects must havve been initialized."},
     {"project_masked_gabor",  project_masked_gabor, METH_VARARGS,  "Loop of gabor computations."},
-    {"project_mclt_set",  project_mclt_set, METH_VARARGS,  "Loop of mdct computations."},
-    {"project_mclt_NLset",  project_mclt_NLset, METH_VARARGS,  "Loop of mdct computations."},
-    {"project_mclt_3Dset",  project_mclt_3Dset, METH_VARARGS,  "Loop of mdct computations."},
+    {"project_mclt_set",  project_mclt_set, METH_VARARGS,  "specific developments"},
+    {"project_mclt_NLset",  project_mclt_NLset, METH_VARARGS,  "specific developments"},
+    {"project_mclt_3Dset",  project_mclt_3Dset, METH_VARARGS,  "specific developments"},
+    {"project_multidimatom",  project_multidimatom, METH_VARARGS,  "specific developments"},
     {"project_atom",  project_atom, METH_VARARGS,  "Project atom and retrieve characteristics"},
     {"project_atom_set",  project_atom_set, METH_VARARGS,  "Project atom and retrieve characteristics and reusing atom transform"},
     {"get_atom",  get_atom, METH_VARARGS,  "computes an atom waveform"},

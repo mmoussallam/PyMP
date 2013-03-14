@@ -534,7 +534,7 @@ def _mp_loop(dictionary, debug, silent_fail,
 #            return current_approx, res_energy
     if debug > 0:
         _Logger.debug(_itprint_(it_number, best_atom))
-    try:
+    try:                
         res_signal.subtract(best_atom, debug)
         dictionary.compute_touched_zone(best_atom)
     except ValueError:

@@ -637,9 +637,9 @@ int projectAtom(double *cin_sigData,
 		atomEnergy +=  cin_atomData[j]*cin_atomData[j];
 	}
 
-	//printf("initial energy of %2.6f \n" , atomEnergy);
-	// perform FFT
+	/*printf("initial energy of %2.6f \n" , atomEnergy);*/
 
+	/* perform FFT*/
 	fftw_execute(fftw_p);
 
 	/* not C99*/
@@ -660,7 +660,7 @@ int projectAtom(double *cin_sigData,
 	out_atomTS = findMaxXcorr(fftw_ip, cout_score, maxIndex, halfOffsetWidth, fftw_output, scale, L);
 
 	if (NULL == cout_score){
-		printf("ERROR: parproj.c 659 :Fatalitas! cross correlation kinf of failed!\n ");
+		printf("ERROR: parproj.c 659 :Fatalitas! cross correlation kind of failed!\n ");
 		return(-1);
 	}
 
@@ -738,12 +738,16 @@ int findMaxXcorr(fftw_plan fftw_ip, double *cout_atomScore, int maxIndex,
 
 }
 
+/* Need to provide some doc on this
+ * same as projectAtom but avoid recomputing the atom's waveform fft
+ * useful for multi-dimensionnal datas and lists of arrays
+ */
 int reprojectAtom(double *cin_sigData,
 		double *cin_atomData,
 		fftw_complex *cin_atomfft ,
 		double *cout_score,
 		int L, int scale,
-		int sigIdx){
+		int sigIdx, int maj){
 
 	/* Declaration */
 	fftw_complex * cin_sigfft; // fftw variables
@@ -871,19 +875,22 @@ int reprojectAtom(double *cin_sigData,
 	/*printf("PARALLELFFT : %2.6f _ %2.6f _  %2.6f _ %2.6f\n",cin_sigfft[maxIndex][1], cin_atomfft[maxIndex][1],prod[0],prod[1]);*/
 	//printf("found correlation max of %2.6f at %d , true value : %2.4f , %2.4f\n" , out_atomScore , out_atomTS , creal(fftw_output[maxIndex]) , cimag(fftw_output[maxIndex]));
 
-	// now let us re-project the atom on the signal to adjust it's energy: Only if no pathological case
-	if (cout_score[0] <0){
-		fact = -sqrt( -cout_score[0]/atomEnergy);
-	}else{
-		fact = sqrt(cout_score[0]/atomEnergy);
+	/* now let us re-project the atom on the signal to adjust it's energy: Only if no pathological case
+	 * Only if the MAJ flag is ON
+	 */
+	if (maj){
+		if (cout_score[0] <0){
+			fact = -sqrt( -cout_score[0]/atomEnergy);
+		}else{
+			fact = sqrt(cout_score[0]/atomEnergy);
+		}
+		/*printf("PARALLELFFT : %2.2f \n",fact);*/
+		// perform calculus on the atom waveform
+		/*printf("PARALLELFFT : %2.6f   \n",fact);*/
+		for(j=0; j<L; j++){
+			cin_atomData[j] *= fact;
+		}
 	}
-	/*printf("PARALLELFFT : %2.2f \n",fact);*/
-	// perform calculus on the atom waveform
-	/*printf("PARALLELFFT : %2.6f   \n",fact);*/
-	for(j=0; j<L; j++){
-		cin_atomData[j] *= fact;
-	}
-
 	if(DEBUG) printf("Cleaning \n");
 	/*if (abs(out_atomTS) >= halfOffsetWidth) printf("Ooops! found value %d, way over %d \n", out_atomTS , halfOffsetWidth);*/
 

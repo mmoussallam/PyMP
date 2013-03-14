@@ -113,8 +113,14 @@ class Approx:
         if self.frame_num > 0:
             self.frame_len = self.length / self.frame_num
 
-        self.recomposed_signal = signals.Signal(
-            np.zeros(self.length), self.fs)
+        # We need to create a signal that has the same nature as the one provided
+        if originalSignal is not None:            
+            self.recomposed_signal = originalSignal.__class__(
+                np.zeros(originalSignal.data.shape), self.fs)
+        else:
+            self.recomposed_signal = signals.Signal(
+                np.zeros(self.length), self.fs)
+        
         self.recomposed_signal.is_normalized = isNormalized
 
     def synthesize(self, method=0, forceReSynthesis=True):
