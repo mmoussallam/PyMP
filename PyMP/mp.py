@@ -403,7 +403,7 @@ def greedy(orig_signal,
 
     Example::
 
-        >>> approx, decay = mp.mp(x, D, 10, 1000)
+        >>> approx, decay = mp.greedy(x, D, 10, 1000, 'mp')
 
     For decomposing the signal `x` on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
     x must be a :class:`.Signal` and D a :class:`.Dico` object
@@ -567,7 +567,7 @@ def _mp_loop(dictionary, debug, silent_fail,
 #            return current_approx, res_energy
     if debug > 1:
         _Logger.debug(
-            "new residual energy of " + str(sum(res_signal.data ** 2)))
+            "new residual energy of " + str(np.sum(res_signal.data ** 2)))
     if not unpad:
         res_energy.append(res_signal.energy)
     else:

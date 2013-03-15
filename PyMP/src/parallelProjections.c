@@ -767,7 +767,19 @@ project_mclt_3Dset(PyObject *self, PyObject *args)
        n_data  = in_vecProj->dimensions[2];
 
        n_sig = n_sensor*n_trial;
-
+       /* checking dimension compatibilities */
+	  if (in_data->dimensions[0] != n_trial){
+		   printf("ERROR: in_data hasn't same trial size %d as %d\n",(int)in_data->dimensions[0], n_trial);
+		   return NULL;
+	  }
+	  if (in_data->dimensions[1] != n_sensor){
+		   printf("ERROR: in_data hasn't same sensor size %d as %d\n",(int)in_data->dimensions[1], n_sensor);
+		   return NULL;
+	  }
+	  if (in_data->dimensions[2] != n_data){
+		   printf("ERROR: in_data hasn't same data size %d as %d\n",(int)in_data->dimensions[2], n_data);
+		   return NULL;
+		  }
        if(DEBUG) printf("%d Signals in %d by %d by %d matrix\n",n_sig,n_data,n_sensor,n_trial);
 
 	   /* retrieve maximum frame number*/
@@ -785,7 +797,7 @@ project_mclt_3Dset(PyObject *self, PyObject *args)
 	   for(trialIdx=0; trialIdx<n_trial ; trialIdx++){
 
 		   for(sensorIdx=0; sensorIdx<n_sensor ; sensorIdx++){
-			   /*printf("Computing proj for trial %d sensor starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
+			   /*printf("Computing proj for trial %d sensor %d starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
 			   res = projectMDCT(&cin_data[trialIdx*n_data*n_sensor + sensorIdx*n_data] ,
 					   &cin_vecProj[trialIdx*n_data*n_sensor + sensorIdx*n_data] ,
 					   cout_scoreTree,
@@ -824,7 +836,7 @@ project_mclt_3Dset(PyObject *self, PyObject *args)
 		   return NULL;
 	   }
 	   /*printf("MAx search %d , %d, %d\n", start,end,K);*/
-	   /* before quiting let us populate the scoreTree */
+	   /* before quiting let us populate the scoreTree USELESS FOR NOW*/
 	   for(i=start; i < end ; i++){
 		   max = 0;
 		   for(j=0; j < K; j++){
@@ -938,13 +950,13 @@ static PyObject * project_multidimatom(PyObject *self, PyObject *args){
 	   double *cin_sigData, *cin_atomData ,*cin_atomWeights ;   // The C vectors to be created to point to the
 									   //   python vectors, cin and cout point to the row
 									   //   of vecin and vecout, respectively
-	   double *input_data, *input_wf;
+	   double *input_data, *input_wf, *dec_table,*true_projs;
 	   fftw_complex *cin_atomfft;
 	   int *cin_atomTimePos;
 	   int scale, sigIdx,strategy, trialIdx, sensorIdx;
 	   int n_trial,n_sensor,n_data,n_sig, i,L_atom;
-	   double proj_score;
-	   int tp, dec,startPos;
+	   double proj_score, maxdecscore;
+	   int tp, dec,startPos, truedec, maxdec;
 	   if (!PyArg_ParseTuple(args, "O!O!O!O!O!ii", &PyArray_Type, &in_sigData,
 												&PyArray_Type, &in_atomData,
 												&PyArray_Type, &in_atomfft ,
@@ -1013,6 +1025,7 @@ static PyObject * project_multidimatom(PyObject *self, PyObject *args){
 		   }
 		   break;
 	     case 1:
+	    	 /* In this strategy: time adaptation is allowed on all signals independantly */
 	   		   /* check that the dimensions agree */
 	   		   L_atom = in_atomData->dimensions[0];
 	   		   if (L_atom != 2*scale){
@@ -1027,7 +1040,7 @@ static PyObject * project_multidimatom(PyObject *self, PyObject *args){
 	   		   			   /*printf("Computing proj for trial %d sensor %d starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
 
 	   		   			   startPos = (int)(trialIdx*n_data*n_sensor + sensorIdx*n_data + cin_atomTimePos[trialIdx*n_sensor + sensorIdx] - scale/2);
-	   		   			   printf("Starting at %d with a L of %d\n",startPos, (int)scale*2);
+	   		   			   /*printf("Starting at %d with a L of %d\n",startPos, (int)scale*2);*/
 	   		   			   input_data = &cin_sigData[startPos];
 	   		   			   input_wf   = cin_atomData;
 	   		   			   dec  = reprojectAtom(input_data ,
@@ -1043,12 +1056,58 @@ static PyObject * project_multidimatom(PyObject *self, PyObject *args){
 
 	   		   			   cin_atomTimePos[trialIdx*n_sensor + sensorIdx] += dec;
 	   		   			   sigIdx++;
-	   		   			   printf("Trial %d - Sensor %d New tp of %d - dec of %d new weight of %1.6f \n",trialIdx,sensorIdx,
+	   		   			   /*printf("Trial %d - Sensor %d New tp of %d - dec of %d new weight of %1.6f \n",trialIdx,sensorIdx,
 								cin_atomTimePos[trialIdx*n_sensor + sensorIdx],dec,
-								cin_atomWeights[trialIdx*n_sensor + sensorIdx]);
+								cin_atomWeights[trialIdx*n_sensor + sensorIdx]);*/
 	   		   		   }
 	   		   }
 	   		   break;
+	     case 2:
+	    	 /* In this strategy: we search the switch that maximizes energy reduction
+	    	  * and all channels shares it */
+			   /* check that the dimensions agree */
+			   L_atom = in_atomData->dimensions[0];
+			   if (L_atom != scale){
+				   printf("ERROR: waveform hasn't same size as the requested scale and strategy 0 asked\n");
+				   return NULL;
+			   }
+			   sigIdx = 0;
+
+			   /* TODO parametrize the amount of shift that is allowed */
+			   dec_table = (double*)malloc(sizeof(double)*scale);
+			   true_projs = (double*)malloc(sizeof(double)*scale*n_sensor);
+			   /* In this mode: time adaptation is performed independantly on each signal*/
+			   for(trialIdx=0; trialIdx<n_trial ; trialIdx++){
+				   maxdec = 0;
+				   maxdecscore=0.0;
+				   for(dec=0;dec<scale;dec++){
+					   /* TODO parametrize */
+					   truedec = dec - scale/2;
+					   printf("Testing a shift of %d \n",truedec);
+					   for(sensorIdx=0; sensorIdx<n_sensor ; sensorIdx++){
+						   /*printf("Computing proj for trial %d sensor %d starting at %d \n",trialIdx,sensorIdx ,trialIdx*n_data*n_sensor + sensorIdx*n_data);*/
+
+						   startPos = (int)(trialIdx*n_data*n_sensor + sensorIdx*n_data + cin_atomTimePos[trialIdx*n_sensor + sensorIdx]);
+						   printf("looking at %d",cin_atomTimePos[trialIdx*n_sensor + sensorIdx]+truedec);
+						   for(i=1;i<scale;i++){
+							   true_projs[dec*n_sensor + sensorIdx] += cin_sigData[startPos+ truedec+i]*cin_atomData[i];
+						   }
+						   dec_table[dec] += fabs(true_projs[dec*n_sensor + sensorIdx]);
+						   printf("-- Achieved a score of %1.6f\n",dec_table[dec]);
+					   }
+
+					   if(dec_table[dec]>maxdecscore){
+						   maxdecscore = dec_table[dec];
+						   maxdec = truedec;
+					   }
+
+					  }
+				   printf("Trial %d : best score achieved for shift:%d \n",trialIdx,maxdec);
+
+			   }
+			   free(dec_table);
+			   free(true_projs);
+			   break;
 	   default:
 		   printf("ERROR: strategy %d not implemented\n",strategy);
 		   return NULL;

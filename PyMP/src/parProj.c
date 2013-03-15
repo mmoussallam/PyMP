@@ -276,11 +276,11 @@ int projectMDCT(double * cin_data ,
 
 
 			cin_vecProj[j + i*K] = (double) norm * realprod;
-			if(DEBUG>1) printf("DEBUG : new score of %2.2f, %2.2f at %d\n",norm,realprod,j);
+			if(DEBUG>1) printf("DEBUG : new score of %2.6f, %2.6f at %d\n",cin_vecProj[j + i*K],realprod,j);
 			if (fabs(cin_vecProj[j + i*K]) > max) {
 				max = fabs(cin_vecProj[j + i*K]);
 				cout_scoreTree[i] = max;
-				if(DEBUG>0) printf("DEBUG : new max found of %2.2f at %d\n",max,j);
+				if(DEBUG>0) printf("DEBUG : new max found of %2.2f on frame %d at freq %d\n",max,i,j);
 			}
 
 		}/*END  Loop on frequency indexes */
