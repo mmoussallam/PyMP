@@ -26,7 +26,7 @@ import math
 import wave
 import struct
 import numpy as np
-import matplotlib.pyplot as plt
+
 from tools import SoundFile
 import base
 import log
@@ -169,6 +169,7 @@ class Signal(object):
 
     def plot(self, pltStr='b-', legend=None):
         ''' DEPRECATED plot the array using matplotlib '''
+        import matplotlib.pyplot as plt
         plt.plot(self.data, pltStr)
         if legend != None:
             plt.legend((legend))
@@ -254,6 +255,7 @@ class Signal(object):
 
         # In high debugging levels, show the process using matplotlib
         if debug > 2:
+            import matplotlib.pyplot as plt
             plt.figure()
             plt.plot(self.data[atom.time_position: atom.
                                time_position + atom.length])

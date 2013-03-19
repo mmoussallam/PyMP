@@ -124,12 +124,14 @@ static PyObject * initialize_plans(PyObject *self, PyObject *args)
 	int size_number;
 	int * sizes , * tolerances;
 	/*int  threadIdx;*/
-	int res ;
+	int res, max_thread_num;
 	/* Declarations - end */
 	
+	max_thread_num = -1;
 	/* parsing arguments */
-	if (!PyArg_ParseTuple(args, "O!O!", &PyArray_Type, &in_data,
-										&PyArray_Type, &in_tolerances )){
+	if (!PyArg_ParseTuple(args, "O!O!|i", &PyArray_Type, &in_data,
+										&PyArray_Type, &in_tolerances,
+										&max_thread_num)){
 	}
 
 	/* Check null pointers */
@@ -148,7 +150,7 @@ static PyObject * initialize_plans(PyObject *self, PyObject *args)
     sizes = pyvector_to_intCarrayptrs(in_data);
     tolerances = pyvector_to_intCarrayptrs(in_tolerances);
     
-    res = initialize(sizes , size_number , tolerances);
+    res = initialize(sizes , size_number , tolerances, max_thread_num);
     if (res<0) {
     	printf("ERROR in initialization, zero-size found is system 32 bits?\n");
     	return NULL;

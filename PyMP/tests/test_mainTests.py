@@ -5,9 +5,9 @@ testing normal behavior of most MP functions and classes
 
 M.Moussallam
 """
-import matplotlib.pyplot as plt
-plt.switch_backend('Agg')  # to avoid display while testing
 
+import matplotlib.pyplot as plt
+plt.switch_backend('Agg')
 from PyMP.mdct.block import Block
 
 import os
@@ -41,7 +41,7 @@ audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
 
 class AtomTest(unittest.TestCase):
     def setUp(self):
-        pass
+        import matplotlib.pyplot as plt
 
     def runTest(self):
         # empty creation
@@ -105,8 +105,6 @@ class AtomTest(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(wf1, wf2)
         np.testing.assert_array_almost_equal(wf2, wf3)
-
-        
 
 
 class WaveletAtomTest(unittest.TestCase):
@@ -209,33 +207,32 @@ class Signaltest(unittest.TestCase):
 #
         # test on a long signals
         l_sig = signals.LongSignal(op.join(audio_filepath,
-                                                "Bach_prelude_40s.wav"), 
-                                    8192,
-                                    mono=True,
-                                    Noverlap=0)
+                                           "Bach_prelude_40s.wav"),
+                                   8192,
+                                   mono=True,
+                                   Noverlap=0)
         sig = signals.Signal(op.join(audio_filepath,
-                                                "Bach_prelude_40s.wav"), mono=True)
-        n_seg_normal =  math.floor(sig.length / 8192);
+                                     "Bach_prelude_40s.wav"), mono=True)
+        n_seg_normal = math.floor(sig.length / 8192)
         self.assertEqual(l_sig.n_seg, n_seg_normal)
 
         # Now with a 50% overlap
         l_sig = signals.LongSignal(op.join(audio_filepath,
-                                                "Bach_prelude_40s.wav"), 
-                                    8192,
-                                    mono=True,
-                                    Noverlap=0.5)
-        self.assertEqual(l_sig.n_seg, 2*n_seg_normal -1)       
-        
-        
+                                           "Bach_prelude_40s.wav"),
+                                   8192,
+                                   mono=True,
+                                   Noverlap=0.5)
+        self.assertEqual(l_sig.n_seg, 2 * n_seg_normal - 1)
+
         # Now with a 75% overlap
         l_sig = signals.LongSignal(op.join(audio_filepath,
-                                                "Bach_prelude_40s.wav"), 
-                                    8192,
-                                    mono=True,
-                                    Noverlap=0.75)
+                                           "Bach_prelude_40s.wav"),
+                                   8192,
+                                   mono=True,
+                                   Noverlap=0.75)
         print sig.length, n_seg_normal
-        self.assertEqual(l_sig.n_seg, 4*n_seg_normal - 3)
-        
+        self.assertEqual(l_sig.n_seg, 4 * n_seg_normal - 3)
+
         L = 4 * 16384
         longSignal = signals.LongSignal(op.join(audio_filepath,
                                                 "Bach_prelude_40s.wav"), L)
@@ -302,21 +299,20 @@ class Signaltest(unittest.TestCase):
 
         # Final test: play utility
         print "Playing Short excerpt from Bach Prelude"
-        real_signal = signals.Signal(op.join(audio_filepath, "Bach_prelude_4s.wav"),
-                                normalize=False, mono=True)
+        real_signal = signals.Signal(
+            op.join(audio_filepath, "Bach_prelude_4s.wav"),
+            normalize=False, mono=True)
         real_signal.play()
 
         print "Testing too long excerpt: SHOULD NOT work"
         l_sig = signals.Signal(op.join(audio_filepath, "Bach_prelude_40s.wav"),
-                                normalize=False, mono=True)
+                               normalize=False, mono=True)
         self.assertRaises(ValueError, l_sig.play)
-        
-        
+
         print "However This should work"
-        l_sig[16*l_sig.fs:19*l_sig.fs].play()
-        
-        
-        
+        l_sig[16 * l_sig.fs:19 * l_sig.fs].play()
+
+
 #        plt.show()
 class BlockTest(unittest.TestCase):
     def runTest(self):
@@ -456,7 +452,6 @@ class MPTest(unittest.TestCase):
         # good call: should work and give same results
         completed_approx = mp.mp_continue(stopped_approx, signal_original,
                                           dico2, 50, full_num - stop_num, debug=0, pad=False)[0]
-        
 
         self.assertEqual(full_approx.length, completed_approx.length)
         self.assertEqual(full_approx.atom_number, completed_approx.atom_number)
@@ -477,24 +472,26 @@ class MPTest(unittest.TestCase):
 
         print "Comparing with legacy implementation"
         n_atoms = 300
-        app_1 , dec1 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update='mp')
-        app_2 , dec2 = mp.mp(signal_original, dico, 100, n_atoms ,debug=0, pad=False)
+        app_1, dec1 = mp.greedy(signal_original, dico, 100,
+                                n_atoms, debug=0, pad=True, update='mp')
+        app_2, dec2 = mp.mp(
+            signal_original, dico, 100, n_atoms, debug=0, pad=False)
         np.testing.assert_almost_equal(dec1, dec2)
         for i in range(n_atoms):
-            self.assertEquals(app_1[i],app_2[i])
+            self.assertEquals(app_1[i], app_2[i])
 
         print "Comparing MP and MP_continue"
-        
+
         cProfile.runctx('mp.mp(signal_original, dico1, 20, 100 ,debug=0 , pad=False)', globals(), locals())
-        
+
         curr_approx = mp.mp(signal_original, dico1, 20, 100,
-                            debug=0 ,clean=False, pad=False)[0]
-        
+                            debug=0, clean=False, pad=False)[0]
+
         cProfile.runctx('mp.mp_continue(curr_approx, signal_original, dico1, 20, 100 ,debug=0 , pad=False)', globals(), locals())
 
+
 class GreedyTest(unittest.TestCase):
-    
-    
+
     def badArgsTest(self):
         print "TESTING BAD CALLS"
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
@@ -512,9 +509,9 @@ class GreedyTest(unittest.TestCase):
 
         # testing mp with unknown update rule
         badargs = (signal_original, dico, 50, 10)
-        badkwargs = { 'update':'nothing'}
+        badkwargs = {'update': 'nothing'}
         self.assertRaises(ValueError, mp.greedy, *badargs, **badkwargs)
-        
+
         # testing mp
         # asburd call : should raise a ValueError
         badargs = (signals.Signal(np.zeros(signal_original.data.shape)),
@@ -522,65 +519,83 @@ class GreedyTest(unittest.TestCase):
 
         self.assertRaises(ValueError, mp.greedy, *badargs)
         print "------ OK -------"
-    
+
     def runTest(self):
-        
+
         self.badArgsTest()
-        
+
+        # Testing force MonoThread
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
-        
         dico = mp_mdct_dico.Dico([128, 1024, 8192], debug_level=0)
+
         print "Comparing with legacy implementation"
         n_atoms = 300
-        app_1 , dec1 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update='mp')
-        app_2 , dec2 = mp.mp(signal_original, dico, 100, n_atoms ,debug=0, pad=False)
+        app_1, dec1 = mp.greedy(signal_original, dico, 100,
+                                n_atoms, debug=0, pad=True, update='mp')
+        app_2, dec2 = mp.mp(
+            signal_original, dico, 100, n_atoms, debug=0, pad=False)
         np.testing.assert_almost_equal(dec1, dec2)
         for i in range(n_atoms):
-            self.assertEquals(app_1[i],app_2[i])
-        
+            self.assertEquals(app_1[i], app_2[i])
+
         print "Running MP, OMP and local versions on synthetic k-sparse"
         dico = mp_mdct_dico.LODico([16, 64])
-        L = 16*300
+        L = 16 * 300
         data = np.zeros(L,)
         # create a 2*k-sparse signal
-        K = 50
+        K = 20
         for k in range(K):
-            
-            at = mdct_atom.Atom(16, 1,int((L-64)*np.random.rand(1)[0]),
-                                       int(8*np.random.rand(1)[0]),
-                                       Fs=8000, mdctCoeff=np.random.rand(1)[0])
-            at.synthesize()
-            data[at.time_position: at.time_position + at.length] += at.waveform
-            at = mdct_atom.Atom(64, 1, int((L-64)*np.random.rand(1)[0]),
-                                       freqBin=32*np.random.rand(1)[0],
-                                       Fs=8000, mdctCoeff=np.random.rand(1)[0])
-            at.synthesize()
-            data[at.time_position: at.time_position + at.length] += at.waveform
-        
-        
-        
-        signal_original = signals.Signal(data,Fs=8000, mono=True, normalize=True)
-        signal_original.data += 0.01*np.random.random(L,)
 
-        
-        n_atoms = 2*K
+            at = mdct_atom.Atom(16, 1, int((L - 64) * np.random.rand(1)[0]),
+                                int(8 * np.random.rand(1)[0]),
+                                Fs=8000, mdctCoeff=np.random.rand(1)[0])
+            at.synthesize()
+            data[at.time_position: at.time_position + at.length] += at.waveform
+            at = mdct_atom.Atom(64, 1, int((L - 64) * np.random.rand(1)[0]),
+                                freqBin=32 * np.random.rand(1)[0],
+                                Fs=8000, mdctCoeff=np.random.rand(1)[0])
+            at.synthesize()
+            data[at.time_position: at.time_position + at.length] += at.waveform
+
+        signal_original = signals.Signal(
+            data, Fs=8000, mono=True, normalize=True)
+        signal_original.data += 0.01 * np.random.random(L,)
+
+        n_atoms = 2 * K
         cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update=\'mp\')', globals(), locals())
         cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update=\'locgp\')', globals(), locals())
         cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update=\'locomp\')', globals(), locals())
         cProfile.runctx('mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update=\'omp\')', globals(), locals())
-        
-        app_1 , dec1 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=True, update='mp')
-        app_2 , dec2 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update='locgp')
-        app_3 , dec3 = mp.greedy(signal_original, dico, 100, n_atoms ,debug=0, pad=False, update='omp')
-        
+
+        app_1, dec1 = mp.greedy(signal_original, dico, 100,
+                                n_atoms, debug=0, pad=True, update='mp')
+        app_2, dec2 = mp.greedy(signal_original, dico, 100,
+                                n_atoms, debug=0, pad=False, update='locgp')
+        app_3, dec3 = mp.greedy(signal_original, dico, 100,
+                                n_atoms, debug=0, pad=False, update='omp')
+
         plt.figure()
-        plt.plot(10.0*np.log10(dec1/dec1[0]))
-        plt.plot(10.0*np.log10(dec2/dec2[0]))
-        plt.plot(10.0*np.log10(dec3/dec3[0]))
-        plt.legend(('MP','LocGP','OMP'))
-        plt.show()
-        
+        plt.plot(10.0 * np.log10(dec1 / dec1[0]))
+        plt.plot(10.0 * np.log10(dec2 / dec2[0]))
+        plt.plot(10.0 * np.log10(dec3 / dec3[0]))
+        plt.legend(('MP', 'LocGP', 'OMP'))
+
+
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+        t = time.time()
+        app_1, dec1 = mp.greedy(signal_original, dico, 1000,
+                                10000, debug=0, pad=True, update='mp', max_thread_num=2)
+        print "2 threads took %1.6f " %(time.time() - t)
+        t = time.time()
+        app_1, dec1 = mp.greedy(signal_original, dico, 1000,
+                                10000, debug=0, pad=True,
+                                update='mp', max_thread_num=1)
+        print "Only One thread took %1.6f " % (time.time() - t)
+
+#        plt.show()
+
 
 class OMPTest(unittest.TestCase):
     def runTest(self):
@@ -599,37 +614,37 @@ class OMPTest(unittest.TestCase):
         pyApprox_oneAtom.add(pyAtom)
 
         signal_one_atom = signals.Signal(pyApprox_oneAtom.
-                                         synthesize(0).data, signal_original.fs, False)
+                                         synthesize(0).data, signal_original.fs,
+                                         False)
 
         # second test
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
-        
 
-        app_mp, dec_mp = mp.mp(signal_original, dico, 10, 200 ,debug=0 ,pad=True, clean=True)
-        app_locomp, dec_locomp = mp.locomp(signal_original, dico, 10, 200 ,debug=0 ,pad=False, clean=True)
-        
+        app_mp, dec_mp = mp.mp(
+            signal_original, dico, 10, 200, debug=0, pad=True, clean=True)
+        app_locomp, dec_locomp = mp.locomp(
+            signal_original, dico, 10, 200, debug=0, pad=False, clean=True)
+
         #  Ok test also the local GP implementation
-        app_locgp, dec_locgp = mp.locomp(signal_original, dico, 10, 200 ,debug=0
-                                           ,pad=False, approximate=True)
-        
+        app_locgp, dec_locgp = mp.locomp(signal_original, dico, 10, 200,
+                                         debug=0, pad=False, approximate=True)
+
         print app_mp
         print app_locomp
-        print app_locgp        
-        
-        
-        plt.figure()    
-        plt.plot(10.0*np.log10(dec_mp/dec_mp[0]),'b')
-        plt.plot(10.0*np.log10(dec_locomp/dec_locomp[0]),'r--')
-        plt.plot(10.0*np.log10(dec_locgp/dec_locgp[0]),'k-.')     
-        plt.legend(('MP','LocOMP','LocGP'))   
+        print app_locgp
+
+        plt.figure()
+        plt.plot(10.0 * np.log10(dec_mp / dec_mp[0]), 'b')
+        plt.plot(10.0 * np.log10(dec_locomp / dec_locomp[0]), 'r--')
+        plt.plot(10.0 * np.log10(dec_locgp / dec_locgp[0]), 'k-.')
+        plt.legend(('MP', 'LocOMP', 'LocGP'))
 #        plt.show()
-        
-        
+
         self.assertGreater(dec_mp[-1], dec_locomp[-1])
         self.assertGreater(dec_mp[-1], dec_locgp[-1])
-        self.assertEqual(int(dec_locgp[-1]),int(dec_locomp[-1]))
-        
+        self.assertEqual(int(dec_locgp[-1]), int(dec_locomp[-1]))
+
         # profiling test
 #        print "Plain"
 #        cProfile.runctx('', globals(), locals())
@@ -724,19 +739,20 @@ class ApproxTest(unittest.TestCase):
         app_update.add(
             mdct_atom.Atom(8192, 1, 4096 - 2048, 32, 44100, -0.24))
         old_array = app_update.synthesize(0).data.copy()
-        
-        self.assertAlmostEqual(np.sqrt(np.sum(old_array**2)), 0.24)
-        
+
+        self.assertAlmostEqual(np.sqrt(np.sum(old_array ** 2)), 0.24)
+
         app_update.update([0], [0.80])
         new_array = app_update.synthesize(0).data.copy()
-        
-        self.assertAlmostEqual(np.sqrt(np.sum(new_array**2)), 0.80)
-        
+
+        self.assertAlmostEqual(np.sqrt(np.sum(new_array ** 2)), 0.80)
+
 #        plt.figure()
 #        plt.plot(old_array)
 #        plt.plot(new_array)
 #        plt.show()
-
+        import matplotlib.pyplot as plt
+        plt.switch_backend('Agg')
         plt.figure()
         plt.subplot(121)
         app.plot_tf()
@@ -802,7 +818,7 @@ class ApproxTest(unittest.TestCase):
         self.neighborTesting()
 
         self.ioTesting()
-    
+
     def neighborTesting(self):
         dico = mp_mdct_dico.Dico([2 ** l for l in range(7, 15, 1)])
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
@@ -812,26 +828,29 @@ class ApproxTest(unittest.TestCase):
         # fill with two atoms in 10000 and 12000
         app.add(mdct_atom.Atom(1024, amp=1, timePos=10000,
                                freqBin=12, Fs=8000, mdctCoeff=0.57))
-        
+
         app.add(mdct_atom.Atom(1024, amp=1, timePos=12000,
                                freqBin=12, Fs=8000, mdctCoeff=0.57))
-        
+
         app.add(mdct_atom.Atom(1024, amp=1, timePos=9000,
                                freqBin=12, Fs=8000, mdctCoeff=0.57))
-        
+
         # now look for neighbors:
         two_neigh = app.get_neighbors(mdct_atom.Atom(1024, amp=1, timePos=11000,
-                                               freqBin=12, Fs=8000, mdctCoeff=0.57))
-        
-        
-        self.assertEqual(app.get_neighbors(mdct_atom.Atom(1024, 1, 11000,12, 8000, 0.57)),
-                         [0,1])
-        self.assertEqual(app.get_neighbors(mdct_atom.Atom(1024, 1, 11025,12, 8000, 0.57)),
-                         [1])        
-        self.assertEqual(app.get_neighbors(mdct_atom.Atom(1024, 1, 8500,12, 8000, 0.57)),
-                         [2])
-        self.assertEqual(app.get_neighbors(mdct_atom.Atom(8192, 1, 7000,12, 8000, 0.57)),
-                         [0,1,2])
+                                                     freqBin=12, Fs=8000, mdctCoeff=0.57))
+
+        self.assertEqual(
+            app.get_neighbors(mdct_atom.Atom(1024, 1, 11000, 12, 8000, 0.57)),
+            [0, 1])
+        self.assertEqual(
+            app.get_neighbors(mdct_atom.Atom(1024, 1, 11025, 12, 8000, 0.57)),
+            [1])
+        self.assertEqual(
+            app.get_neighbors(mdct_atom.Atom(1024, 1, 8500, 12, 8000, 0.57)),
+            [2])
+        self.assertEqual(
+            app.get_neighbors(mdct_atom.Atom(8192, 1, 7000, 12, 8000, 0.57)),
+            [0, 1, 2])
 
     def ioTesting(self):
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
@@ -925,7 +944,7 @@ class LOMPTest(unittest.TestCase):
 #        approximant.write_to_xml(approx_path+"LOmp_aligned")
 
         print " Approx Reached : %1.3f dB in %d  it" % (approximant.compute_srr(),
-                                                     approximant.atom_number)
+                                                        approximant.atom_number)
 
         del pyAtom, approximant, signal_one_atom
 
@@ -950,7 +969,7 @@ class LOMPTest(unittest.TestCase):
                   + str(approximant.atom_number) + " iteration")
 #        plt.show()
         print " Approx Reached : %1.3f dB in %d  it" % (approximant.compute_srr(),
-                                                     approximant.atom_number)
+                                                        approximant.atom_number)
 
         del approximant
 
@@ -977,7 +996,7 @@ class LOMPTest(unittest.TestCase):
 #        plt.savefig(figPath+"nonAlignedAtom_mp_vs_LOmp" + ext)
 #        plt.show()
         print " Approx Reached : %1.3f dB in %d  it" % (approximant.compute_srr(),
-                                                     approximant.atom_number)
+                                                        approximant.atom_number)
 
         del approximant
 
@@ -995,7 +1014,7 @@ class LOMPTest(unittest.TestCase):
                   (approximant.compute_srr(), approximant.atom_number))
 #        plt.show()
         print " Approx Reached : %1.3f dB in %d it" % (approximant.compute_srr(),
-                                                     approximant.atom_number)
+                                                       approximant.atom_number)
 
         del approximant
 
@@ -1014,7 +1033,7 @@ class LOMPTest(unittest.TestCase):
         plt.xlabel("samples")
 #        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_nbIt10"+ext)
         print " Approx Reached : %1.3f dB in %d it" % (approximant.compute_srr(),
-                                                     approximant.atom_number)
+                                                       approximant.atom_number)
 
         del approximant
         print "comparing results and processing times for long decompositions"
@@ -1032,9 +1051,9 @@ class LOMPTest(unittest.TestCase):
                   (approx1.compute_srr(), approx1.atom_number, t1 - t0))
 #        plt.show()
         print " Approx Reached : %1.3f dB in %d iteration and %1.3f seconds" % (
-                                                     approx1.compute_srr(),
-                                                     approx1.atom_number,
-                                                     t1-t0)
+            approx1.compute_srr(),
+            approx1.atom_number,
+            t1 - t0)
 
         t2 = time.clock()
         approx2 = mp.mp(signal_original, lodico, 20, 500, False, False)[0]
@@ -1048,9 +1067,9 @@ class LOMPTest(unittest.TestCase):
         plt.title("Bell signals with LOmp : SRR of " + str(int(approx2.compute_srr())) + " dB in " + str(approx2.atom_number) + " iteration and " + str(t3 - t2) + "s")
 #        plt.savefig(figPath+"RealSignal_mp_vs_LOmp_SRR20"+ext)
         print " Approx Reached : %1.3f dB in %d iteration and %1.3f seconds" % (
-                                                     approx2.compute_srr(),
-                                                     approx2.atom_number,
-                                                     t3-t2)
+            approx2.compute_srr(),
+            approx2.atom_number,
+            t3 - t2)
 
         del approx1, approx2
         del signal_original
@@ -1071,9 +1090,9 @@ class LOMPTest(unittest.TestCase):
 #        plt.title("White Noise signals with mp : SRR of " + str(int(approx1.compute_srr())) + " dB in " + str(approx1.atom_number) + " iteration and " + str(t1 - t0) + "s")
 #        plt.show()
         print " Approx Reached : %1.3f dB in %d iteration and %1.3f seconds" % (
-                                                     approx1.compute_srr(),
-                                                     approx1.atom_number,
-                                                     t1-t0)
+            approx1.compute_srr(),
+            approx1.atom_number,
+            t1 - t0)
 
         t2 = time.clock()
         approx2 = mp.mp(noise_signal, lodico, 10, 500, False, True)[0]
@@ -1091,9 +1110,9 @@ class LOMPTest(unittest.TestCase):
 #        plt.xlabel("samples")
 #        plt.savefig(figPath+"NoiseSignal_mp_vs_LOmp_SRR20"+ext)
         print " Approx Reached : %1.3f dB in %d iteration and %1.3f seconds" % (
-                                                     approx2.compute_srr(),
-                                                     approx2.atom_number,
-                                                     t3-t2)
+            approx2.compute_srr(),
+            approx2.atom_number,
+            t3 - t2)
 
 
 class SSMPTest(unittest.TestCase):
@@ -1190,7 +1209,7 @@ class SSMPTest(unittest.TestCase):
 
         del approx1, approx2
         del signal_original
-        # "comparing results and processing times for long decompositions 
+        # "comparing results and processing times for long decompositions
         # of white gaussian noise"
         noise_signal = signals.Signal(
             0.5 * np.random.random(5 * 16384), 44100, False)
@@ -1281,9 +1300,9 @@ class WinServerTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    import matplotlib
-    print matplotlib.__version__
 
+    import matplotlib.pyplot as plt
+    plt.switch_backend('Agg')  # to avoid display while testing
     _Logger = log.Log('test', level=3, imode=False)
     _Logger.info('Starting Tests')
     suite = unittest.TestSuite()

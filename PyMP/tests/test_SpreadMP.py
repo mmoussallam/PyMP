@@ -9,7 +9,6 @@ Created on Sep 13, 2011
 import unittest
 
 
-import matplotlib.pyplot as plt
 import numpy as np
 import os.path as op
 from PyMP import Signal, mp
@@ -17,8 +16,8 @@ from PyMP import parallelProjections
 from PyMP.mdct import dico as mdct_dico
 from PyMP.mdct import block as mdct_block
 
-audio_filepath= op.join(op.dirname(__file__), '..', '..', 'data')
-#audio_filepath = '/sons/sqam/'
+audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
+# audio_filepath = '/sons/sqam/'
 
 
 class blocksTest(unittest.TestCase):
@@ -44,27 +43,32 @@ class blocksTest(unittest.TestCase):
         spreadBlock.update(pySig, 0, -1)
 
         maxClassicAtom1 = classicBlock.get_max_atom()
-        print maxClassicAtom1.length, maxClassicAtom1.frame, maxClassicAtom1.freq_bin, maxClassicAtom1.mdct_value
+        print maxClassicAtom1.length, maxClassicAtom1.frame,
+        print maxClassicAtom1.freq_bin, maxClassicAtom1.mdct_value
         maxSpreadcAtom1 = spreadBlock.get_max_atom()
-        print maxSpreadcAtom1.length, maxSpreadcAtom1.frame, maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.mdct_value
+        print maxSpreadcAtom1.length, maxSpreadcAtom1.frame,
+        print maxSpreadcAtom1.freq_bin, maxSpreadcAtom1.mdct_value
         # assert equality using the inner comparison method of MDCT atoms
         self.assertEqual(maxClassicAtom1, maxSpreadcAtom1)
 
         # verifying the masking index construction
         mask_frame_width = 2
         mask_bin_width = 1
-        spreadBlock.compute_mask(maxSpreadcAtom1, mask_bin_width, mask_frame_width, 0.5)
-             
-        c_frame = int(np.ceil(maxSpreadcAtom1.time_position / ( scale / 2)))
-        c_bin = int(maxSpreadcAtom1.reduced_frequency * scale ) 
-        
-        z1 = np.arange(int(c_frame - mask_frame_width), int(c_frame + mask_frame_width) +1)
-        z2 = np.arange(int(c_bin - mask_bin_width), int(c_bin + mask_bin_width) + 1)
+        spreadBlock.compute_mask(
+            maxSpreadcAtom1, mask_bin_width, mask_frame_width, 0.5)
+
+        c_frame = int(np.ceil(maxSpreadcAtom1.time_position / (scale / 2)))
+        c_bin = int(maxSpreadcAtom1.reduced_frequency * scale)
+
+        z1 = np.arange(int(
+            c_frame - mask_frame_width), int(c_frame + mask_frame_width) + 1)
+        z2 = np.arange(
+            int(c_bin - mask_bin_width), int(c_bin + mask_bin_width) + 1)
 #        x, y = np.meshgrid(z1, z2)
 #        print spreadBlock.mask_index_x
-#        np.testing.assert_array_equal(spreadBlock.mask_index_x, z1)   
-#        np.testing.assert_array_equal(spreadBlock.mask_index_y, z2)   
-        
+#        np.testing.assert_array_equal(spreadBlock.mask_index_x, z1)
+#        np.testing.assert_array_equal(spreadBlock.mask_index_y, z2)
+
         pySig.subtract(maxSpreadcAtom1)
 
         # recompute the projections
@@ -99,7 +103,7 @@ class dicosTest(unittest.TestCase):
                                           all_scales=True,
                                           penalty=0, maskSize=3)
 
-        self.assertEqual(spreadDico.mask_times, [3,3,3])
+        self.assertEqual(spreadDico.mask_times, [3, 3, 3])
 
         classicDIco.initialize(pySig)
         spreadDico.initialize(pySig)
@@ -126,7 +130,8 @@ class realTest(unittest.TestCase):
 
     def runTest(self):
         name = 'orchestra'
-        pySig = Signal(op.join(audio_filepath, 'glocs.wav'), mono=True, normalize=True)
+        pySig = Signal(
+            op.join(audio_filepath, 'glocs.wav'), mono=True, normalize=True)
         pySig.crop(0, 5 * pySig.fs)
         pySig.pad(16384)
         sigEnergy = np.sum(pySig.data ** 2)
@@ -135,8 +140,8 @@ class realTest(unittest.TestCase):
 
         classicDIco = mdct_dico.Dico(dico, useC=False)
         spreadDico = mdct_dico.SpreadDico(
-            dico,all_scales=False, spread_scales=[1024, 8192],
-            penalty=0.1, mask_time = 2, mask_freq = 2)
+            dico, all_scales=False, spread_scales=[1024, 8192],
+            penalty=0.1, mask_time=2, mask_freq=2)
 
         approxClassic, decayClassic = mp.mp(pySig, classicDIco, 20, nbAtoms)
         approxSpread, decaySpread = mp.mp(
@@ -160,24 +165,28 @@ class realTest(unittest.TestCase):
 #        plt.savefig(name + '_decayTFMasking.eps')
 
         plt.figure()
-        for blockI in range(1,3):
+        for blockI in range(1, 3):
             block = spreadDico.blocks[blockI]
             plt.subplot(2, 2, blockI)
-            print block.mask.shape, block.mask.shape[0] / (block.scale/2), block.scale/2
-            plt.imshow(np.reshape(block.mask,(block.mask.shape[0] / (block.scale/2), block.scale/2)),
-                   interpolation='nearest',aspect='auto')
+            print block.mask.shape, block.mask.shape[0] / (block.scale / 2), block.scale / 2
+            plt.imshow(
+                np.reshape(block.mask, (
+                    block.mask.shape[0] / (block.scale / 2), block.scale / 2)),
+                interpolation='nearest', aspect='auto')
             plt.colorbar()
-            plt.subplot(2, 2, blockI+2)
-#            print block.mask.shape, block.mask.shape[0] / (block.scale/2), block.scale/2
+            plt.subplot(2, 2, blockI + 2)
+# print block.mask.shape, block.mask.shape[0] / (block.scale/2),
+# block.scale/2
             block.im_proj_matrix()
             plt.colorbar()
-        
+
 
 class realTest2(unittest.TestCase):
 
     def runTest(self):
         name = 'orchestra'
-        pySig = Signal(op.join(audio_filepath, 'Bach_prelude_40s.wav'), mono=True, normalize=True)
+        pySig = Signal(op.join(
+            audio_filepath, 'Bach_prelude_40s.wav'), mono=True, normalize=True)
         pySig.crop(0, 5 * pySig.fs)
         pySig.pad(16384)
         sigEnergy = np.sum(pySig.data ** 2)
@@ -191,7 +200,7 @@ class realTest2(unittest.TestCase):
         approxClassic, decayClassic = mp.mp(pySig, classicDIco, 20, nbAtoms)
         approxSpread, decaySpread = mp.mp(
             pySig, spreadDico, 20, nbAtoms, pad=False)
-
+        import matplotlib.pyplot as plt
         plt.figure(figsize=(16, 8))
         plt.subplot(121)
         approxClassic.plot_tf(ylim=[0, 4000])
@@ -208,27 +217,30 @@ class realTest2(unittest.TestCase):
         plt.ylabel('Residual energy decay(dB)')
         plt.xlabel('Iteration')
 #        plt.savefig(name + '_decayTFMasking.eps')
-        
+
 
 class perfTest(unittest.TestCase):
-    
+
     def runTest(self):
         dico = [128, 1024, 8192]
         nbAtoms = 100
         pySig = Signal(op.join(audio_filepath,
                                'Bach_prelude_40s.wav'),
-                               mono=True, normalize=True)
+                       mono=True, normalize=True)
         classicDIco = mdct_dico.Dico(dico)
         spreadDico = mdct_dico.SpreadDico(
             dico, all_scales=True, penalty=0.1, maskSize=10)
 
         import cProfile
-        cProfile.runctx('mp.mp(pySig, classicDIco, 20, nbAtoms)', globals(), locals())
-        cProfile.runctx('mp.mp(pySig, spreadDico, 20, nbAtoms, pad=False)', globals(), locals())
+        cProfile.runctx(
+            'mp.mp(pySig, classicDIco, 20, nbAtoms)', globals(), locals())
+        cProfile.runctx('mp.mp(pySig, spreadDico, 20, nbAtoms, pad=False)',
+                        globals(), locals())
 
-        
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
+    import matplotlib.pyplot as plt
     suite = unittest.TestSuite()
 
 #    suite.addTest(blocksTest())
@@ -238,4 +250,4 @@ if __name__ == "__main__":
     suite.addTest(perfTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
-    plt.show()
+#    plt.show()

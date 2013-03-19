@@ -36,17 +36,30 @@ void sayHelloBastard(void){
  * Initializing FFTW plans, inputs and output vectors
  *
  */
-int initialize(int * sizes  , int sNumber , int * tolerances){
+int initialize(int * sizes  , int sNumber , int * tolerances, int max_thread_num){
 
 	int size ;
 	int  threadIdx;
 	size_number = sNumber;
 	/* Determines the number of available Threads */
-#pragma omp parallel
-	{
-		nb_threads = omp_get_num_threads();
-	}
 
+	#pragma omp parallel
+		{
+			nb_threads = omp_get_num_threads();
+
+		}
+
+	if(max_thread_num>0){
+		if (max_thread_num<=nb_threads){
+			nb_threads = max_thread_num;
+			omp_set_num_threads(nb_threads);
+
+		}else{
+			printf("You asked for more threads (%d) than there are available (%d), ignoring your request\n",
+					max_thread_num, nb_threads);
+		}
+	}
+	/*printf("%d threads availables \n", nb_threads);*/
 	/* retrive the sizes for which the plan must be created */
 	fft_sizes = (int*) malloc(sizeof(int) * size_number);
 	fft_opt_width = (int*) malloc(sizeof(int) * size_number);
@@ -114,7 +127,7 @@ int initialize(int * sizes  , int sNumber , int * tolerances){
 
 	}
 	/* everything's fine */
-
+	if(DEBUG) printf("Allocation succeeded\n");
 	return(0);
 }
 
@@ -226,7 +239,7 @@ int projectMDCT(double * cin_data ,
 	for (i=0 ; i < size_number ; i++){
 		if (L == fft_sizes[i])
 		{	size =i;
-		if(DEBUG) printf("DEBUG :  found value %d in %d\n",L , i);
+		if(DEBUG>1) printf("DEBUG :  found value %d in %d\n",L , i);
 		break;
 		}/*
 		else{	printf("DEBUG :  value %d is not in %d = %d\n",L , i , fft_sizes[i]);
@@ -280,7 +293,7 @@ int projectMDCT(double * cin_data ,
 			if (fabs(cin_vecProj[j + i*K]) > max) {
 				max = fabs(cin_vecProj[j + i*K]);
 				cout_scoreTree[i] = max;
-				if(DEBUG>0) printf("DEBUG : new max found of %2.2f on frame %d at freq %d\n",max,i,j);
+				if(DEBUG>1) printf("DEBUG : new max found of %2.2f on frame %d at freq %d\n",max,i,j);
 			}
 
 		}/*END  Loop on frequency indexes */

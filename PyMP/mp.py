@@ -52,19 +52,20 @@ def mp(orig_signal,
         clean=False,
         silent_fail=False,
         debug_iteration=-1,
-        unpad=False):
+        unpad=False,
+        max_thread_num=None):
     """Common Matching Pursuit Loop Options are detailed below:
 
     Parameters
     ----------
-     `orig_signal`:  the original signal (as a :class:`.Signal` object) :math:`x` 
+     `orig_signal`:  the original signal (as a :class:`.Signal` object) :math:`x`
                      to decompose
-                     
-     `dictionary`:   the dictionary (as a :class:`.Dico` object) :math:`\Phi` on 
+
+     `dictionary`:   the dictionary (as a :class:`.Dico` object) :math:`\Phi` on
                      which to decompose :math:x
-    
+
      `target_srr`:   a target Signal to Residual Ratio
-    
+
      `max_it_num`:   maximum number of iteration allowed
 
     Returns
@@ -99,7 +100,7 @@ def mp(orig_signal,
     res_signal = orig_signal.copy()
 
     # FFTW Optimization for C code: initialize module global variables
-    _initialize_fftw(dictionary)
+    _initialize_fftw(dictionary, max_thread_num)
 
     # initialize blocks
     dictionary.initialize(res_signal)
@@ -192,7 +193,7 @@ def mp_continue(current_approx,
 
     while (current_srr < target_srr) & (it_num < max_it_num):
 
-        # lauches a mp loop: update projection, 
+        # lauches a mp loop: update projection,
         # retrieve best atom and subtract from residual
 
         _mp_loop(dictionary, debug,
@@ -223,7 +224,7 @@ def mp_long(orig_longsignal,
             write=False):
     """NOT FULLY TESTED treats long signals , return a collection of approximants ,
         one by segment
-        You can use the FusionApprox method of the Approx class to recover a 
+        You can use the FusionApprox method of the Approx class to recover a
         single approx object from this collection"""
 
     output_dir = output_dir + str(target_srr) + '/'
@@ -292,14 +293,14 @@ def locomp(original_signal,
 
     parameters
     ----------
-    
+
     approximate : if True, perform Gradient Pursuit instead of locOMP
-    
+
     outputs:
     -------
-    
+
     same as mp
-    
+
     """
 
     # back compatibility - use debug levels now
@@ -326,7 +327,6 @@ def locomp(original_signal,
     it_number = 0
     current_srr = current_approx.compute_srr()
 
-
     # loop is same as mp except for orthogonal projection of the atom on the
     # residual
     # Decomposition loop: stopping criteria is either SNR or iteration number
@@ -340,15 +340,15 @@ def locomp(original_signal,
 
         if not approximate:
             best_atom = _locomp_loop(dictionary, debug,
-                                 silent_fail, unpad, res_signal,
-                                 current_approx,
-                                 res_energy_list, it_number)
+                                     silent_fail, unpad, res_signal,
+                                     current_approx,
+                                     res_energy_list, it_number)
         else:
             best_atom = _locgp_loop(dictionary, debug,
-                                 silent_fail, unpad, res_signal,
-                                 current_approx,
-                                 res_energy_list, it_number)
-        
+                                    silent_fail, unpad, res_signal,
+                                    current_approx,
+                                    res_energy_list, it_number)
+
         # compute new SRR and increment iteration Number
         current_srr = current_approx.compute_srr(res_signal)
 
@@ -368,31 +368,32 @@ def locomp(original_signal,
 
 
 def greedy(orig_signal,
-        dictionary,
-        target_srr,
-        max_it_num,
-        debug=0,
-        pad=True,
-        clean=False,
-        silent_fail=False,
-        debug_iteration=-1,
-        unpad=False,
-        update='mp'):
-    
+           dictionary,
+           target_srr,
+           max_it_num,
+           debug=0,
+           pad=True,
+           clean=False,
+           silent_fail=False,
+           debug_iteration=-1,
+           unpad=False,
+           update='mp',
+           max_thread_num=None):
+
     """Common Greedy Pursuit Loop Options are detailed below:
 
     Parameters
     ----------
-     `orig_signal`:  the original signal (as a :class:`.Signal` object) :math:`x` 
+     `orig_signal`:  the original signal (as a :class:`.Signal` object) :math:`x`
                      to decompose
-                     
-     `dictionary`:   the dictionary (as a :class:`.Dico` object) :math:`\Phi` on 
+
+     `dictionary`:   the dictionary (as a :class:`.Dico` object) :math:`\Phi` on
                      which to decompose :math:x
-    
+
      `target_srr`:   a target Signal to Residual Ratio
-    
+
      `max_it_num`:   maximum number of iteration allowed
-     
+
      `update`    :   mp for MP, orthogonal for OMP, gradient for GP
 
     Returns
@@ -427,7 +428,7 @@ def greedy(orig_signal,
     res_signal = orig_signal.copy()
 
     # FFTW Optimization for C code: initialize module global variables
-    _initialize_fftw(dictionary)
+    _initialize_fftw(dictionary, max_thread_num=max_thread_num)
 
     # initialize blocks
     dictionary.initialize(res_signal)
@@ -448,11 +449,11 @@ def greedy(orig_signal,
 
     res_energy_list.append(res_signal.energy)
 
-    if update not in ['mp','locomp','locgp','omp']:
+    if update not in ['mp', 'locomp', 'locgp', 'omp']:
         raise ValueError('Unrecognized update rule')
 
-    loop_str = '_%s_loop'%update
-    
+    loop_str = '_%s_loop' % update
+
     # Decomposition loop: stopping criteria is either SNR or iteration number
     while (current_srr < target_srr) & (it_number < max_it_num):
 
@@ -462,24 +463,24 @@ def greedy(orig_signal,
 
         if update == 'mp':
             best_atom = _mp_loop(dictionary, debug,
-                             silent_fail, unpad, res_signal,
-                             current_approx,
-                             res_energy_list, it_number)
+                                 silent_fail, unpad, res_signal,
+                                 current_approx,
+                                 res_energy_list, it_number)
         elif update == 'locomp':
             best_atom = _locomp_loop(dictionary, debug,
-                             silent_fail, unpad, res_signal,
-                             current_approx,
-                             res_energy_list, it_number)
+                                     silent_fail, unpad, res_signal,
+                                     current_approx,
+                                     res_energy_list, it_number)
         elif update == 'omp':
             best_atom = _omp_loop(dictionary, debug,
-                             silent_fail, unpad, res_signal,
-                             current_approx,
-                             res_energy_list, it_number)
+                                  silent_fail, unpad, res_signal,
+                                  current_approx,
+                                  res_energy_list, it_number)
         if update == 'locgp':
             best_atom = _locgp_loop(dictionary, debug,
-                             silent_fail, unpad, res_signal,
-                             current_approx,
-                             res_energy_list, it_number)
+                                    silent_fail, unpad, res_signal,
+                                    current_approx,
+                                    res_energy_list, it_number)
 
         # compute new SRR and increment iteration Number
         current_srr = current_approx.compute_srr(res_signal)
@@ -497,7 +498,6 @@ def greedy(orig_signal,
     _clean_fftw()
 
     return current_approx, res_energy_list
-
 
 
 def _itprint_(it_num, best_atom):
@@ -534,7 +534,7 @@ def _mp_loop(dictionary, debug, silent_fail,
 #            return current_approx, res_energy
     if debug > 0:
         _Logger.debug(_itprint_(it_number, best_atom))
-    try:                
+    try:
         res_signal.subtract(best_atom, debug)
         dictionary.compute_touched_zone(best_atom)
     except ValueError:
@@ -588,7 +588,8 @@ def _get_local_subdico(best_atom, current_approx, dictionary):
     t_interv = [int(best_atom.time_position - dictionary.get_pad()),
                 int(best_atom.time_position + best_atom.length)]
     t_interv[0] = max(t_interv[0], 0)
-    t_interv[1] = min(t_interv[1], current_approx.length -dictionary.get_pad() )
+    t_interv[1] = min(t_interv[1], current_approx.length -
+                      dictionary.get_pad())
 # ov_sel_atoms = current_approx.filter_atoms(time_interv=t_interv,
 # index=True)
     ov_sel_atoms = current_approx.get_neighbors(best_atom)
@@ -603,29 +604,29 @@ def _get_local_subdico(best_atom, current_approx, dictionary):
 #    ) - t_interv[0], len(ov_sel_atoms) + 1))
     subdico = np.zeros((t_interv[1] + dictionary.get_pad(
     ) - t_interv[0], len(ov_sel_atoms) + 1))
-    
+
     subdico[best_atom.time_position - t_interv[0]:
             best_atom.time_position - t_interv[0] + best_atom.length,
-            -1] = _PyServer.get_waveform( best_atom.length, best_atom.freq_bin)
+            -1] = _PyServer.get_waveform(best_atom.length, best_atom.freq_bin)
 
     for atomidx in range(len(ov_sel_atoms)):
         at = current_approx.atoms[ov_sel_atoms[atomidx]]
-        
+
 #        wf = at.get_waveform() / np.sqrt(np.sum(at.get_waveform() ** 2))
-        
+
         subdico[
             at.time_position - t_interv[0]: at.time_position - t_interv[0] + at.length,
-            atomidx] = _PyServer.get_waveform( at.length, at.freq_bin)
+            atomidx] = _PyServer.get_waveform(at.length, at.freq_bin)
 
     return subdico, t_interv, ov_sel_atoms
 
-#def _grad_proj(locproj, ov_sel_atoms, best_atom, t_interv, dict, current_approx):
+# def _grad_proj(locproj, ov_sel_atoms, best_atom, t_interv, dict, current_approx):
 #    """ avoids the numpy dot product, slow when numpy is not parallelized
-#        also there are a lot of zeroes in the subdictionary, no need to take them 
+#        also there are a lot of zeroes in the subdictionary, no need to take them
 #        into account"""
 #    # initialize output
 #    outvec =  np.zeros((t_interv[1] + dict.get_pad() - t_interv[0], ))
-#    
+#
 #    # projection loop
 #    for at_i in range(len(ov_sel_atoms)):
 #        at = current_approx[ov_sel_atoms[at_i]]
@@ -639,8 +640,9 @@ def _get_local_subdico(best_atom, current_approx, dictionary):
 #    slice = range(int(best_atom.time_position - t_interv[0]),
 #                  int(best_atom.time_position - t_interv[0] + best_atom.length))
 #    outvec[slice] += locproj[-1]*wf
-#    
+#
 #    return outvec
+
 
 def _locomp_loop(dictionary, debug, silent_fail,
                  unpad, res_signal, current_approx,
@@ -707,10 +709,10 @@ def _locomp_loop(dictionary, debug, silent_fail,
 
 
 def _locgp_loop(dictionary, debug, silent_fail,
-                 unpad, res_signal, current_approx,
-                 res_energy, it_number):
+                unpad, res_signal, current_approx,
+                res_energy, it_number):
     #===========================================================================
-    # # Internal GP loop with local gradient updates 
+    # # Internal GP loop with local gradient updates
     #=========================================================================
 
     # Compute inner products and selects the best atom
@@ -724,7 +726,7 @@ def _locgp_loop(dictionary, debug, silent_fail,
     if debug > 0:
         _Logger.debug(_itprint_(it_number, best_atom))
 
-    # Same as for locOMP : build neighbouring subdictionary    
+    # Same as for locOMP : build neighbouring subdictionary
     # selected that overlaps with the selected one
     subdico, t_interv, ov_sel_atoms = _get_local_subdico(
         best_atom, current_approx, dictionary)
@@ -732,37 +734,40 @@ def _locgp_loop(dictionary, debug, silent_fail,
     # recompute the weights by least squares on the residual signal
     # Replace the pseudo-inverse by a gradient descent step
     if 'LO' in dictionary.nature:
-        sigslice = res_signal.data[t_interv[0]:t_interv[1] + dictionary.get_pad()]
-        
+        sigslice = res_signal.data[t_interv[0]:t_interv[1] +
+                                   dictionary.get_pad()]
+
 #         @TODO can we replace this step by a projection using fftw?
 #         We don't have to do that, we already calculated them!!
-#         the projection score are all stored in the projection_matrix of the dictionary
-        locProj = np.dot(subdico.T, sigslice)        
-    
+# the projection score are all stored in the projection_matrix of the
+# dictionary
+        locProj = np.dot(subdico.T, sigslice)
+
     # HACK faster if weights have already been computed
     else:
         loc_projs2 = []
         for at_i in ov_sel_atoms:
             at = current_approx[at_i]
-            block = dictionary.blocks[dictionary.find_block_by_scale(at.length)]    
-            loc_projs2.append(block.projs_matrix[at.frame*at.length/2 + at.freq_bin])    
+            block = dictionary.blocks[dictionary.find_block_by_scale(at.length)]
+            loc_projs2.append(
+                block.projs_matrix[at.frame * at.length / 2 + at.freq_bin])
         loc_projs2.append(best_atom.mdct_value)
         locProj = np.array(loc_projs2)
-    
+
 #    grad_proj = _grad_proj(locProj, ov_sel_atoms,
 #                           best_atom, t_interv, dictionary, current_approx)
 #    print subdico.shape, locProj.shape
-    # projection 
-    
-    grad_proj = np.dot(subdico,locProj)
-    # refactoring: replace by a broadcasted computation since 
+    # projection
+
+    grad_proj = np.dot(subdico, locProj)
+    # refactoring: replace by a broadcasted computation since
     # all we need is the energy of the projected array
 #    grad_proj_en = np.sum(np.sum((subdico*locProj),axis=1)**2)
-    
+
 #    print grad_proj_en - np.sum(grad_proj**2)
-    
+
 #    step = np.sum(locProj**2)/ np.sum(np.sum((subdico*locProj),axis=1)**2)
-    step = np.sum(locProj**2)/ np.sum(grad_proj**2)
+    step = np.sum(locProj ** 2) / np.sum(grad_proj ** 2)
 #    print step
     # compute new weights
     weights = step * locProj
@@ -804,11 +809,12 @@ def _locgp_loop(dictionary, debug, silent_fail,
 
     return best_atom
 
+
 def _omp_loop(dictionary, debug, silent_fail,
-                 unpad, res_signal, current_approx,
-                 res_energy, it_number):
+              unpad, res_signal, current_approx,
+              res_energy, it_number):
     #===========================================================================
-    # # Internal OMP loop with local gradient updates 
+    # # Internal OMP loop with local gradient updates
     # BEWARE: VERY MEMORY CONSUMING!
     #=========================================================================
 
@@ -823,25 +829,25 @@ def _omp_loop(dictionary, debug, silent_fail,
     if debug > 0:
         _Logger.debug(_itprint_(it_number, best_atom))
 
-    if it_number==0:
-        dictionary.matrix = np.zeros((current_approx.length,1))
+    if it_number == 0:
+        dictionary.matrix = np.zeros((current_approx.length, 1))
     else:
         # add the current waveform to the subdictionary:
         dictionary.matrix = np.concatenate((dictionary.matrix,
-                                        np.zeros((dictionary.matrix.shape[0],1))),axis=1)
-    
+                                            np.zeros((dictionary.matrix.shape[0], 1))), axis=1)
+
     t_interv = [int(best_atom.time_position - dictionary.get_pad()),
                 int(best_atom.time_position + best_atom.length)]
     t_interv[0] = max(t_interv[0], 0)
-    t_interv[1] = min(t_interv[1], current_approx.length -dictionary.get_pad() )
+    t_interv[1] = min(t_interv[1], current_approx.length -
+                      dictionary.get_pad())
     # fill the new column with new waveform
     dictionary.matrix[best_atom.time_position:
-                      best_atom.time_position+
-                      best_atom.length,-1] = _PyServer.get_waveform(best_atom.length,
-                                                                    best_atom.freq_bin)
+                      best_atom.time_position +
+                      best_atom.length, -1] = _PyServer.get_waveform(best_atom.length,
+                                                                     best_atom.freq_bin)
 
-    
-    subdico = dictionary.matrix[:,0:it_number+1]        
+    subdico = dictionary.matrix[:, 0:it_number + 1]
 
     # recompute the weights by least squares on the residual signal
 #    print subdico.shape, res_signal.data.shape
@@ -859,7 +865,6 @@ def _omp_loop(dictionary, debug, silent_fail,
 
     # add atom to dictionary: but not the waveform, already taken care of
     current_approx.add(best_atom, noWf=True)
-
 
     # update the residual, locally
     res_signal.data = current_approx.original_signal.data - \
@@ -883,17 +888,20 @@ def _omp_loop(dictionary, debug, silent_fail,
     return best_atom
 
 
-def _initialize_fftw(dictionary):
+def _initialize_fftw(dictionary, max_thread_num=None):
+    if max_thread_num is not None:
+        max_thread_flag = max_thread_num
+    else:
+        max_thread_flag = -1
     if parproj.initialize_plans(np.array(dictionary.sizes),
-                                np.array([2] * len(dictionary.sizes))) != 1:
+                                np.array([2] * len(dictionary.sizes)),
+                                max_thread_flag) != 1:
         raise ValueError("Something failed during FFTW initialization step ")
 
 
 def _clean_fftw():
     if parproj.clean_plans() != 1:
         raise ValueError("Something failed during FFTW cleaning stage ")
-
-
 
 
 def mp_joint(orig_sig_list,

@@ -17,19 +17,13 @@ The main class is :class:`Approx`
 import math
 import numpy as np
 
-import matplotlib.patches as mpatches
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.collections import PatchCollection
-import matplotlib.colors as cc
-
 from PyMP import signals
 from PyMP import log
 from PyMP.base import BaseAtom
 from PyMP.tools.mdct import imdct
 
 
-#global _Logger
+# global _Logger
 _Logger = log.Log('Approx')
 
 
@@ -113,14 +107,15 @@ class Approx:
         if self.frame_num > 0:
             self.frame_len = self.length / self.frame_num
 
-        # We need to create a signal that has the same nature as the one provided
-        if originalSignal is not None:            
+        # We need to create a signal that has the same nature as the one
+        # provided
+        if originalSignal is not None:
             self.recomposed_signal = originalSignal.__class__(
                 np.zeros(originalSignal.data.shape), self.fs)
         else:
             self.recomposed_signal = signals.Signal(
                 np.zeros(self.length), self.fs)
-        
+
         self.recomposed_signal.is_normalized = isNormalized
 
     def synthesize(self, method=0, forceReSynthesis=True):
@@ -208,25 +203,25 @@ class Approx:
 
         return output_approx
 
-    def __repr__(self):        
+    def __repr__(self):
         return 'Approx Object: %d atoms, SRR of %2.2f dB' % (self.atom_number, self.srr)
 
     def get_neighbors(self, atom):
         """ returns the atom neighbor indexes """
         t_interv = [atom.time_position - self.dico.get_pad(),
-                atom.time_position + atom.length]
-        
+                    atom.time_position + atom.length]
+
         return [i for i in range(self.atom_number) if
-                (self.atoms[i].time_position >=  t_interv[0]) and
-                (self.atoms[i].time_position <  t_interv[1]) and
-                (self.atoms[i].time_position + self.atoms[i].length >  atom.time_position)]
+                (self.atoms[i].time_position >= t_interv[0]) and
+                (self.atoms[i].time_position < t_interv[1]) and
+                (self.atoms[i].time_position + self.atoms[i].length > atom.time_position)]
 
     # Filter the atom list by the given criterion
     def filter_atoms(self, scale=0, time_interv=None, freq_interv=None):
         '''Filter the atom list by the given criterion, returns an new approximant object'''
         filteredApprox = Approx(self.dico, [], self.original_signal,
                                 self.length, self.fs)
-        
+
         # TODO: change to a list sorting: will be much faster
         for atom in self.atoms:
             doAppend = True
@@ -240,7 +235,7 @@ class Approx:
                 doAppend &= False
 
             if(time_interv != None):
-                if (time_interv[0] < atom.time_position) and (atom.time_position<= time_interv[1]):
+                if (time_interv[0] < atom.time_position) and (atom.time_position <= time_interv[1]):
                     doAppend = True
                 else:
                     doAppend = False
@@ -280,19 +275,19 @@ class Approx:
         # otherwise recompute ?
 
     #
-    
+
     def update(self, atom_indexes, new_weights, update_rec=False):
-        """ update atom values (e.g. after projection) and the 
-            recomposed_signal instance 
-            
+        """ update atom values (e.g. after projection) and the
+            recomposed_signal instance
+
             """
         if update_rec:
             for i in range(len(atom_indexes)):
-                ind  = atom_indexes[i]
+                ind = atom_indexes[i]
                 atom = self.atoms[ind]
                 self.remove(atom, position=ind)
                 atom.mdct_value = new_weights[i]
-                            
+
                 self.add(atom)
         else:
             for i in range(len(atom_indexes)):
@@ -330,7 +325,7 @@ class Approx:
 
         if residual is None:
             resEnergy = np.sum((self.original_signal.data -
-                             self.recomposed_signal.data) ** 2)
+                                self.recomposed_signal.data) ** 2)
         else:
             resEnergy = residual.energy
 # resEnergy = sum((self.original_signal.dataVec -
@@ -374,6 +369,11 @@ class Approx:
             - logF        : frequency axis in logarithmic scale
 
         """
+        import matplotlib.patches as mpatches
+        import matplotlib
+        import matplotlib.pyplot as plt
+        from matplotlib.collections import PatchCollection
+        import matplotlib.colors as cc
 #        plt.figure()
         if french:
             labx = "Temps (s)"
@@ -526,8 +526,10 @@ class Approx:
             plt.colorbar(p)
 
     def plot_3d(self, itStep, fig=None):
-        """ Creates a 3D Time-Frequency plot with various steps NOT WORKING below 0.99
+        """ Creates a 3D Time-Frequency plot with various steps
+        NOT WORKING below 0.99
         EXPERIMENTAL"""
+        import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
         if fig is None:
             fig = plt.figure()
@@ -552,10 +554,9 @@ class Approx:
         import cPickle
 
         output = open(dumpFilePath, 'wb')
-        _Logger.info("Dumping approx to  " + dumpFilePath )
+        _Logger.info("Dumping approx to  " + dumpFilePath)
         cPickle.dump(self, output, protocol=0)
         _Logger.info("Done ")
-
 
     def to_dico(self):
         """ Returns the approximant as a sparse dictionary object ,
@@ -647,7 +648,7 @@ class Approx:
 
 
 def load(inputFilePath):
-    import cPickle    
+    import cPickle
     file_obj = open(inputFilePath, 'r')
     return cPickle.load(file_obj)
 

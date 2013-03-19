@@ -3,8 +3,7 @@ Created on Sep 13, 2011
 
 @author: moussall
 '''
-import matplotlib
-matplotlib.use('Agg')  # to avoid display while testing
+
 
 import os.path as op
 import matplotlib.pyplot as plt
@@ -489,6 +488,8 @@ class perfTestsNL(unittest.TestCase):
 
 if __name__ == "__main__":
     # import syssys.argv = ['', 'Test.testName']
+    import matplotlib
+    matplotlib.use('Agg')  # to avoid display while testing
     suite = unittest.TestSuite()
 
     suite.addTest(BlocksTest())

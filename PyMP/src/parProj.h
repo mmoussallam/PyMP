@@ -51,7 +51,7 @@
  void sayHelloBastard(void);
 
 /* Initializing FFTW variables and ThreadPools */
- int initialize(int * sizes , int size_number , int *  tolerances);
+ int initialize(int * sizes , int size_number , int *  tolerances, int max_thread_num);
 
 /* Cleaning FFTW variables and ThreadPools */
  int clean(void);

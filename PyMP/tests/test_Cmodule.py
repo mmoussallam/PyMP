@@ -16,8 +16,7 @@
 
 
 """
-import matplotlib
-matplotlib.use('Agg')  # to avoid display while testing
+
 
 import os
 import sys
@@ -42,7 +41,7 @@ import os.path as op
 import numpy as np
 from scipy.stats import gmean
 from cmath import exp, pi
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
