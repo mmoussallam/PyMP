@@ -1289,11 +1289,11 @@ if __name__ == '__main__':
 
 #    suite.addTest(MPlongTest())
 #    suite.addTest(MPTest())
-    suite.addTest(OMPTest())
+#    suite.addTest(OMPTest())
     suite.addTest(GreedyTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
-    suite.addTest(LOMPTest())
+#    suite.addTest(LOMPTest())
 #    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
