@@ -6,8 +6,9 @@ testing normal behavior of most MP functions and classes
 M.Moussallam
 """
 import matplotlib.pyplot as plt
-from PyMP.mdct.block import Block
 plt.switch_backend('Agg')  # to avoid display while testing
+
+from PyMP.mdct.block import Block
 
 import os
 import os.path as op
