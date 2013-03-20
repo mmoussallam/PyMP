@@ -8,7 +8,7 @@ Created on Sep 13, 2011
 '''
 import unittest
 
-
+import matplotlib.pyplot as plt
 import numpy as np
 import os.path as op
 from PyMP import Signal, mp

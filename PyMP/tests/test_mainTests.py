@@ -581,21 +581,45 @@ class GreedyTest(unittest.TestCase):
         plt.plot(10.0 * np.log10(dec3 / dec3[0]))
         plt.legend(('MP', 'LocGP', 'OMP'))
 
+        self.optimThreadNumTest()
 
-        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
-                                         normalize=True, mono=True)
-        t = time.time()
-        app_1, dec1 = mp.greedy(signal_original, dico, 1000,
-                                10000, debug=0, pad=True, update='mp', max_thread_num=2)
-        print "2 threads took %1.6f " %(time.time() - t)
-        t = time.time()
-        app_1, dec1 = mp.greedy(signal_original, dico, 1000,
-                                10000, debug=0, pad=True,
-                                update='mp', max_thread_num=1)
-        print "Only One thread took %1.6f " % (time.time() - t)
 
 #        plt.show()
 
+    def optimThreadNumTest(self):
+        """ depending on the machine and the problem size
+            a different number of threads might be optimal """ 
+        
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+        import os
+        import multiprocessing
+
+        n_thread_max = multiprocessing.cpu_count()        
+        print "Testing a maximum of %d threads"%n_thread_max
+        
+        print "Using 8 Long Scales on real audio signal"
+        dico = mp_mdct_dico.Dico([2**j for j in range(7,15)], debug_level=0)        
+        for n_thread in range(n_thread_max,0,-1):
+            t = time.time()        
+            
+            app_1, dec1 = mp.greedy(signal_original, dico, 1000,
+                                    1000, debug=0, pad=True,
+                                    update='mp',max_thread_num=n_thread)        
+            print "%d thread(s) took %1.6f s" %(n_thread, time.time() - t)
+
+#        print "Using 2 short Scales on synthetic short time serie"
+#        os.environ['OMP_NUM_THREADS'] = str(n_thread_max)
+#        signal_original = signals.Signal(np.random.rand(2048,),
+#                                         normalize=True, mono=True)
+#        dico = mp_mdct_dico.Dico([16,64], debug_level=0)        
+#        for n_thread in range(n_thread_max,0,-1):
+#            t = time.time()        
+#            
+#            app_1, dec1 = mp.greedy(signal_original, dico, 1000,
+#                                    1000, debug=0, pad=True,
+#                                    update='mp',max_thread_num=n_thread)        
+#            print "%d thread(s) took %1.6f " %(n_thread, time.time() - t)
 
 class OMPTest(unittest.TestCase):
     def runTest(self):
