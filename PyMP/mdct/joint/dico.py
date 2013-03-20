@@ -221,7 +221,8 @@ class RandomSetDico(SetDico, random_dico.SequenceDico):
     ending_touched_index = []
     TsSequence = None
 
-    def __init__(self, sizes, useC=True, selectNature='sum', tol=None, nonLinear=False, params=None):
+    def __init__(self, sizes, useC=True, selectNature='sum',
+                 tol=None, nonLinear=False, params=None, seed=None):
         " Create an set of dictionaries, with blocks and everything."
         self.use_c_optim = useC
         self.sizes = sizes
@@ -229,6 +230,7 @@ class RandomSetDico(SetDico, random_dico.SequenceDico):
         self.projections = None
         self.nature = selectNature
         self.isNL = nonLinear
+        self.seed = seed
         if tol is not None:
             self.tolerances = tol
         else:
@@ -269,7 +271,8 @@ class RandomSetDico(SetDico, random_dico.SequenceDico):
                                                           residualSignalList,
                                                           useC=self.use_c_optim,
                                                           nature=self.nature,
-                                                          tolerance=tolerance))
+                                                          tolerance=tolerance,
+                                                          seed=self.seed))
 
         self.starting_touched_index = [0] * len(residualSignalList)
         self.ending_touched_index = [-1] * len(residualSignalList)

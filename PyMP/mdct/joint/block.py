@@ -680,7 +680,10 @@ class SetLOBlock(mdct_block.Block):
 class RandomSetBlock(SetBlock):
     """ Classic MDCT block useful for handling Sets Only the update routine is changed: no need to
         look for the max since it will be done later in the dictionary
-
+        
+        Here the joinly decomposed signals are exclusively in the form of lists
+        because they can have slightly varying lengths...
+        
         NO ATOM Local Optimization!! But RSSMP
         """
 
@@ -704,13 +707,15 @@ class RandomSetBlock(SetBlock):
     # of the signals
     def __init__(
         self, length=0, resSignalList=None, frameLen=0, useC=True,
-            debug_level=None, nature='sum', tolerance=None):
+            debug_level=None, nature='sum', tolerance=None, seed=None):
         if debug_level is not None:
             _Logger.set_level(debug_level)
 
         self.scale = length
         self.residualSignalList = resSignalList
-
+        self.seed = seed        
+        np.random.seed(self.seed)
+        
         if frameLen == 0:
             self.frame_len = length / 2
         else:
@@ -879,7 +884,8 @@ class RandomSetBlock(SetBlock):
             offset = self.scale / 4
             Atom = mdct_atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - offset, 0), self.max_bin_idx, self.residualSignalList[0].fs)
             Atom.frame = self.max_frame_idx
-            Atom.synthesize_ifft(1)
+            Atom.synthesize(1.0)
+#            Atom.synthesize_ifft(1)
 #            Atom.waveform /= sum(Atom.waveform**2)
 
             Atom.proj_score = self.projs_matrix[self.maxIdx, sigIdx]
