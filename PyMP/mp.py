@@ -54,33 +54,74 @@ def mp(orig_signal,
         debug_iteration=-1,
         unpad=False,
         max_thread_num=None):
-    """Common Matching Pursuit Loop Options are detailed below:
+    """Matching Pursuit Decomposition    
+
+    This is the original, plain Matching Pursuit Algorithm
 
     Parameters
     ----------
-     `orig_signal`:  the original signal (as a :class:`.Signal` object) :math:`x`
-                     to decompose
-
-     `dictionary`:   the dictionary (as a :class:`.Dico` object) :math:`\Phi` on
-                     which to decompose :math:x
-
-     `target_srr`:   a target Signal to Residual Ratio
-
-     `max_it_num`:   maximum number of iteration allowed
-
+    orig_signal :  Signal
+        the original signal (as a :class:`.Signal` object)  to decompose
+    dictionary : BaseDico
+        the dictionary (as a :class:`.Dico` object)  on which to decompose `orig_signal`
+    target_srr : float
+        a target Signal to Residual Ratio (SRR)
+    max_it_num : int
+        the maximum number of iteration allowed
+    debug : int, optional
+        requested debug level, default is 0
+    pad : bool, optional
+        whether to pad the signal's edges with zeroes
+            
+        
     Returns
     -------
-     `approx`:  A :class:`.Approx` object encapsulating the approximant
+    approx : Approx
+        A :class:`.Approx` object encapsulating the approximant
+    decay : list
+        A list of residual's energy across iterations
 
-     `decay`:   A list of residual's energy across iterations
+    Other Parameters
+    ----------------
+    clean : bool, optional
+        whether perform on the fly cleaning of atom's waveforms to 
+        limit memory consumption
+    silent_fail : bool, optional
+        whether to allow energy increase when subtracting atoms
+    debug_iteration : int, optional
+        specify a specific iteration number at which the debug level 
+        should be raised to maximum
+    unpad : bool, optional
+        whether to remove added edges zeroes after decomposition
+    max_thread_num : int, optional
+        the maximum number of threads allocated
 
-    Example::
+    Raises
+    ------
+    ValueError
+        If a selected atom causes the residual signal's energy to increase, see :func:`.Signal.subtract`
 
-        >>> approx, decay = mp.mp(x, D, 10, 1000)
-
+    Examples
+    --------
     For decomposing the signal `x` on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
     x must be a :class:`.Signal` and D a :class:`.Dico` object
+    
+    >>> approx, decay = mp.mp(x, D, 10, 1000)
 
+    
+
+    See Also
+    --------
+    greedy : a decomposition method where the update strategy (MP, OMP, GP or CMP)
+        can be set as a parameter
+
+    Notes
+    -----
+    This is the original Matching Pursuit Algorithm transcribed to 
+    work with PyMP objects encapsulating signals :math:`x` and dictionaries :math:`\Phi`
+    It builds an approximant :math:`\hat{x}` of :math:`x`
+    as a linear combination of atoms from :math:`\Phi`
+    
     """
 
     # back compatibility - use debug levels now
@@ -384,30 +425,62 @@ def greedy(orig_signal,
 
     Parameters
     ----------
-     `orig_signal`:  the original signal (as a :class:`.Signal` object) :math:`x`
-                     to decompose
-
-     `dictionary`:   the dictionary (as a :class:`.Dico` object) :math:`\Phi` on
-                     which to decompose :math:x
-
-     `target_srr`:   a target Signal to Residual Ratio
-
-     `max_it_num`:   maximum number of iteration allowed
-
-     `update`    :   mp for MP, orthogonal for OMP, gradient for GP
-
+    orig_signal :  Signal
+        the original signal (as a :class:`.Signal` object)  to decompose
+    dictionary : BaseDico
+        the dictionary (as a :class:`.Dico` object)  on which to decompose `orig_signal`
+    target_srr : float
+        a target Signal to Residual Ratio (SRR)
+    max_it_num : int
+        the maximum number of iteration allowed
+    debug : int, optional
+        requested debug level, default is 0
+    pad : bool, optional
+        whether to pad the signal's edges with zeroes
+    update : {'mp', 'omp', 'locomp', 'locgp'}, optional
+        choice of update loop to consider
+            
+        
     Returns
     -------
-     `approx`:  A :class:`.Approx` object encapsulating the approximant
+    approx : Approx
+        A :class:`.Approx` object encapsulating the approximant
+    decay : list
+        A list of residual's energy across iterations
 
-     `decay`:   A list of residual's energy across iterations
+    Other Parameters
+    ----------------
+    clean : bool, optional
+        whether perform on the fly cleaning of atom's waveforms to 
+        limit memory consumption
+    silent_fail : bool, optional
+        whether to allow energy increase when subtracting atoms
+    debug_iteration : int, optional
+        specify a specific iteration number at which the debug level 
+        should be raised to maximum
+    unpad : bool, optional
+        whether to remove added edges zeroes after decomposition
+    max_thread_num : int, optional
+        the maximum number of threads allocated
 
-    Example::
+    Raises
+    ------
+    ValueError
+        If a selected atom causes the residual signal's energy to increase, see :func:`.Signal.subtract`
 
-        >>> approx, decay = mp.greedy(x, D, 10, 1000, 'mp')
 
+    Examples
+    --------
     For decomposing the signal `x` on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
     x must be a :class:`.Signal` and D a :class:`.Dico` object
+    
+    >>> approx, decay = mp.greedy(x, D, 10, 1000, 'mp')
+
+    
+
+    See Also
+    --------
+    mp : a decomposition method with plain mp only        
 
     """
 

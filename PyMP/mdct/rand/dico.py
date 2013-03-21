@@ -55,7 +55,7 @@ class SequenceDico(Dico):
         self.seed = seed
         
         
-    def initialize(self, residualSignal):
+    def initialize(self, residual_signal):
         self.blocks = []
         self.best_current_block = None
         self.starting_touched_index = 0
@@ -63,7 +63,7 @@ class SequenceDico(Dico):
 
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
-            self.blocks.append(block.SequenceBlock(mdctSize, residualSignal, randomType=self.
+            self.blocks.append(block.SequenceBlock(mdctSize, residual_signal, randomType=self.
                 sequence_type, nbSim=self.nb_consec_sim, windowType=self.windowType, seed=self.seed))
 
     def compute_touched_zone(self, previousBestAtom):
@@ -135,7 +135,7 @@ class StochasticDico(Dico):
         self.sigma = sigma
         
         
-    def initialize(self, residualSignal):
+    def initialize(self, residual_signal):
         self.blocks = []
         self.best_current_block = None
         self.starting_touched_index = 0
@@ -143,7 +143,7 @@ class StochasticDico(Dico):
 
         for mdctSize in self.sizes:
             # check whether this block should optimize time localization or not
-            self.blocks.append(block.StochasticBlock(mdctSize, residualSignal,
+            self.blocks.append(block.StochasticBlock(mdctSize, residual_signal,
                                                      windowType=self.windowType,
                                                      seed=self.seed,
                                                      sigma = self.sigma))

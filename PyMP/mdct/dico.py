@@ -81,7 +81,7 @@ class Dico(BaseDico):
                 return i
         return None
 
-    def initialize(self, residualSignal):
+    def initialize(self, residual_signal):
         ''' Create the collection of blocks specified by the MDCT sizes '''
         self.blocks = []
         self.best_current_block = None
@@ -89,7 +89,7 @@ class Dico(BaseDico):
         self.ending_touched_index = -1
         for mdctSize in self.sizes:
             self.blocks.append(block.Block(mdctSize,
-                                           residualSignal, useC=self.use_c_optim, forceHF=self.forceHF))
+                                           residual_signal, useC=self.use_c_optim, forceHF=self.forceHF))
 
     def init_proj_matrix(self, itNumbers):
         """ method used for monitoring the projection along iterations
@@ -228,7 +228,7 @@ class LODico(Dico):
         else:
             self.HRsizes = sizes  # default behavior: compute high resolution for all scales
 
-    def initialize(self, residualSignal):
+    def initialize(self, residual_signal):
         self.blocks = []
         self.best_current_block = None
         self.starting_touched_index = 0
@@ -237,10 +237,10 @@ class LODico(Dico):
             # check whether this block should optimize time localization or not
             if mdctSize in self.HRsizes:
                 self.blocks.append(block.LOBlock(mdctSize,
-                                                 residualSignal, useC=self.use_c_optim))
+                                                 residual_signal, useC=self.use_c_optim))
             else:
                 self.blocks.append(
-                    block.Block(mdctSize, residualSignal, useC=self.use_c_optim))
+                    block.Block(mdctSize, residual_signal, useC=self.use_c_optim))
 
     def get_projections(self, indexes, sigLength):
         """ additional method provided for Gradient Pursuits
@@ -271,13 +271,13 @@ class FullDico(Dico):
     def __init__(self, sizes=[]):
         self.sizes = sizes
 
-    def initialize(self, residualSignal):
+    def initialize(self, residual_signal):
         self.blocks = []
         self.best_current_block = None
         self.starting_touched_index = 0
         self.ending_touched_index = -1
         for mdctSize in self.sizes:
-            self.blocks.append(block.FullBlock(mdctSize, residualSignal))
+            self.blocks.append(block.FullBlock(mdctSize, residual_signal))
 
     def init_proj_matrix(self, itNumbers):
         """ method used for monitoring the projection along iterations"""

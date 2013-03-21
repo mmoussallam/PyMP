@@ -43,7 +43,8 @@ class Signal(object):
     Longer signals should not be loaded in memory. the `LongSignal` class allows
     to define this kind of signal, and slice it in frames overlapping or not.
 
-    Attributes:
+    Attributes
+    ----------
 
         `channel_num`:The number of channel
 

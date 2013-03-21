@@ -31,7 +31,7 @@ extensions = ['sphinx.ext.autodoc','sphinx.ext.mathjax',
           'matplotlib.sphinxext.mathmpl',
           'matplotlib.sphinxext.only_directives',
           'matplotlib.sphinxext.plot_directive',                    
-          'sphinx.ext.doctest','sphinx_pyreverse']
+          'sphinx.ext.doctest','sphinx_pyreverse','numpydoc']
 
 
 #jsmath_path = '.';

@@ -126,7 +126,24 @@ class WaveletAtomTest(unittest.TestCase):
         plt.plot(atom.x, atom.waveform)
 #        plt.show()
 
+class WaveletPursuitTest(unittest.TestCase):
+    def runTest(self):
+        signal_original = signals.Signal(np.random.randn(512),
+                                         normalize=True, mono=True)
+        from PyMP.wavelet import dico as wavelet_dico
+        
+        wavelet_nature = 'db8'
+        levels = range(3,6)
+        dico = wavelet_dico.WaveletDico(sizes, nature, levels)
 
+        
+        n_atoms = 300
+        app_1, dec1 = mp.greedy(signal_original, dico, 100,
+                                n_atoms, debug=0, pad=True, update='mp')
+        
+        app_1.plot_tf()
+        
+        
 class DicoTest(unittest.TestCase):
     def runTest(self):
         # test dictionary class
@@ -1334,7 +1351,7 @@ if __name__ == '__main__':
 #    suite.addTest(MPlongTest())
 #    suite.addTest(MPTest())
 #    suite.addTest(OMPTest())
-    suite.addTest(GreedyTest())
+#    suite.addTest(GreedyTest())
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(LOMPTest())
@@ -1344,7 +1361,8 @@ if __name__ == '__main__':
 #    suite.addTest(BlockTest())
 #    suite.addTest(WinServerTest())
 #    suite.addTest(Signaltest())
-#    suite.addTest(WaveletAtomTest())
+    suite.addTest(WaveletAtomTest())
+    suite.addTest(WaveletPursuitTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
 

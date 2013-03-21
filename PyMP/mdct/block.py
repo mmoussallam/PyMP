@@ -43,7 +43,7 @@ import numpy as np
 
 from math import  floor
 from cmath import exp
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 from .. import win_server
 from .. import  log
@@ -360,6 +360,7 @@ class Block(BaseBlock):
 #        return waveform[L/2:-L/2]
 
     def plot_proj_matrix(self):
+        import matplotlib.pyplot as plt
         plt.figure()
 #        plt.subplot(211)
 #        plt.plot(self.best_score_tree)
@@ -369,6 +370,7 @@ class Block(BaseBlock):
                   + " p :" + str(self.max_frame_idx) + " , k: " + str(self.max_bin_idx))
 
     def im_proj_matrix(self):
+        import matplotlib.pyplot as plt
 #        plt.figure()
         plt.imshow(np.abs(self.projs_matrix.reshape((self.frame_num, self.frame_len))),
                    aspect='auto',
@@ -610,6 +612,7 @@ class LOBlock(Block):
         return Atom
 
     def plot_proj_matrix(self):
+        import matplotlib.pyplot as plt
         maxFrameIdx = floor(self.maxIdx / (0.5 * self.scale))
         maxBinIdx = self.maxIdx - maxFrameIdx * (0.5 * self.scale)
         plt.figure()
@@ -774,7 +777,7 @@ class FullBlock(Block):
 
     def plot_proj_matrix(self):
         ''' For debug purposes only... '''
-
+        import matplotlib.pyplot as plt
         plt.figure()
 #        plt.subplot(211)
         plt.plot(abs(self.projs_matrix[self.maxLidx + self.scale / 4]))

@@ -4,7 +4,7 @@ MP routines Documentation
 Main Module providing MP methods
 ********************************
 	.. automodule:: PyMP.mp
-		:members: mp, locomp
+		:members: mp, greedy
 		:undoc-members:
 
 Alternative: Command Line utility

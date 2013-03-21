@@ -15,8 +15,7 @@ class WaveAtom(BaseAtom):
 
     nature = 'db8'
     level = 0
-    frame = 0
-    mdct_value = 0.0
+    frame = 0    
     time_position = 0
 
     # for time-shift invariant atoms
