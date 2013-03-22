@@ -16,7 +16,6 @@ Module log
 
 import logging
 import traceback
-import matplotlib.pyplot as plt
 
 Levels = {-1: logging.NOTSET,
           0: logging.ERROR,
@@ -77,6 +76,7 @@ class Log():
             self.logger.info("created log handler for function : " + self.name)
 
         if self.imode:
+            import matplotlib.pyplot as plt
             plt.ion()
             self.logger.info("Set interactive mode ON for pyplot")
 

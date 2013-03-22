@@ -20,9 +20,7 @@ Greedy algorithms using the pymp objects
 '''
 import math
 import numpy as np
-import scipy.sparse
 # these imports are for debugging purposes
-import matplotlib.pyplot as plt
 import os.path
 
 # PyMP object imports
@@ -525,8 +523,6 @@ def greedy(orig_signal,
     if update not in ['mp', 'locomp', 'locgp', 'omp']:
         raise ValueError('Unrecognized update rule')
 
-    loop_str = '_%s_loop' % update
-
     # Decomposition loop: stopping criteria is either SNR or iteration number
     while (current_srr < target_srr) & (it_number < max_it_num):
 
@@ -581,6 +577,7 @@ def _itprint_(it_num, best_atom):
 
 
 def _plot_proj(best_atom, residual_sig):
+    import matplotlib.pyplot as plt
     plt.figure()
     plt.plot(residual_sig.data[best_atom.
                                time_position: best_atom.time_position + best_atom.length])
@@ -617,6 +614,7 @@ def _mp_loop(dictionary, debug, silent_fail,
             print "Atom Selected: ", best_atom
 
             if debug > 1:
+                import matplotlib.pyplot as plt
                 plt.figure()
                 plt.plot(res_signal.data[best_atom.time_position:
                          best_atom.time_position + best_atom.length])

@@ -6,6 +6,8 @@ Created on Sep 13, 2011
 
 
 import os.path as op
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import cProfile
