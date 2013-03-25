@@ -7,13 +7,6 @@
 # M. Moussallam                                             Mon Aug 16 2010  */
 # -------------------------------------------------------------------------- */
 
-'''
-Module approx
-=============
-
-The main class is :class:`Approx`
-
-'''
 import math
 import numpy as np
 
@@ -29,50 +22,27 @@ _Logger = log.Log('Approx')
 
 class Approx:
     """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm
+    
+    Attributes
+    ----------
+    *dico* : :class:`.BaseDico`
+        the dictionary (as a :class:`.BaseDico` object) from which it has been constructed
+    *atoms* : list
+        a list of :class:`.BaseAtom` objets
+    *atom_number* : int
+        the length of the atoms list
+    *srr* : float
+        the Signal to Residual Ratio achieved by the approximation
+    *original_signal* : :class:`.Signal`
+        a :class:`.Signal` object that is the original signal
+    *length* : int
+        Length in samples of the time signal, same as the one of `original_signal`
+    *recomposed_signal* :  :class:`.Signal`
+        a :class:`.Signal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
+     
+     """
 
-    This object handles MP constructed approximations
-    The approx object is quite similarr in nature to the MPTK [1] Book object but allows
-    further manipulations in python such as plotting the time frequency distribution of atoms
-
-    The object has following attributes:
-    Attributes:
-
-        * `dico`     : the dictionary (as a :class:`.BaseDico` object) from which it has been constructed
-
-        * `atoms`    : a list of :class:`.Atom` objets
-
-        * `atom_number`    : the length of the atoms list
-
-        * `srr`           : the Signal to Residual Ratio achieved by the approximation
-
-        * `original_signal`    : a :class:`.Signal` object that is the original signal
-
-        * `length`        : Length in samples of the time signal, same as the one of `original_signal`
-
-        * `recomposed_signal`   : a :class:`.Signal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
-
-
-    An approximant can be manipulated in various ways. Obviously atoms can be edited by several methods among which
-    :func:`add` ,  :func:`remove`  and :func:`filterAtom`
-
-    Measure of distorsion can be estimated by the method :func:`compute_srr`
-
-    Approx objets can be exported in various formats using
-    :func:`to_dico` ,
-    :func:`to_sparse_array` ,
-    :func:`to_array` ,
-    :func:`write_to_xml` ,
-    :func:`dumpToDisk` ,
-
-    and reversely can be recovered from these formats
-
-    A useful plotting routine, :func:`plot_tf` is provided to visualize atom distribution in the time frequency plane
-    Also an experimental 3D plot taking the atom iteration number as a depth parameter
-    :func:`plot_3d`
-
-
-    """
-
+    # Attributes
     dico = []
     atoms = []
     atom_number = 0
@@ -84,20 +54,27 @@ class Approx:
     recomposed_signal = None
     fs = 0
 
-    def __init__(self, dico=None, atoms=[], originalSignal=None, length=0,
+    def __init__(self, dico=None, atoms=[], original_signal=None, length=0,
                  Fs=0, debug_level=None):
-        """ The approx class encapsulate the approximation that is iteratively
-             being constructed by a greed algorithm """
+        """ 
+        Parameters
+        ----------
+        dico :  :class:`.BaseDico`
+            the dictionary (as a :class:`.BaseDico` object) from which it has been constructed
+        *atoms* : list
+            a list of :class:`.BaseAtom` objets
+                         
+             """
         if debug_level is not None:
             _Logger.set_level(debug_level)
 
         self.dico = dico
         self.atoms = atoms
-        self.original_signal = originalSignal
-        if originalSignal != None:
-            self.length = originalSignal.length
-            self.fs = originalSignal.fs
-            isNormalized = originalSignal.is_normalized
+        self.original_signal = original_signal
+        if original_signal != None:
+            self.length = original_signal.length
+            self.fs = original_signal.fs
+            isNormalized = original_signal.is_normalized
         else:
             self.length = length
             self.fs = Fs
@@ -109,9 +86,9 @@ class Approx:
 
         # We need to create a signal that has the same nature as the one
         # provided
-        if originalSignal is not None:
-            self.recomposed_signal = originalSignal.__class__(
-                np.zeros(originalSignal.data.shape), self.fs)
+        if original_signal is not None:
+            self.recomposed_signal = original_signal.__class__(
+                np.zeros(original_signal.data.shape), self.fs)
         else:
             self.recomposed_signal = signals.Signal(
                 np.zeros(self.length), self.fs)

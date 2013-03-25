@@ -7,20 +7,6 @@
 # M. Moussallam                                             Mon Aug 16 2010  */
 # -------------------------------------------------------------------------- */
 #
-'''
-Module signals
-==============
-
-The main class is :class:`Signal`, it can be instantiated from a numpy array
-using the main constructor (multichannel is allowed).
-
-It can also be created from a file on the disk using the path as argument
-in the constructor
-
-Longer Signals are handled with :class:`LongSignal` objects.
-
-'''
-
 
 import math
 import wave
@@ -45,42 +31,31 @@ class Signal(object):
 
     Attributes
     ----------
+    *data* : array
+        a numpy array containing the signal data
+    *channel_num* : int
+        The number of channel
+    *length* : int
+        The length in samples (integer) of the signal (total dimension of the numpy array is channel_num x length)
+    *fs* : int
+        The sampling frequency
+    *location* :  str , optional
+        Where the original file is located on the disk
+    *sample_width* : int
+        Various bit format exist for wav file, this allows to handle it
+    *is_normalized* : bool
+        A boolean telling is the numpy array has been normalized (which here means its values are between -1 and 1)
+    *energy* : float
+        The energy (:math:`\sum_i x[i]^2`) of the array
+    
 
-        `channel_num`:The number of channel
 
-        `length`:                The length in samples (integer) of the signal (total dimension of the numpy array is channel_num x length)
-
-        `samplingFrequency`:     The sampling frequency
-
-        `location`:              (optional) Where the original file is located on the disk
-
-        `sample_width` :          Various bit format exist for wav file, this allows to handle it
-
-        `is_normalized` :         A boolean telling is the numpy array has been normalized (which here means its values are between -1 and 1)
-
-        `energy`:                The energy (:math:`\sum_i x[i]^2`) of the array
-
-    Standard methods to manipulate the signal are:
-
-        :func:`normalize` : makes sure all values of the array are between -1 and 1
-
-        :func:`plot`: Plot using matlplotlib
-
-        :func:`crop` : crop
-
-        :func:`pad`:  with zeroes
-
-        :func:`copy`:
-
-        :func:`downsample`:
-
+    Notes
+    -----
     For use in the PyMP framework, other methods need to be defined:
-
-        :func:`add`:             adds an atom waveform to the current signal and updates energy
-
-        :func:`subtract`:        the opposite operation
-
-    Output Methods: :func:`write`
+        :func:`add` :             adds an atom waveform to the current signal and updates energy
+        :func:`subtract` :        the opposite operation
+    
 
     """
 
@@ -96,7 +71,21 @@ class Signal(object):
 
     # Constructor
     def __init__(self, data=[], Fs=0, normalize=False, mono=False, debug_level=None):
-        ''' Simple constructor from a numpy array (data) or a string '''
+        """ Simple constructor from a numpy array (data) or a string 
+    parameters
+    ----------
+    data : array
+        a numpy array containing the signal data
+    Fs :  int
+        the sampling frequency
+    normalize : bool, optionnal
+        whether to normalize the signal (e.g. max will be 1)
+    mono :  bool, optionnal
+        keep only the first channel
+    
+    
+
+        """
 
         if isinstance(data, str):
             self.location = data

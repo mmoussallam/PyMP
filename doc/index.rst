@@ -8,15 +8,15 @@ PyMP's documentation!
 
 .. toctree::
    :maxdepth: 2
-
+   
    doc
+   
    example
    example_coder
    example_objects
 
    MP.rst
    classes.rst
-
    Mdct.rst
 
 Indices and tables
