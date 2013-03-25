@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Manipulating Signals &mdash; PyMP 0.9.2 documentation</title>
+    <title>Manipulating Signals &mdash; PyMP 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.2',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,8 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 0.9.2 documentation" href="index.html" />
+    <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="next" title="MP routines Documentation" href="MP.html" />
     <link rel="prev" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" /> 
   </head>
@@ -41,12 +40,15 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="MP.html" title="MP routines Documentation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -212,10 +214,6 @@ They handle the approximation of a signal on a given dictionary.</p>
 <p>Basically, an approximant is just a collection of atoms, this means we can enrich this object py adding some atoms to it.
 For example we can add 3 MDCT atoms of different scales, time and frequency localization to obtain an approximant
 as in the following example:</p>
-<p>(<a class="reference external" href="./pyplots/approx_ex1.py">Source code</a>, <a class="reference external" href="./pyplots/approx_ex1.png">png</a>, <a class="reference external" href="./pyplots/approx_ex1.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/approx_ex1.pdf">pdf</a>)</p>
-<div class="figure">
-<img alt="_images/approx_ex1.png" src="_images/approx_ex1.png" />
-</div>
 <p>This example use the <a class="reference internal" href="Mdct.html#PyMP.mdct.atom.Atom" title="PyMP.mdct.atom.Atom"><tt class="xref py py-class docutils literal"><span class="pre">Atom</span></tt></a> objects. The long atom (2048 samples or 256 ms at a sampling rate of 8000 Hz) is built using the command:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct.atom</span> <span class="kn">import</span> <span class="n">Atom</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">atom_long</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">(</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -283,12 +281,15 @@ using the Signal to Residual Ratio (SRR):</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="MP.html" title="MP routines Documentation"
              >next</a> |</li>
         <li class="right" >
           <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

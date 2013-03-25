@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Union of MDCT basis Classes documentation : &mdash; PyMP 0.9.2 documentation</title>
+    <title>Union of MDCT basis Classes documentation : &mdash; PyMP 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.2',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,8 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 0.9.2 documentation" href="index.html" />
+    <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="prev" title="Classes Package Documentation:" href="classes.html" /> 
   </head>
   <body>
@@ -40,9 +39,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="classes.html" title="Classes Package Documentation:"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -104,7 +106,12 @@
 <em class="property">class </em><tt class="descclassname">PyMP.mdct.atom.</tt><tt class="descname">Atom</tt><big>(</big><em>scale=0</em>, <em>amp=0</em>, <em>timePos=0</em>, <em>freqBin=0</em>, <em>Fs=0</em>, <em>mdctCoeff=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>MDCT atom class : implement real domain MDCT atoms of scale defined by the atom length</p>
 <p>An MDCT atom is defined for a length L, a frequency localization k and a frame parameter p by:</p>
-<img src="_images/mathmpl/math-f017b011b8.png" class="center" /><p>Additionnal attributes are:</p>
+<div class="math">
+\begin{equation*}
+\phi_{L,p,k}[n]=w_{L}[u]\sqrt{\frac{2}{L}} \cos [ \frac{\pi}{L} \left(u+ \frac{L+1}{2}\right) (k+\frac{1}{2}) ]
+\end{equation*}
+</div>
+<p>Additionnal attributes are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><cite>freq_bin</cite> : MDCT frequency bin index (default is 0)</li>
@@ -120,6 +127,8 @@
 <li><cite>proj_score</cite>: useful when atom is reprojected using say.. LOMP algorithm</li>
 </ul>
 </div></blockquote>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="PyMP.mdct.atom.Atom.copy">
 <tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom.copy" title="Permalink to this definition">¶</a></dt>
@@ -172,7 +181,7 @@ No further optimization of the selected atom is performed</p>
 </dd>
 </dl>
 </li>
-<li><p class="first"><tt class="xref py py-class docutils literal"><span class="pre">LOBlock</span></tt>   is a block that performs a local optimization of the time localization of the selected atom</p>
+<li><p class="first"><a class="reference internal" href="#PyMP.mdct.block.LOBlock" title="PyMP.mdct.block.LOBlock"><tt class="xref py py-class docutils literal"><span class="pre">LOBlock</span></tt></a>   is a block that performs a local optimization of the time localization of the selected atom</p>
 </li>
 <li><dl class="first docutils">
 <dt><tt class="xref py py-class docutils literal"><span class="pre">FullBlock</span></tt>  this block simulates a dictionary where atoms at all time localizations are available</dt>
@@ -199,6 +208,8 @@ Run the test file: parallelProjections/install_and_test.py in order to compile i
 and perform some basic execution tests</dd>
 </dl>
 </div></blockquote>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="PyMP.mdct.block.Block.compute_transform">
 <tt class="descname">compute_transform</tt><big>(</big><em>startingFrame=1</em>, <em>endFrame=-1</em><big>)</big><a class="headerlink" href="#PyMP.mdct.block.Block.compute_transform" title="Permalink to this definition">¶</a></dt>
@@ -239,12 +250,21 @@ New version uses the PyWinServer to serve waveforms</p>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="PyMP.mdct.block.LOBlock">
+<em class="property">class </em><tt class="descclassname">PyMP.mdct.block.</tt><tt class="descname">LOBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>tinvOptim=True</em>, <em>useC=True</em>, <em>forceHF=False</em><big>)</big><a class="headerlink" href="#PyMP.mdct.block.LOBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that inherit classic MDCT block class and deals with local optimization
+This is the main class for differentiating LOMP from MP</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+</dd></dl>
+
 </div>
 <span class="target" id="module-PyMP.mdct.dico"></span><div class="section" id="module-mdct-dico">
 <h3>Module mdct.dico<a class="headerlink" href="#module-mdct-dico" title="Permalink to this headline">¶</a></h3>
 <p>This class inherits from <a class="reference internal" href="classes.html#PyMP.base.BaseDico" title="PyMP.base.BaseDico"><tt class="xref py py-class docutils literal"><span class="pre">BaseDico</span></tt></a> and is used to represent and manipulate multiscale MDCT dictionaries.
 Dictionaries are mostly implemented as a collection of <tt class="xref py py-class docutils literal"><span class="pre">pymp_MDCTBlock</span></tt> of various kind, according to the
-type of pursuit that is seeked.</p>
+nature of pursuit that is seeked.</p>
 <dl class="docutils">
 <dt>This module describes 3 kind of blocks:</dt>
 <dd><ul class="first last">
@@ -260,7 +280,7 @@ No further optimization of the selected atom is performed</p>
 <li><p class="first"><a class="reference internal" href="#PyMP.mdct.dico.LODico" title="PyMP.mdct.dico.LODico"><tt class="xref py py-class docutils literal"><span class="pre">LODico</span></tt></a>   is a dictionary that performs a local optimization of the time localization of the selected atom</p>
 </li>
 <li><dl class="first docutils">
-<dt><tt class="xref py py-class docutils literal"><span class="pre">FullDico</span></tt>  this object simulates a dictionary where atoms at all time localizations are available</dt>
+<dt><a class="reference internal" href="#PyMP.mdct.dico.FullDico" title="PyMP.mdct.dico.FullDico"><tt class="xref py py-class docutils literal"><span class="pre">FullDico</span></tt></a>  this object simulates a dictionary where atoms at all time localizations are available</dt>
 <dd><p class="first last">This kind of dictionary can be thought of as a Toeplitz matrix
 BEWARE: memory consumption and CPU load will be very high! only use with very small signals
 (e.g. 1024 samples or so) Fairly intractable at higher dimensions</p>
@@ -274,9 +294,11 @@ BEWARE: memory consumption and CPU load will be very high! only use with very sm
 <dt id="PyMP.mdct.dico.Dico">
 <em class="property">class </em><tt class="descclassname">PyMP.mdct.dico.</tt><tt class="descname">Dico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>useC=True</em>, <em>forceHF=False</em>, <em>debug_level=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico" title="Permalink to this definition">¶</a></dt>
 <dd><p>class to handle multiscale MDCT dictionaries using MDCT blocks</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="PyMP.mdct.dico.Dico.compute_touched_zone">
-<tt class="descname">compute_touched_zone</tt><big>(</big><em>previousBestAtom</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico.compute_touched_zone" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">compute_touched_zone</tt><big>(</big><em>previousBestAtom</em>, <em>panic=False</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico.compute_touched_zone" title="Permalink to this definition">¶</a></dt>
 <dd><p>update zone computed from the previously selected atom</p>
 </dd></dl>
 
@@ -309,7 +331,7 @@ ONLY for DEV purposes</p>
 
 <dl class="method">
 <dt id="PyMP.mdct.dico.Dico.initialize">
-<tt class="descname">initialize</tt><big>(</big><em>residualSignal</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico.initialize" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">initialize</tt><big>(</big><em>residual_signal</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.Dico.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create the collection of blocks specified by the MDCT sizes</p>
 </dd></dl>
 
@@ -333,12 +355,36 @@ ONLY for DEV purposes</p>
 <em class="property">class </em><tt class="descclassname">PyMP.mdct.dico.</tt><tt class="descname">LODico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>hrsizes=None</em>, <em>useC=True</em>, <em>debug_level=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.LODico" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shift invariant MDCT dictionary
 Only difference is in the constructor and initialization: need to use LOBlocks</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="PyMP.mdct.dico.LODico.get_projections">
 <tt class="descname">get_projections</tt><big>(</big><em>indexes</em>, <em>sigLength</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.LODico.get_projections" title="Permalink to this definition">¶</a></dt>
 <dd><p>additional method provided for Gradient Pursuits
 indexes formalism: key as in the py_pursuit_Approx Object :
 int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PyMP.mdct.dico.FullDico">
+<em class="property">class </em><tt class="descclassname">PyMP.mdct.dico.</tt><tt class="descname">FullDico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.FullDico" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class handles blocks were MDCT products are computed for
+each and every possible time localization. Therefore Iterations
+are very slow but convergence should be optimum</p>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="PyMP.mdct.dico.FullDico.init_proj_matrix">
+<tt class="descname">init_proj_matrix</tt><big>(</big><em>itNumbers</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.FullDico.init_proj_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>method used for monitoring the projection along iterations</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyMP.mdct.dico.FullDico.update_proj_matrix">
+<tt class="descname">update_proj_matrix</tt><big>(</big><em>projMatrix</em>, <em>iterationNumber</em>, <em>normedProj=False</em><big>)</big><a class="headerlink" href="#PyMP.mdct.dico.FullDico.update_proj_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>method used for monitoring the projection along iterations</p>
 </dd></dl>
 
 </dd></dl>
@@ -371,6 +417,8 @@ int(block*self.length +  frame*float(atom.length /2) + atom.frequencyBin)</p>
 <p><cite>current_shift</cite>: The current time-shift</p>
 <p><cite>nbSim</cite>: Number of consecutive iterations with the same time-shift (default is 1)</p>
 </div></blockquote>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="PyMP.mdct.rand.block.SequenceBlock.update">
 <tt class="descname">update</tt><big>(</big><em>new_res_signal</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em>, <em>iterationNumber=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock.update" title="Permalink to this definition">¶</a></dt>
@@ -391,11 +439,8 @@ Signal Processing, vol. 92, pp. 2532-2544 2012.</p>
 <em class="property">class </em><tt class="descclassname">PyMP.mdct.rand.dico.</tt><tt class="descname">SequenceDico</tt><big>(</big><em>sizes=</em><span class="optional">[</span><span class="optional">]</span>, <em>seq_type='random'</em>, <em>nbSame=1</em>, <em>windowType=None</em>, <em>seed=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.dico.SequenceDico" title="Permalink to this definition">¶</a></dt>
 <dd><p>This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner
 the shifts are controlled by the different blocks.</p>
-<p>Attributes:</p>
-<blockquote>
-<div><p><cite>sequence_type</cite>: The type of time-shift sequence, available choices are <em>scale</em>,*random*,*gaussian*,*binom*,*dicho*,*jump*,*binary* default is <em>random</em> which use a uniform pseudo-random generator</p>
-<p><cite>nb_consec_sim</cite>: Number of consecutive iterations with the same time-shift (default is 1)</p>
-</div></blockquote>
+<p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 </dd></dl>
 
 </div>
@@ -419,9 +464,12 @@ the shifts are controlled by the different blocks.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="classes.html" title="Classes Package Documentation:"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

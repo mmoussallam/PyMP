@@ -9,10 +9,10 @@ Classes for Standard Algorithm
 		:members: Atom
 		
 	.. automodule:: PyMP.mdct.block
-		:members: Block	
+		:members: Block, LOBlock	
 		
 	.. automodule:: PyMP.mdct.dico
-		:members: Dico, LODico
+		:members: Dico, LODico, FullDico
 
 Classes for Random Matching Pursuit
 ***********************************

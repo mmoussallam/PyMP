@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyMP Tutorial 1. Signal decomposition &mdash; PyMP 0.9.2 documentation</title>
+    <title>PyMP Tutorial 1. Signal decomposition &mdash; PyMP 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.2',
+        VERSION:     '1.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,8 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 0.9.2 documentation" href="index.html" />
+    <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="next" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" />
     <link rel="prev" title="What is PyMP?" href="doc.html" /> 
   </head>
@@ -41,12 +40,15 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="doc.html" title="What is PyMP?"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -136,10 +138,6 @@ Documentation for the modules that we&#8217;re using here is provided in the nex
 </pre></div>
 </div>
 <p>and (d) is the time-frequency plot of the 1000 atoms that have been used to approximate the original glockenspiel signal</p>
-<p>(<a class="reference external" href="./pyplots/MP_example.py">Source code</a>, <a class="reference external" href="./pyplots/MP_example.png">png</a>, <a class="reference external" href="./pyplots/MP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/MP_example.pdf">pdf</a>)</p>
-<div class="figure">
-<img alt="_images/MP_example.png" src="_images/MP_example.png" />
-</div>
 <p>You can evaluate the quality of the approximation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">compute_srr</span><span class="p">()</span> 
 <span class="go">19.167848...</span>
@@ -157,10 +155,6 @@ routines of its blocks will perform the local optimization so that at our level 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mp_approx</span><span class="p">,</span> <span class="n">mp_decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">Dico</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lomp_approx</span><span class="p">,</span> <span class="n">lomp_decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">LODico</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
-</div>
-<p>(<a class="reference external" href="./pyplots/LoMP_example.py">Source code</a>, <a class="reference external" href="./pyplots/LoMP_example.png">png</a>, <a class="reference external" href="./pyplots/LoMP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/LoMP_example.pdf">pdf</a>)</p>
-<div class="figure">
-<img alt="_images/LoMP_example.png" src="_images/LoMP_example.png" />
 </div>
 <p>In addition to plotting, we can compare the quality of the approximations, given a fixed number of atoms (here 500):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">mp_approx</span>
@@ -181,11 +175,12 @@ Alternatively one can verify that for a given level of SRR, LoMP will use a smal
 </pre></div>
 </div>
 <p>We can now compare the three strategies in terms of normalized reconstruction error</p>
-<img src="_images/mathmpl/math-acd4157822.png" class="center" /><p>This gives the following results:</p>
-<p>(<a class="reference external" href="./pyplots/RSSMP_example.py">Source code</a>, <a class="reference external" href="./pyplots/RSSMP_example.png">png</a>, <a class="reference external" href="./pyplots/RSSMP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/RSSMP_example.pdf">pdf</a>)</p>
-<div class="figure">
-<img alt="_images/RSSMP_example.png" src="_images/RSSMP_example.png" />
+<div class="math">
+\begin{equation*}
+10 \log_{10} (\| \tilde{x}_m - x \|^2) -  10 \log_{10} (\| x \|^2)
+\end{equation*}
 </div>
+<p>This gives the following results:</p>
 <p>And that&#8217;s it.</p>
 </div>
 </div>
@@ -207,12 +202,15 @@ Alternatively one can verify that for a given level of SRR, LoMP will use a smal
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
              >next</a> |</li>
         <li class="right" >
           <a href="doc.html" title="What is PyMP?"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 0.9.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
