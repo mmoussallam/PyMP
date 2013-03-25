@@ -25,6 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="next" title="Classes Package Documentation:" href="classes.html" />
     <link rel="prev" title="Manipulating Signals" href="example_objects.html" /> 
@@ -193,14 +194,9 @@ should be raised to maximum</p>
 </div>
 <p class="rubric">Notes</p>
 <p>This is the original Matching Pursuit Algorithm transcribed to 
-work with PyMP objects encapsulating signals <span class="math">\(x\)</span>
- and dictionaries <span class="math">\(\Phi\)</span>
-
-It builds an approximant <span class="math">\(\hat{x}\)</span>
- of <span class="math">\(x\)</span>
-
-as a linear combination of atoms from <span class="math">\(\Phi\)</span>
-</p>
+work with PyMP objects encapsulating signals <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> and dictionaries <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/>
+It builds an approximant <img src="_images/mathmpl/math-57b04a58dd.png" style="position: relative; bottom: -4px"/> of <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/>
+as a linear combination of atoms from <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/></p>
 <p class="rubric">Examples</p>
 <p>For decomposing the signal <cite>x</cite> on the Dictionary D at either SRR of 10 dB or using 1000 atoms:
 x must be a <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> and D a <a class="reference internal" href="Mdct.html#PyMP.mdct.dico.Dico" title="PyMP.mdct.dico.Dico"><tt class="xref py py-class docutils literal"><span class="pre">Dico</span></tt></a> object</p>

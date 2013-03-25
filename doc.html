@@ -25,6 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="next" title="PyMP Tutorial 1. Signal decomposition" href="example.html" />
     <link rel="prev" title="PyMP’s documentation!" href="index.html" /> 
@@ -120,35 +121,22 @@ recommend you use one of the existing implementation (indeed MPTK) as
 it can be fairly faster and more thoroughly tested that this piece of
 software.</p>
 <p>In the opposite case let&#8217;s have a look at how this is built:</p>
+<a class="reference internal image-reference" href="_images/classes_bench.png"><img alt="_images/classes_bench.png" src="_images/classes_bench.png" style="width: 329.0px; height: 816.0px;" /></a>
 <div class="section" id="a-few-notions">
 <h3>A few notions<a class="headerlink" href="#a-few-notions" title="Permalink to this headline">¶</a></h3>
 <p>This section only recall MP in order to describe the meaning of PyMP
 methods and classes. This is NOT an introduction to greedy algorithms.</p>
-<p>MP will decompose a signal <span class="math">\(x\)</span>
- into a linear combination of atoms <span class="math">\(\phi\)</span>
- taken from a dictionary <span class="math">\(\Phi\)</span>
- by iteratively selecting them according to their correlation to the
-signal. Thus, the algorithm builds an <em>approximant</em> <span class="math">\(\tilde{x}_{m}\)</span>
- of <span class="math">\(x\)</span>
- in <span class="math">\(m\)</span>
- iterations such that:</p>
-<div class="math">
-\begin{equation*}
-\tilde{x}_{m}=\sum_{n=0}^{m-1}\alpha_{n}\phi_{\gamma^{n}}\approx x
-\end{equation*}
-</div>
-</div>
+<p>MP will decompose a signal <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> into a linear combination of atoms <img src="_images/mathmpl/math-e22cc525ec.png" style="position: relative; bottom: -7px"/> taken from a dictionary <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/> by iteratively selecting them according to their correlation to the
+signal. Thus, the algorithm builds an <em>approximant</em> <img src="_images/mathmpl/math-c69356f997.png" style="position: relative; bottom: -8px"/> of <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/> in <img src="_images/mathmpl/math-88d9a1501b.png" style="position: relative; bottom: -3px"/> iterations such that:</p>
+<img src="_images/mathmpl/math-6791c2506d.png" class="center" /></div>
 <div class="section" id="implementation">
 <h3>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h3>
 <p>PyMP provide an Object-Oriented implementation of the MP algorithm in the following manner:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Signals (such as <span class="math">\(x\)</span>
-) are handled through <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> objects</li>
-<li>Dictionaries (such as <span class="math">\(\Phi\)</span>
-) are handled through <a class="reference internal" href="classes.html#PyMP.base.BaseDico" title="PyMP.base.BaseDico"><tt class="xref py py-class docutils literal"><span class="pre">BaseDico</span></tt></a> objects</li>
-<li>Approximants (such as <span class="math">\(\tilde{x}_{m}\)</span>
-) are handled through <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> objects</li>
+<li>Signals (such as <img src="_images/mathmpl/math-4e155c67a6.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> objects</li>
+<li>Dictionaries (such as <img src="_images/mathmpl/math-cebfe4186d.png" style="position: relative; bottom: -3px"/>) are handled through <a class="reference internal" href="classes.html#PyMP.base.BaseDico" title="PyMP.base.BaseDico"><tt class="xref py py-class docutils literal"><span class="pre">BaseDico</span></tt></a> objects</li>
+<li>Approximants (such as <img src="_images/mathmpl/math-c69356f997.png" style="position: relative; bottom: -8px"/>) are handled through <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> objects</li>
 </ul>
 </div></blockquote>
 <p>The algorithm itself is performed using function from the <a class="reference internal" href="MP.html#module-PyMP.mp" title="PyMP.mp"><tt class="xref py py-mod docutils literal"><span class="pre">mp</span></tt></a> module. A comprehensive view of how it works is provided in the next topic.</p>

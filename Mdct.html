@@ -25,6 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="prev" title="Classes Package Documentation:" href="classes.html" /> 
   </head>
@@ -106,12 +107,7 @@
 <em class="property">class </em><tt class="descclassname">PyMP.mdct.atom.</tt><tt class="descname">Atom</tt><big>(</big><em>scale=0</em>, <em>amp=0</em>, <em>timePos=0</em>, <em>freqBin=0</em>, <em>Fs=0</em>, <em>mdctCoeff=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>MDCT atom class : implement real domain MDCT atoms of scale defined by the atom length</p>
 <p>An MDCT atom is defined for a length L, a frequency localization k and a frame parameter p by:</p>
-<div class="math">
-\begin{equation*}
-\phi_{L,p,k}[n]=w_{L}[u]\sqrt{\frac{2}{L}} \cos [ \frac{\pi}{L} \left(u+ \frac{L+1}{2}\right) (k+\frac{1}{2}) ]
-\end{equation*}
-</div>
-<p>Additionnal attributes are:</p>
+<img src="_images/mathmpl/math-f017b011b8.png" class="center" /><p>Additionnal attributes are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><cite>freq_bin</cite> : MDCT frequency bin index (default is 0)</li>

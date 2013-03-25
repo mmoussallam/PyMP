@@ -25,6 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="next" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" />
     <link rel="prev" title="What is PyMP?" href="doc.html" /> 
@@ -138,6 +139,10 @@ Documentation for the modules that we&#8217;re using here is provided in the nex
 </pre></div>
 </div>
 <p>and (d) is the time-frequency plot of the 1000 atoms that have been used to approximate the original glockenspiel signal</p>
+<p>(<a class="reference external" href="./pyplots/MP_example.py">Source code</a>, <a class="reference external" href="./pyplots/MP_example.png">png</a>, <a class="reference external" href="./pyplots/MP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/MP_example.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/MP_example.png" src="_images/MP_example.png" />
+</div>
 <p>You can evaluate the quality of the approximation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span><span class="o">.</span><span class="n">compute_srr</span><span class="p">()</span> 
 <span class="go">19.167848...</span>
@@ -155,6 +160,10 @@ routines of its blocks will perform the local optimization so that at our level 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mp_approx</span><span class="p">,</span> <span class="n">mp_decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">Dico</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lomp_approx</span><span class="p">,</span> <span class="n">lomp_decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">LODico</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span> <span class="n">srr</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
+</div>
+<p>(<a class="reference external" href="./pyplots/LoMP_example.py">Source code</a>, <a class="reference external" href="./pyplots/LoMP_example.png">png</a>, <a class="reference external" href="./pyplots/LoMP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/LoMP_example.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/LoMP_example.png" src="_images/LoMP_example.png" />
 </div>
 <p>In addition to plotting, we can compare the quality of the approximations, given a fixed number of atoms (here 500):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">mp_approx</span>
@@ -175,12 +184,11 @@ Alternatively one can verify that for a given level of SRR, LoMP will use a smal
 </pre></div>
 </div>
 <p>We can now compare the three strategies in terms of normalized reconstruction error</p>
-<div class="math">
-\begin{equation*}
-10 \log_{10} (\| \tilde{x}_m - x \|^2) -  10 \log_{10} (\| x \|^2)
-\end{equation*}
+<img src="_images/mathmpl/math-acd4157822.png" class="center" /><p>This gives the following results:</p>
+<p>(<a class="reference external" href="./pyplots/RSSMP_example.py">Source code</a>, <a class="reference external" href="./pyplots/RSSMP_example.png">png</a>, <a class="reference external" href="./pyplots/RSSMP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/RSSMP_example.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/RSSMP_example.png" src="_images/RSSMP_example.png" />
 </div>
-<p>This gives the following results:</p>
 <p>And that&#8217;s it.</p>
 </div>
 </div>

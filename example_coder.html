@@ -25,6 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
     <link rel="next" title="Manipulating Signals" href="example_objects.html" />
     <link rel="prev" title="PyMP Tutorial 1. Signal decomposition" href="example.html" /> 
@@ -117,9 +118,7 @@ In this tutorial we illustrate the advantages of RSSMP in an audio compression c
 <p>A much more detailed discussion on this can be found in the <a class="reference external" href="http://dx.doi.org/10.1016/j.sigpro.2012.03.019">paper</a> , let&#8217;s just introduce the basics</p>
 <div class="section" id="simple-sparse-encoding-scheme">
 <h3>Simple Sparse Encoding Scheme<a class="headerlink" href="#simple-sparse-encoding-scheme" title="Permalink to this headline">¶</a></h3>
-<p>To encode an approximation <span class="math">\(\tilde{x}_m\)</span>
- of <span class="math">\(m\)</span>
- atoms, one needs to encode two things:</p>
+<p>To encode an approximation <img src="_images/mathmpl/math-19320b900b.png" style="position: relative; bottom: -8px"/> of <img src="_images/mathmpl/math-88d9a1501b.png" style="position: relative; bottom: -3px"/> atoms, one needs to encode two things:</p>
 <blockquote>
 <div><ul class="simple">
 <li>The indexes of the atoms in the dictionary</li>
@@ -128,8 +127,7 @@ In this tutorial we illustrate the advantages of RSSMP in an audio compression c
 </div></blockquote>
 <p>The simplest encoding scheme is to encode each atom separately. In this setup the cost of encoding
 an atom&#8217;s index is fixed and directly linked to the size of the dictionary. The cost of encoding
-an atom&#8217;s weight is also fixed if we use a static midtread quantizer with <span class="math">\(2^Q\)</span>
- steps.</p>
+an atom&#8217;s weight is also fixed if we use a static midtread quantizer with <img src="_images/mathmpl/math-6f18d98412.png" style="position: relative; bottom: -3px"/> steps.</p>
 </div>
 <div class="section" id="entropy-coding">
 <h3>Entropy coding<a class="headerlink" href="#entropy-coding" title="Permalink to this headline">¶</a></h3>
@@ -171,8 +169,7 @@ an additionnal parameter (e.g. a local optimal time-shift) must be transmitted a
 </div>
 <p>From the <em>mp_approx</em> object constructed we can now evaluate a (theoretical) rate and an associated distorsion by quantizing
 the atoms weights and counting the cost of both indices and weights. To do that, we use the <a class="reference internal" href="#PyMP.mp_coder.simple_mdct_encoding" title="PyMP.mp_coder.simple_mdct_encoding"><tt class="xref py py-func docutils literal"><span class="pre">simple_mdct_encoding()</span></tt></a> method
-in the <a class="reference internal" href="#module-PyMP.mp_coder" title="PyMP.mp_coder"><tt class="xref py py-mod docutils literal"><span class="pre">mp_coder</span></tt></a> module. Here&#8217;s an example where we set a target of 8kbps with a midtread uniform quantizer with <span class="math">\(2^{14}\)</span>
- steps</p>
+in the <a class="reference internal" href="#module-PyMP.mp_coder" title="PyMP.mp_coder"><tt class="xref py py-mod docutils literal"><span class="pre">mp_coder</span></tt></a> module. Here&#8217;s an example where we set a target of 8kbps with a midtread uniform quantizer with <img src="_images/mathmpl/math-a1c50679e1.png" style="position: relative; bottom: -3px"/> steps</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">snr</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantized_approx</span> <span class="o">=</span> <span class="n">mp_coder</span><span class="o">.</span><span class="n">simple_mdct_encoding</span><span class="p">(</span><span class="n">mp_approx</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -182,8 +179,7 @@ in the <a class="reference internal" href="#module-PyMP.mp_coder" title="PyMP.mp
 </pre></div>
 </div>
 <p>In other words, we achieved a 20 dB SNR with a (theoretical) 3.4 kbps bitrate. We can change the coder properties,
-in particular the number of quantizing steps (recall this is <span class="math">\(2^Q\)</span>
-  and not directly Q!!):</p>
+in particular the number of quantizing steps (recall this is <img src="_images/mathmpl/math-6f18d98412.png" style="position: relative; bottom: -3px"/>  and not directly Q!!):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">snr</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">,</span> <span class="n">quantized_approx</span> <span class="o">=</span> <span class="n">mp_coder</span><span class="o">.</span><span class="n">simple_mdct_encoding</span><span class="p">(</span><span class="n">mp_approx</span><span class="p">,</span> <span class="mi">8000</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;</span><span class="si">%f</span><span class="s">, </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">snr</span><span class="p">,</span> <span class="n">bitrate</span><span class="p">)</span>
 <span class="go">12.556648, 997.297883</span>
@@ -205,6 +201,10 @@ in particular the number of quantizing steps (recall this is <span class="math">
 </pre></div>
 </div>
 <p>But a simple Time-Frequency plot already tells you there&#8217;s going to be some highly disturbing artefacts:</p>
+<p>(<a class="reference external" href="./pyplots/plot_encoded_cloche.py">Source code</a>, <a class="reference external" href="./pyplots/plot_encoded_cloche.png">png</a>, <a class="reference external" href="./pyplots/plot_encoded_cloche.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/plot_encoded_cloche.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/plot_encoded_cloche.png" src="_images/plot_encoded_cloche.png" />
+</div>
 <p>Energy has appeared BEFORE the impact on the bell, this phenomemnon is called pre-echo artefact and is very common
 when using this type of dictionaries. Only two way to get rid of it:</p>
 <blockquote>
