@@ -135,7 +135,7 @@ class WaveletPursuitTest(unittest.TestCase):
         
         wavelet_nature = 'db8'
         levels = range(3,6)
-        dico = wavelet_dico.WaveletDico(sizes, nature, levels)
+        dico = wavelet_dico.WaveletDico(sizes, wavelet_nature, levels)
 
         
         n_atoms = 300
