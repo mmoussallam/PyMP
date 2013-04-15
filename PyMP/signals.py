@@ -82,8 +82,6 @@ class Signal(object):
         whether to normalize the signal (e.g. max will be 1)
     mono :  bool, optionnal
         keep only the first channel
-    
-    
 
         """
 
@@ -468,17 +466,13 @@ class LongSignal(Signal):
         Instead, the data is sliced in frames that can be loaded later individually. very useful to
         process large files such as audio archives
 
-        Attributes:
-
-            `filepath`:    The path to the audio file
-
-            `frameSize`:   In samples, default is 16384*3
-
-            `frameDuration`:  Alternative to frameSize, specify directly a frame duration in seconds (Defult is None)
-
-            `forceMono`:      Only load the left (first) channel (default is False)
-
-            `Noverlap` :      overlap (as a ratio r such that :math:`0\leq r < 1`)
+        Attributes
+        ----------
+        `filepath`:    The path to the audio file
+        `frame_size`:   In samples, defaut is 16384*3
+        `frame_duration`:  Alternative to frameSize, specify directly a frame duration in seconds (Defult is None)
+        `mono`:      Only load the left (first) channel (default is False)
+        `Noverlap` :      overlap (as a ratio r such that :math:`0\leq r < 1`)
 
     Standard methods to manipulate the signal are:
 

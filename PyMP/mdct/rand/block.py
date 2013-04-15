@@ -20,25 +20,25 @@ _Logger = log.Log('SSMPBlocks', level=0)
 class SequenceBlock(mdct_block.Block):
     """ block implementing the Randomized Pursuit
 
-    Attributes:
+    Attributes
+    ----------
+    `sequence_type`: The type of time-shift sequence, available choices are 
 
-        `sequence_type`: The type of time-shift sequence, available choices are 
+            *scale*
+            *random*
+            *gaussian*
+            *binom*
+            *dicho*
+            *jump*
+            *binary*
 
-                *scale*
-                *random*
-                *gaussian*
-                *binom*
-                *dicho*
-                *jump*
-                *binary*
+        default is *random* which use a uniform pseudo-random generator
 
-            default is *random* which use a uniform pseudo-random generator
+    `shift_list`: The actual sequence of subdictionary time-shifts
 
-        `shift_list`: The actual sequence of subdictionary time-shifts
+    `current_shift`: The current time-shift
 
-        `current_shift`: The current time-shift
-
-        `nbSim`: Number of consecutive iterations with the same time-shift (default is 1)
+    `nbSim`: Number of consecutive iterations with the same time-shift (default is 1)
     """
 
     # properties
@@ -193,7 +193,9 @@ class StochasticBlock(mdct_block.Block):
                  randomType='proba',
                  windowType=None,
                  seed=None,
-                 sigma = 1):
+                 sigma = 1,
+                 debug_level=0):
+        _Logger.set_level(debug_level)
         
         self.scale = length
         self.residual_signal = resSignal
@@ -229,19 +231,32 @@ class StochasticBlock(mdct_block.Block):
         
         # draw a new index vector whose weights are poduct of
         # a random variable and the projection matrix
-        probabilities = np.exp(self.sigma * np.abs(self.projs_matrix))
-        # normalize so it adds to 1
-        probabilities /= np.sum(probabilities)
+        probabilities = np.exp(self.sigma * np.abs(self.projs_matrix)) - np.exp(0)
+        # normalize so it adds to 1                
+        
+        probabilities /= np.sum(probabilities)        
         # create the bins
         bins = np.add.accumulate(probabilities)
+#        print probabilities.shape
+#        import pylab as pl
+#        pl.figure()
+#        pl.subplot(211)
+#        pl.plot(probabilities)
+#        pl.subplot(212)
+#        pl.plot(bins,'r')
+#        pl.plot(np.cumsum(probabilities),'k')
+#        pl.show()
         
         # now draw an index at random: use it as the selected atom
         self.maxIdx = np.digitize(np.random.random_sample(1), bins)[0]
         
-        _Logger.debug("Chose index %d at random"%self.maxIdx)
+#        print np.max(np.abs(self.projs_matrix))
         # deduce the value of the selected atom
         self.max_value = self.projs_matrix[self.maxIdx]
-    
+        _Logger.debug("Chose index %d at random with value %1.5f"%(self.maxIdx, self.max_value))
+        
+#        print self.max_value
+
     def get_max_atom(self):
         self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)

@@ -639,6 +639,60 @@ class GreedyTest(unittest.TestCase):
 #                                    update='mp',max_thread_num=n_thread)        
 #            print "%d thread(s) took %1.6f " %(n_thread, time.time() - t)
 
+class StochasticMPTest(unittest.TestCase):
+    def runTest(self):
+# dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
+
+        dico = random_dico.StochasticDico([256, 2048, 8192],debug_level=2)
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+        signal_original.crop(0, 5 * 16384)
+
+        signal_original.data += 0.01 * np.random.random(5 * 16384)
+
+        # first try with a single-atom signals
+        pyAtom = mdct_atom.Atom(2048, 1, 11775, 128, 8000, 0.57)
+        pyApprox_oneAtom = approx.Approx(dico, [], signal_original)
+        pyApprox_oneAtom.add(pyAtom)
+
+        signal_one_atom = signals.Signal(pyApprox_oneAtom.
+                                         synthesize(0).data, signal_original.fs,
+                                         False)
+
+        # second test
+        signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
+                                         normalize=True, mono=True)
+
+        app_mp, dec_mp = mp.greedy(signal_original, dico, 10, 100, debug=2,
+                                   pad=True, clean=True,update='mp')        
+
+        #  Ok test also the local GP implementation
+        app_locgp, dec_locgp = mp.greedy(signal_original, dico, 10, 100, debug=2,
+                                         pad=False, clean=True,update='locgp')
+
+        print app_mp        
+        print app_locgp
+
+        plt.figure()
+        plt.plot(10.0 * np.log10(dec_mp / dec_mp[0]), 'b')
+#        plt.plot(10.0 * np.log10(dec_locomp / dec_locomp[0]), 'r--')
+        plt.plot(10.0 * np.log10(dec_locgp / dec_locgp[0]), 'k-.')
+        plt.legend(('MP', 'LocGP'))
+#        plt.show()
+
+#        self.assertGreater(dec_mp[-1], dec_locomp[-1])
+        self.assertGreater(dec_mp[-1], dec_locgp[-1])
+#        self.assertEqual(int(dec_locgp[-1]), int(dec_locomp[-1]))
+
+        # profiling test
+#        print "Plain"
+#        cProfile.runctx('', globals(), locals())
+#
+#        cProfile.runctx('mp.mp(signal_original, dico2, 20, 1000 ,debug=0 , '
+#                        'clean=True)', globals(), locals())
+
+
+
 class OMPTest(unittest.TestCase):
     def runTest(self):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
@@ -1362,10 +1416,11 @@ if __name__ == '__main__':
 #    suite.addTest(BlockTest())
 #    suite.addTest(WinServerTest())
 #    suite.addTest(Signaltest())
-    suite.addTest(WaveletAtomTest())
-    suite.addTest(WaveletPursuitTest())
+    suite.addTest(StochasticMPTest())
+#    suite.addTest(WaveletAtomTest())
+#    suite.addTest(WaveletPursuitTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
 
-#    plt.show()
+    plt.show()
     _Logger.info('Tests stopped')

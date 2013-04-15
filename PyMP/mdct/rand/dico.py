@@ -126,13 +126,14 @@ class StochasticDico(Dico):
 
     # constructor
     def __init__(self, sizes=[], seq_type='random', nbSame=1,
-                 windowType=None,seed=None, sigma=1.0):
+                 windowType=None,seed=None, sigma=1.0, debug_level=0):
         self.sequence_type = seq_type
         self.sizes = sizes
         self.nb_consec_sim = nbSame
         self.windowType = windowType
         self.seed = seed
         self.sigma = sigma
+        self.debug_level = debug_level
         
         
     def initialize(self, residual_signal):
@@ -146,7 +147,8 @@ class StochasticDico(Dico):
             self.blocks.append(block.StochasticBlock(mdctSize, residual_signal,
                                                      windowType=self.windowType,
                                                      seed=self.seed,
-                                                     sigma = self.sigma))
+                                                     sigma = self.sigma,
+                                                     debug_level=self.debug_level))
 
     # DO I need to restate it?
     def update(self, residualSignal, iterationNumber=0, debug=0):
