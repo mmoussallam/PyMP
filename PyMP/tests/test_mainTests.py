@@ -7,7 +7,7 @@ M.Moussallam
 """
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from PyMP.mdct.block import Block
 
@@ -127,15 +127,68 @@ class WaveletAtomTest(unittest.TestCase):
         plt.plot(atom.x, atom.waveform)
 #        plt.show()
 
+class WaveletDicoAndBlockTest(unittest.TestCase):
+    def runTest(self):
+        # creating a block
+        from PyMP.wavelet import dico as wavelet_dico
+        from PyMP.wavelet import block as wavelet_block
+        from PyMP.wavelet import atom as wavelet_atom
+        ### BLOCK
+        test_block = wavelet_block.WaveletBlock(('db8', 5), mode='per', debug_level=3)
+        print test_block
+        # test with a power of two as the length
+        N = 512
+        from PyMP.wavelet import dico as wavelet_dico
+        sig_test = signals.Signal(np.random.randn(N))
+        
+        test_block.initialize(sig_test)
+        test_block.compute_transform()
+        self.assertEqual(len(test_block.projections), test_block.level +1 )
+        
+        # check that all elements have correct lengths
+        self.assertEqual(len(test_block.projections[0]), test_block.scales[0])
+        for j in range(1,test_block.level+1):                   
+            self.assertEqual(len(test_block.projections[j]), test_block.scales[j-1])
+        
+        # test that it finds something
+        test_block.find_max()
+        print test_block
+        
+        best_atom = test_block.get_max_atom()
+        self.assertTrue(isinstance(best_atom, wavelet_atom.WaveAtom))
+        
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.plot(best_atom.waveform)
+        plt.show()
+        
+        ### DICO
+        wavelets = [('db8',5),('haar',3)]        
+        dico = wavelet_dico.WaveletDico(wavelets, debug_level=3)
+        dico.initialize(sig_test)
+        
+        self.assertEqual(dico.blocks[0].nature, 'db8')
+        self.assertEqual(dico.blocks[0].level, 5)
+        self.assertEqual(dico.blocks[1].nature, 'haar')
+        self.assertEqual(dico.blocks[1].level, 3)
+        
+        dico.blocks[0].initialize(sig_test)
+        self.assertEquals(dico.blocks[0].scales, [2**j for j in range(4,9)])
+        
+        dico.update(sig_test, 0)
+        
+        print dico.best_current_block
+        # @TODO test with bad arguments
+
 class WaveletPursuitTest(unittest.TestCase):
     def runTest(self):
         signal_original = signals.Signal(np.random.randn(512),
                                          normalize=True, mono=True)
         from PyMP.wavelet import dico as wavelet_dico
         
-        wavelet_nature = 'db8'
-        levels = range(3,6)
-        dico = wavelet_dico.WaveletDico(sizes, wavelet_nature, levels)
+        wavelets = [('db8',6),('haar',5)]
+        
+        dico = wavelet_dico.WaveletDico(wavelets)
 
         
         n_atoms = 300
@@ -1416,8 +1469,9 @@ if __name__ == '__main__':
 #    suite.addTest(BlockTest())
 #    suite.addTest(WinServerTest())
 #    suite.addTest(Signaltest())
-    suite.addTest(StochasticMPTest())
-#    suite.addTest(WaveletAtomTest())
+#    suite.addTest(StochasticMPTest())
+    suite.addTest(WaveletAtomTest())
+    suite.addTest(WaveletDicoAndBlockTest())
 #    suite.addTest(WaveletPursuitTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)

@@ -48,8 +48,8 @@ class Approx:
     atom_number = 0
     srr = 0
     original_signal = []
-    frame_num = 0
-    frame_len = 0
+#    frame_num = 0
+#    frame_len = 0
     length = 0
     recomposed_signal = None
     fs = 0
@@ -79,10 +79,10 @@ class Approx:
             self.length = length
             self.fs = Fs
             isNormalized = False
-        if dico != None:
-            self.frame_num = self.length / max(self.dico.sizes)
-        if self.frame_num > 0:
-            self.frame_len = self.length / self.frame_num
+#        if dico != None:
+#            self.frame_num = self.length / max(self.dico.sizes)
+#        if self.frame_num > 0:
+#            self.frame_len = self.length / self.frame_num
 
         # We need to create a signal that has the same nature as the one
         # provided

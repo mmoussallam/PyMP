@@ -13,7 +13,7 @@
 """
 
 Module mdct.block
-=====================
+=================
 
 This class inherits from :class:`.BaseBlock` and is used to represent and manipulate MDCT atoms.
 :class:`mdct.Atom` Objects can either be constructed or recovered from Xml using :func:`mdct.Atom.fromXml`

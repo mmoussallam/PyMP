@@ -15,19 +15,20 @@ class BaseAtom(object):
 
     To implement a new type of atom, you must derive from this class.
 
-    Attributes:
-
-        - `nature`: A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT
-
-        - `length: Sample length of the atom (default is 0)
-
-        - `timePosition`: The index of the first atom sample in a signal
-
-        - `waveform`: a numpy array that will contain the atom waveform
-
-        - `amplitude`: the atom amplitude
-
-        - `fs`: the atom sampling frequency
+    Attributes
+    ----------
+    nature: str
+        A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT
+    length: int, optional
+        Sample length of the atom (default is 0)
+    timePosition : int
+        The index of the first atom sample in a signal
+    waveform : array-like
+        a numpy array that will contain the atom waveform
+    amplitude : float
+        the atom amplitude
+    fs : int 
+        the atom sampling frequency
 
     """
 
@@ -72,6 +73,14 @@ class BaseBlock(object):
     def __init__(self):
         """ empty constructor """
 
+    def update(self, residual):
+        raise NotImplementedError("Subclass method not found")
+
+    def find_max(self):
+        raise NotImplementedError("Subclass method not found")
+
+    def get_max_atom(self):
+        raise NotImplementedError("Subclass method not found")
 
 class BaseDico(object):
     """ This class creates an interface that any type of dictionary should reproduce
@@ -95,3 +104,9 @@ class BaseDico(object):
     def get_pad(self):
         """ the amount of zeroes that need to be added on the sides """
         return self.sizes[-1]  # last element of the list should be the biggest, 
+
+    def update(self, res, it):
+        raise NotImplementedError("Subclass method not found")
+
+    def get_best_atom(self):
+        raise NotImplementedError("Subclass method not found")

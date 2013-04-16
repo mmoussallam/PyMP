@@ -1,6 +1,6 @@
 '''
 Module wavelet.atom
-================
+===================
 
 This class inherits from :class:`.Atom` and is used to represent and manipulate wavelet based atoms.
 :class:`WaveAtom` Objects can either be constructed or recovered from Xml using :func:`pymp_MDCTAtom.fromXml`
@@ -40,7 +40,7 @@ class WaveAtom(BaseAtom):
         wv = Wavelet(self.nature)
         scaling, wavelet, x = wv.wavefun(level=self.level)
         if value is None:
-            value = 1.0
+            value = self.amplitude
 
         self.waveform = value * wavelet
         self.scaling = scaling
