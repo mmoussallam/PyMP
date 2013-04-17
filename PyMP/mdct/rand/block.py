@@ -7,6 +7,7 @@ from ...tools import Misc
 from ... import win_server
 from ... import log
 from ... import parallelProjections
+from ...baserand import AbstractSequenceBlock
 from .. import block as mdct_block
 from .. import atom as mdct_atom
 
@@ -16,14 +17,13 @@ from .. import atom as mdct_atom
 _PyServer = win_server.get_server()
 _Logger = log.Log('SSMPBlocks', level=0)
 
-
-class SequenceBlock(mdct_block.Block):
+class SequenceBlock(AbstractSequenceBlock, mdct_block.Block):
     """ block implementing the Randomized Pursuit
 
     Attributes
     ----------
-    `sequence_type`: The type of time-shift sequence, available choices are 
-
+    `sequence_type`: str
+        The type of time-shift sequence, available choices are 
             *scale*
             *random*
             *gaussian*
@@ -31,14 +31,13 @@ class SequenceBlock(mdct_block.Block):
             *dicho*
             *jump*
             *binary*
-
         default is *random* which use a uniform pseudo-random generator
-
-    `shift_list`: The actual sequence of subdictionary time-shifts
-
-    `current_shift`: The current time-shift
-
-    `nbSim`: Number of consecutive iterations with the same time-shift (default is 1)
+    `shift_list`: array-like
+        The actual sequence of subdictionary time-shifts
+    `current_shift`: int
+        The current time-shift
+    `nbSim`: int
+        Number of consecutive iterations with the same time-shift (default is 1)
     """
 
     # properties
@@ -56,10 +55,10 @@ class SequenceBlock(mdct_block.Block):
                  seed=None):
         self.scale = length
         self.residual_signal = resSignal
-        self.seed = seed
-#        if self.seed is not None:
-        np.random.seed(self.seed)
-#        else:            
+        
+        super(SequenceBlock,self).__init__(randomType=randomType, nbSim=nbSim,                  
+                                            seed=seed)
+
 #            np.random.seed()
 
         if frameLen == 0:
@@ -106,14 +105,14 @@ class SequenceBlock(mdct_block.Block):
         self.windowType = windowType
 
     # The update method is nearly the same as CCBlock
-    def update(self, new_res_signal, startFrameIdx=0, stopFrameIdx=-1, iterationNumber=0):
+    def update(self, new_res_signal, startFrameIdx=0, stopFrameIdx=-1, iteration_number=0):
         """ Same as superclass except that at each update, one need to pick a time shift from the sequence """
 
         # change the current Time-Shift if enough iterations have been done
         if (self.nb_consec_sim > 0):
-            if (iterationNumber % self.nb_consec_sim == 0):
+            if (iteration_number % self.nb_consec_sim == 0):
                 self.current_shift = self.shift_list[(
-                    iterationNumber / self.nb_consec_sim) % len(self.shift_list)]
+                    iteration_number / self.nb_consec_sim) % len(self.shift_list)]
 
         self.residual_signal = new_res_signal
 
@@ -237,15 +236,6 @@ class StochasticBlock(mdct_block.Block):
         probabilities /= np.sum(probabilities)        
         # create the bins
         bins = np.add.accumulate(probabilities)
-#        print probabilities.shape
-#        import pylab as pl
-#        pl.figure()
-#        pl.subplot(211)
-#        pl.plot(probabilities)
-#        pl.subplot(212)
-#        pl.plot(bins,'r')
-#        pl.plot(np.cumsum(probabilities),'k')
-#        pl.show()
         
         # now draw an index at random: use it as the selected atom
         self.maxIdx = np.digitize(np.random.random_sample(1), bins)[0]

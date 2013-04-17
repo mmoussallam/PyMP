@@ -16,6 +16,7 @@ import math
 import numpy as np
 
 from ..dico import Dico
+from ...baserand import AbstractSequenceDico
 from ... import log
 from . import block
 
@@ -24,7 +25,7 @@ from . import block
 _Logger = log.Log('SSMPDicos', level=0)
 
 
-class SequenceDico(Dico):
+class SequenceDico( AbstractSequenceDico, Dico):
     """ This dictionary implements a sequence of subdictionaries that are shifted in time at each iteration in a pre-defined manner
         the shifts are controlled by the different blocks.
 
@@ -48,11 +49,11 @@ class SequenceDico(Dico):
     # constructor
     def __init__(self, sizes=[], seq_type='random', nbSame=1,
                  windowType=None,seed=None):
-        self.sequence_type = seq_type
-        self.sizes = sizes
-        self.nb_consec_sim = nbSame
+        
+        super(SequenceDico, self).__init__(seq_type=seq_type, nbSame=nbSame, seed=seed)
+                
+        self.sizes = sizes        
         self.windowType = windowType
-        self.seed = seed
         
         
     def initialize(self, residual_signal):
@@ -82,10 +83,10 @@ class SequenceDico(Dico):
             self.starting_touched_index = previousBestAtom.time_position - previousBestAtom.length / 2
             self.ending_touched_index = self.starting_touched_index + 1.5 * previousBestAtom.length
 
-    def update(self, residualSignal, iterationNumber=0, debug=0):
+    def update(self, residualSignal, iteration_number=0, debug=0):
         self.max_block_score = 0
         self.best_current_block = None
-        self.it_num = iterationNumber
+        self.it_num = iteration_number
         # BUGFIX STABILITY
 #        self.endingTouchedIndex = -1
 #        self.startingTouchedIndex = 0
@@ -101,18 +102,14 @@ class SequenceDico(Dico):
                 endingTouchedFrame = -1
 
             block.update(residualSignal,
-                 startingTouchedFrame, endingTouchedFrame, iterationNumber)
+                 startingTouchedFrame, endingTouchedFrame, iteration_number)
 
             if np.abs(block.max_value) > self.max_block_score:
 #                self.maxBlockScore = block.getMaximum()
                 self.max_block_score = np.abs(block.max_value)
                 self.best_current_block = block
 
-    def getSequences(self, length):
-        sequences = []
-        for block in self.blocks:
-            sequences.append(block.shift_list[0:length])
-        return sequences
+
 
 class StochasticDico(Dico):
     """ This dictionary implements Stochastic MP as described
@@ -151,10 +148,10 @@ class StochasticDico(Dico):
                                                      debug_level=self.debug_level))
 
     # DO I need to restate it?
-    def update(self, residualSignal, iterationNumber=0, debug=0):
+    def update(self, residualSignal, iteration_number=0, debug=0):
         self.max_block_score = 0
         self.best_current_block = None
-        self.it_num = iterationNumber
+        self.it_num = iteration_number
         # BUGFIX STABILITY
 #        self.endingTouchedIndex = -1
 #        self.startingTouchedIndex = 0

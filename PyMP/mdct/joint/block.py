@@ -797,12 +797,12 @@ class RandomSetBlock(SetBlock):
         # OPTIM -> do pre-twid directly in the windows
         self.locCoeff = self.w_long * self.pre_twid_vec
 
-    def update(self, newResidualList, startFrameList=None, stopFrameList=None, iterationNumber=0):
+    def update(self, newResidualList, startFrameList=None, stopFrameList=None, iteration_number=0):
 # print "block update called : " , self.scale  , self.frameNumber , " type
 # : " , self.nature
         self.residualSignalList = newResidualList
 
-        self.current_shift = self.shift_list[iterationNumber]
+        self.current_shift = self.shift_list[iteration_number]
 
         if startFrameList is None:
             startFrameList = [2] * self.sigNumber

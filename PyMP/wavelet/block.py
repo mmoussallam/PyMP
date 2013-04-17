@@ -43,13 +43,14 @@ class WaveletBlock(BaseBlock):
         self.scales = None
         
     def __repr__(self):
-        
+        """ printing info """
         mv_str = str(self.max_value) if self.max_value is not None else 'Not Set'
         mi_str = str(self.max_index) if self.max_index is not None else '-'  
         ml_str = str(self.max_level) if self.max_level is not None else '-'  
         return """ 
-Block for %s wavelet transform with %d levels 
-    Max Value : %s at level %s position %s"""%(self.nature, self.level,
+%s for %s wavelet transform with %d levels 
+    Max Value : %s at level %s position %s"""%(self.__class__.__name__,
+                                               self.nature, self.level,
                                                mv_str, ml_str, mi_str)
     
     def update(self, new_res_signal):

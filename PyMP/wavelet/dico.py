@@ -8,7 +8,6 @@ import numpy as np
 from .. import log
 from ..base import BaseDico, BaseAtom
 from . import block
-from dbus.bus import _logger
 
 #global _Logger
 _Logger = log.Log('WaveletDico', level=0)
@@ -35,7 +34,7 @@ class WaveletDico(BaseDico):
         wavelet types and corresponding levels.
         Also the zero padding attribute must be set at initialization        
         '''
-        _logger.setLevel(debug_level)
+        _Logger.set_level(debug_level)
         self.wavelets = wavelets
         self.pad = pad
     
@@ -49,8 +48,8 @@ class WaveletDico(BaseDico):
         self.starting_touched_index = 0
         self.ending_touched_index = -1
         for wav in self.wavelets:
-            print wav               
-            self.blocks.append(block.WaveletBlock(wav, debug_level=_logger.level))
+            _Logger.info("Adding %s level %d"%wav)               
+            self.blocks.append(block.WaveletBlock(wav, debug_level=_Logger.debugLevel))
     
     def update(self, residual, it_number):
         ''' quite classical : update each block independantly and retrieve the best one
@@ -73,3 +72,4 @@ class WaveletDico(BaseDico):
     
     def compute_touched_zone(self, best_atom):
         pass
+    

@@ -435,7 +435,7 @@ class Signal(object):
 
         return W
 
-    def Spectrogram(self, wsize=512, tstep=256, order=2, log=False, ax=None):
+    def spectrogram(self, wsize=512, tstep=256, order=2, log=False, ax=None):
         """ Compute and plot the (absolute value) spectrogram of the signal 
         
         Based on a short-time fourier transform
@@ -511,7 +511,7 @@ class Signal(object):
             X[:, :, t] = fframe[:, :n_freq]
         
         Spectro = np.abs(X)**order
-        print Spectro.shape
+        
         if log:
             Spectro = np.log10(Spectro)
         
