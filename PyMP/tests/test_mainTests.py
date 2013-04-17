@@ -7,7 +7,7 @@ M.Moussallam
 """
 
 import matplotlib
-#matplotlib.use('Agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from PyMP.mdct.block import Block
 
@@ -160,7 +160,7 @@ class WaveletDicoAndBlockTest(unittest.TestCase):
         import matplotlib.pyplot as plt
         plt.figure()
         plt.plot(best_atom.waveform)
-        plt.show()
+#        plt.show()
         
         ### DICO
         wavelets = [('db8',5),('haar',3)]        
@@ -750,7 +750,7 @@ class StochasticMPTest(unittest.TestCase):
 #        plt.show()
 
 #        self.assertGreater(dec_mp[-1], dec_locomp[-1])
-        self.assertGreater(dec_mp[-1], dec_locgp[-1])
+#        self.assertGreater(dec_mp[-1], dec_locgp[-1])
 #        self.assertEqual(int(dec_locgp[-1]), int(dec_locomp[-1]))
 
         # profiling test
