@@ -210,7 +210,7 @@ class WaveletPursuitTest(unittest.TestCase):
         plt.figure()
         plt.plot(app_1.recomposed_signal.data)
         plt.plot(signal_original.data)
-        plt.show()
+#        plt.show()
 #        app_1.plot_tf()
         
         
