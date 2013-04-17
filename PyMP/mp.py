@@ -617,10 +617,10 @@ def _mp_loop(dictionary, debug, silent_fail,
                 import matplotlib.pyplot as plt
                 plt.figure()
                 plt.plot(res_signal.data[best_atom.time_position:
-                         best_atom.time_position + best_atom.length])
-                plt.plot(best_atom.waveform)
+                         best_atom.time_position + best_atom.length],'o-')
+                plt.plot(best_atom.waveform,'x--')
                 plt.plot(res_signal.data[best_atom.time_position:
-                                         best_atom.time_position + best_atom.length] - best_atom.waveform, ':')
+                                         best_atom.time_position + best_atom.length] - best_atom.waveform, '+:')
                 plt.legend(('Signal', 'Atom substracted', 'residual'))
                 plt.title('Iteration ' + str(it_number))
                 dictionary.best_current_block.plot_proj_matrix()

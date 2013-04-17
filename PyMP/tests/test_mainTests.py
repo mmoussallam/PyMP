@@ -186,16 +186,32 @@ class WaveletPursuitTest(unittest.TestCase):
                                          normalize=True, mono=True)
         from PyMP.wavelet import dico as wavelet_dico
         
-        wavelets = [('db8',6),('haar',5)]
+        # let us creat a synthetic signal with two wavelets"
+#        sig_data = np.zeros(512)
+#        from pywt import Wavelet
+#        wv = Wavelet('db4')
+#        scaling, wavelet, x = wv.wavefun(level=3)
+#        sig_data[32:32+wavelet.shape[0]] += 0.57*wavelet
+#        wv = Wavelet('haar')
+#        scaling, wavelet, x = wv.wavefun(level=1)
+#        sig_data[65:65+wavelet.shape[0]] += 0.57*wavelet
+#        signal_original = signals.Signal(sig_data, normalize=False, mono=True)
         
-        dico = wavelet_dico.WaveletDico(wavelets)
+        wavelets = [('db4',4),('haar',5)]
+        
+        dico = wavelet_dico.WaveletDico(wavelets, pad=0, debug_level=1)
 
         
-        n_atoms = 300
+        n_atoms = 100
         app_1, dec1 = mp.greedy(signal_original, dico, 100,
-                                n_atoms, debug=0, pad=True, update='mp')
+                                n_atoms, debug=2, pad=True, update='mp')
         
-        app_1.plot_tf()
+        print app_1
+        plt.figure()
+        plt.plot(app_1.recomposed_signal.data)
+        plt.plot(signal_original.data)
+        plt.show()
+#        app_1.plot_tf()
         
         
 class DicoTest(unittest.TestCase):
@@ -1470,9 +1486,9 @@ if __name__ == '__main__':
 #    suite.addTest(WinServerTest())
 #    suite.addTest(Signaltest())
 #    suite.addTest(StochasticMPTest())
-    suite.addTest(WaveletAtomTest())
-    suite.addTest(WaveletDicoAndBlockTest())
-#    suite.addTest(WaveletPursuitTest())
+#    suite.addTest(WaveletAtomTest())
+#    suite.addTest(WaveletDicoAndBlockTest())
+    suite.addTest(WaveletPursuitTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
 

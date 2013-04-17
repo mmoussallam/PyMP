@@ -43,6 +43,7 @@ class WaveAtom(BaseAtom):
             value = self.amplitude
 
         self.waveform = value * wavelet
+        print self.waveform.shape, self.level
         self.scaling = scaling
         self.x = x
 #        return wavelet
@@ -61,13 +62,13 @@ class WaveAtom(BaseAtom):
         else:
             ts_str = str(self.time_shift)
         return '''
-Wavelet Atom :
+%s Wavelet Atom :
     length = %d
     frame = %d
     time Position = %d
     time shift = %s
     amplitude = %2.2f
-    level = %d''' % (self.length,
+    level = %d''' % (self.nature, self.length,
                              self.frame,
                              self.time_position,
                              ts_str,
@@ -80,3 +81,6 @@ Wavelet Atom :
             return self.synthesize()
 
         return self.waveform
+
+    def get_value(self):
+        return self.amplitude
