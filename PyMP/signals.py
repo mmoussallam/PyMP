@@ -435,7 +435,104 @@ class Signal(object):
 
         return W
 
-
+    def Spectrogram(self, wsize=512, tstep=256, order=2, log=False, ax=None):
+        """ Compute and plot the (absolute value) spectrogram of the signal 
+        
+        Based on a short-time fourier transform
+        
+        Parameters
+        ----------
+        wsize : int
+            length of the STFT window in samples (must be a multiple of 4)
+        tstep : int , opt
+            step between successive windows in samples (must be a multiple of 2,
+            a divider of wsize and smaller than wsize/2) (default: wsize/2)
+        order : int, opt
+            1 will have the Magnitude Spectrum, 2 the Power Spectrum
+        log : bool, opt
+            Set to True for the log-spectrogram
+        """
+        import matplotlib.pyplot as plt
+        from scipy.fftpack import fft, ifft, fftfreq
+        if ax is None:            
+            ax = plt.gca()
+                    
+        
+        ### Errors and warnings ###
+        if wsize % 4:
+            raise ValueError('The window length must be a multiple of 4.')
+    
+        if tstep is None:
+            tstep = wsize / 2
+    
+        tstep = int(tstep)
+    
+        if (wsize % tstep) or (tstep % 2):
+            raise ValueError('The step size must be a multiple of 2 and a '
+                             'divider of the window length.')
+    
+        if tstep > wsize:
+            raise ValueError('The step size must be smaller than the '
+                             'window length.')
+    
+        n_step = int(math.ceil(self.length / float(tstep)))
+        n_freq = wsize / 2 + 1
+        
+        _Logger.debug("Number of frequencies: %d" % n_freq)
+        _Logger.debug("Number of time steps: %d" % n_step)
+    
+        X = np.zeros((self.channel_num, n_freq, n_step), dtype=np.complex)
+    
+        if self.channel_num == 0:
+            return X
+        x = self.data.T
+        T = self.length
+        # Defining sine window
+        win = np.sin(np.arange(.5, wsize + .5) / wsize * np.pi)
+        win2 = win ** 2
+    
+        swin = np.zeros((n_step - 1) * tstep + wsize)
+        for t in range(n_step):
+            swin[t * tstep:t * tstep + wsize] += win2
+        swin = np.sqrt(wsize * swin)
+    
+        # Zero-padding and Pre-processing for edges
+        xp = np.zeros((self.channel_num, wsize + (n_step - 1) * tstep),
+                      dtype=x.dtype)
+        xp[:, (wsize - tstep) / 2: (wsize - tstep) / 2 + T] = x
+        x = xp
+    
+        for t in range(n_step):
+            # Framing
+            wwin = win / swin[t * tstep: t * tstep + wsize]
+            frame = x[:, t * tstep: t * tstep + wsize] * wwin[None, :]
+            # FFT
+            fframe = fft(frame)
+            X[:, :, t] = fframe[:, :n_freq]
+        
+        Spectro = np.abs(X)**order
+        print Spectro.shape
+        if log:
+            Spectro = np.log10(Spectro)
+        
+        if Spectro.shape[0]>1:
+            print "Taking mean of channels"
+            Spectro = np.squeeze(np.mean(Spectro, axis=0))
+        else:
+            Spectro = np.squeeze(Spectro)
+        
+        (Fmax,Tmax) = Spectro.shape
+        yticks =  np.arange(.0,Fmax, Fmax/10.0)
+        yvalues = (yticks*0.5*float(self.fs)/float(Fmax)).astype(int)
+        xticks =  np.arange(.0,Tmax, Tmax/10.0)
+        xvalues = (xticks*float(tstep)/float(self.fs))
+        
+        plt.imshow(Spectro,
+                   origin='lower')
+        plt.xticks(xticks, ["%1.2f"%v for v in xvalues])
+        plt.yticks(yticks, yvalues)
+        plt.xlabel('Time (s)')
+        plt.ylabel('Frequency (Hz)')
 # def InitFromFile(filepath, forceMono=False, doNormalize=False, debugLevel=None):
 #    ''' Static method to create a Signal from a wav file on the disk
 #        This is based on the wave Python library through the use of the Tools.SoundFile class

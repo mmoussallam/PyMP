@@ -7,7 +7,7 @@ M.Moussallam
 """
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from PyMP.mdct.block import Block
 
@@ -182,7 +182,7 @@ class WaveletDicoAndBlockTest(unittest.TestCase):
 
 class WaveletPursuitTest(unittest.TestCase):
     def runTest(self):
-        signal_original = signals.Signal(np.random.randn(512),
+        signal_original = signals.Signal(np.random.randn(512),1000,
                                          normalize=True, mono=True)
         from PyMP.wavelet import dico as wavelet_dico
         
@@ -202,16 +202,18 @@ class WaveletPursuitTest(unittest.TestCase):
         dico = wavelet_dico.WaveletDico(wavelets, pad=0, debug_level=1)
 
         
-        n_atoms = 100
+        n_atoms = 10
         app_1, dec1 = mp.greedy(signal_original, dico, 100,
                                 n_atoms, debug=2, pad=True, update='mp')
         
         print app_1
         plt.figure()
+        plt.subplot(211)
         plt.plot(app_1.recomposed_signal.data)
         plt.plot(signal_original.data)
-#        plt.show()
-#        app_1.plot_tf()
+        plt.xlim([0, signal_original.length])
+        plt.subplot(212)
+        app_1.recomposed_signal.Spectrogram(wsize=64,tstep=32,order=1,log=False)
         
         
 class DicoTest(unittest.TestCase):
@@ -251,6 +253,12 @@ class Signaltest(unittest.TestCase):
         signal.crop(8000, 8256)
 
         signal.wigner_plot()
+        del signal
+
+        signal = signals.Signal(op.join(audio_filepath, "ClocheB.wav"))
+        signal.crop(0, 2*8192)
+        signal.Spectrogram(512, tstep=128, order=1, log=False)
+        signal.Spectrogram(1024, tstep=512, order=2, log=True)
 
         del signal
 

@@ -84,3 +84,15 @@ class WaveAtom(BaseAtom):
 
     def get_value(self):
         return self.amplitude
+    
+    
+    def get_tf_info(self, Fs):
+        """ returns energy centroids and spread in the time frequency plane """
+        L = self.length
+        K = L / 2
+        freq = self.freq_bin
+        f = float(freq) * float(Fs) / float(L)
+        bw = (float(Fs) / float(K))  # / 2
+        p = float(self.time_position + K) / float(Fs)
+        l = float(L - K / 2) / float(Fs) 
+        return f, bw, p, l

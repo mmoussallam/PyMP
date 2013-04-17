@@ -412,13 +412,7 @@ class Approx:
         colors = []
         for i in range(maxTom):
             atom = self.atoms[i]
-            L = atom.length
-            K = L / 2
-            freq = atom.freq_bin
-            f = float(freq) * float(Fs) / float(L)
-            bw = (float(Fs) / float(K))  # / 2
-            p = float(atom.time_position + K) / float(Fs)
-            l = float(L - K / 2) / float(Fs)
+            f, bw, p, l = atom.get_tf_info(Fs)
 #            print "f =  " ,f , " Hz"
             if f > maxFreq:
                 maxFreq = f + bw + bw

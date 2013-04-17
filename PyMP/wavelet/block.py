@@ -126,7 +126,7 @@ Block for %s wavelet transform with %d levels
         for l in range(len(self.projections)):
             coeffs.append( np.zeros_like(self.projections[l]))
             if l == self.max_level:
-                print len(self.projections), self.max_level,self.projections[self.max_level].shape, self.max_index        
+#                print len(self.projections), self.max_level,self.projections[self.max_level].shape, self.max_index        
                 coeffs[-1][self.max_index] = self.projections[self.max_level][self.max_index]
         
         best_atom.waveform = pywt.waverec(coeffs, self.nature, mode='per')
