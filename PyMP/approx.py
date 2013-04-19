@@ -88,10 +88,10 @@ class Approx:
         # provided
         if original_signal is not None:
             self.recomposed_signal = original_signal.__class__(
-                np.zeros(original_signal.data.shape), self.fs)
+                np.zeros(original_signal.data.shape), self.fs, debug_level=debug_level)
         else:
             self.recomposed_signal = signals.Signal(
-                np.zeros(self.length), self.fs)
+                np.zeros(self.length), self.fs,debug_level=debug_level)
 
         self.recomposed_signal.is_normalized = isNormalized
 

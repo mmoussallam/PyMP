@@ -6,9 +6,9 @@ This class inherits from :class:`.Atom` and is used to represent and manipulate 
 :class:`WaveAtom` Objects can either be constructed or recovered from Xml using :func:`pymp_MDCTAtom.fromXml`
 
 '''
-
+import numpy as np
 from ..base import BaseAtom
-from pywt import Wavelet
+from pywt import Wavelet, centfrq
 
 
 class WaveAtom(BaseAtom):
@@ -88,11 +88,21 @@ class WaveAtom(BaseAtom):
     
     def get_tf_info(self, Fs):
         """ returns energy centroids and spread in the time frequency plane """
-        L = self.length
-        K = L / 2
-        freq = self.freq_bin
+        
+        # This is some pretty ugly hack and is only intended to allow basic
+        # plotting features
+        C = np.cumsum(self.waveform**2)
+        center = np.min(np.nonzero(C>np.max(C)/2))
+        start = np.min(np.nonzero(C>0.00001*np.max(C)))
+        end = np.min(np.nonzero(C>(0.99999*np.max(C))))
+        scale = 2**(np.round(np.log2(end-start)))
+        
+        
+        L = scale
+        K = L / 4
+        freq = centfrq(self.nature, precision=self.level)
         f = float(freq) * float(Fs) / float(L)
-        bw = (float(Fs) / float(K))  # / 2
-        p = float(self.time_position + K) / float(Fs)
-        l = float(L - K / 2) / float(Fs) 
+        bw = (float(Fs) / scale)  # / 2
+        p = center / float(Fs)
+        l = float(L + K) / float(Fs) 
         return f, bw, p, l

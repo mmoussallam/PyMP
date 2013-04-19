@@ -274,11 +274,20 @@ class Signal(object):
 
         self.energy = self.energy - oldEnergy + newEnergy
 
+    def resample(self, newFs):
+        """ resampling the signal """
+        from scipy.signal import resample
+        resamp_data = resample(self.data, self.get_duration()*newFs)
+        self.data = resamp_data
+        self.length = len(self.data)
+        self.fs = newFs
+    
     def downsample(self, newFs):
         """ downsampling the signal by taking only a portion of the data """
 
         if newFs >= self.fs:
-            raise ValueError('new sampling frequency is bigger than actual, try upsampling instead')
+            print 'WARNING new sampling frequency is bigger than actual, trying upsampling instead'
+            return self.resample(newFs)
 
         # ratio of selected points
         subRatio = float(self.fs) / float(newFs)
@@ -305,8 +314,9 @@ class Signal(object):
             self.data[atom.time_position: atom.
                       time_position + atom.length] += atom.waveform
         except:
-            _Logger.error('Mispositionned atom: ' + str(atom.
-                                                        time_position) + ' and length ' + str(atom.length))
+            _Logger.error('Mispositionned atom: from %d to %d - sig length of %d'%(atom.time_position,
+                                                                atom.length,
+                                                                self.length))
 #        # update energy value
         self.energy += np.sum(self.data[atom.time_position: atom.
                                         time_position + atom.length] ** 2) - localEnergy
@@ -373,10 +383,12 @@ class Signal(object):
                 self.data[i] = 0
             if self.data[i] < -1:
                 _Logger.warning(str(i) + 'th sample was below -1: cropping')
+                print "Data Clipped during writing"
                 self.data[i] = -1
             if self.data[i] > 1:
                 _Logger.warning(str(i) + 'th sample was over 1: cropping')
                 self.data[i] = 1
+                print "Data Clipped during writing"
             value = int(16384 * self.data[i])
             packed_value = struct.pack('h', value)
             values.append(packed_value)
@@ -468,12 +480,12 @@ class Signal(object):
         tstep = int(tstep)
     
         if (wsize % tstep) or (tstep % 2):
-            raise ValueError('The step size must be a multiple of 2 and a '
-                             'divider of the window length.')
+            raise ValueError('The step size is %d but it should be a multiple of 2 and a '
+                             'divider of the window length %d'%(tstep,wsize))
     
         if tstep > wsize:
-            raise ValueError('The step size must be smaller than the '
-                             'window length.')
+            raise ValueError('The step size is %d but it should be smaller than the '
+                             'window length %d'%(tstep,wsize))
     
         n_step = int(math.ceil(self.length / float(tstep)))
         n_freq = wsize / 2 + 1

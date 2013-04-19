@@ -47,6 +47,18 @@ class WaveletDico(BaseDico):
         self.best_current_block = None
         self.starting_touched_index = 0
         self.ending_touched_index = -1
+        
+        # Checking the signal length is a power of 2
+        if not np.log2(residual_signal.length) == int(np.log2(residual_signal.length)):
+            print "WARNING Wavelets decomposition need signal with powers of two in lengths "
+            print "Adding zeroes at the end to reach 2**%d"%np.ceil(np.log2(residual_signal.length))
+            missings = 2**np.ceil(np.log2(residual_signal.length)) - residual_signal.length
+            if missings % 2==0:
+                residual_signal.pad(missings/2)
+            else:
+                residual_signal.pad((missings+1)/2)
+                residual_signal.crop(1,residual_signal.length)
+        
         for wav in self.wavelets:
             _Logger.info("Adding %s level %d"%wav)               
             self.blocks.append(block.WaveletBlock(wav, debug_level=_Logger.debugLevel))
@@ -56,8 +68,8 @@ class WaveletDico(BaseDico):
         Selection of an atom will impact all the decomposition levels so for now we reprocess 
         all the projections scores at each iteration'''
         self.max_block_score = 0
-        self.best_current_block = None
-
+        self.best_current_block = None        
+            
         for block in self.blocks:            
             block.update(residual)
 
