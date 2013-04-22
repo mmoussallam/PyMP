@@ -19,20 +19,23 @@ mpl.rcParams['image.interpolation'] = 'Nearest'
 #mpl.rcParams['text.usetex'] = True
 
 print "Running MP, OMP and local versions on synthetic k-sparse"
-dico = Dico([16, 64])
-L = 16 * 100
+scales = [16, 64, 256]
+dico = Dico(scales)
+M = len(scales)
+L = 256 * 10
 k = 30
-data = np.zeros(L,)
+
 # create a k-sparse signal
-sp_vec = np.zeros(2*L,)
+sp_vec = np.zeros(M*L,)
 from PyMP.tools import mdct
-random_indexes = np.arange(2*L)
+random_indexes = np.arange(M*L)
 np.random.shuffle(random_indexes)
-random_weights = np.random.randn(2*L)
+random_weights = 5*np.random.randn(M*L)
 sp_vec[random_indexes[0:k]] = random_weights[0:k]
 
-sparse_data = mdct.imdct(sp_vec[0:L], 16)
-sparse_data += mdct.imdct(sp_vec[L:], 64)
+sparse_data = np.zeros(L,)
+for m in range(M):
+    sparse_data += mdct.imdct(sp_vec[m*L:(m+1)*L], scales[m])
 
 #plt.figure()
 #plt.subplot(211)
@@ -45,7 +48,7 @@ sparse_data += mdct.imdct(sp_vec[L:], 64)
 
 signal_original = Signal(
     sparse_data, Fs=8000, mono=True, normalize=True)
-#signal_original.data += 0.01 * np.random.random(L,)
+signal_original.data += 0.01 * np.random.random(L,)
 
 n_atoms = k + 1
 
