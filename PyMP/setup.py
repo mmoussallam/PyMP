@@ -4,10 +4,12 @@ import os
 import numpy.core
 
 NUMPYDIR = os.path.dirname(numpy.core.__file__)
-libraries = ['fftw3']
-include_dirs = [os.path.join(NUMPYDIR, r'include/numpy'),'/usr/local/include']
-library_dirs = ['/usr/lib/openmpi/lib/openmpi/', "/usr/local/lib"]
+libraries = ['fftw3-3']
+include_dirs = [os.path.join(NUMPYDIR, r'include/numpy'),'/usr/local/include',r'C:\Libs']
+library_dirs = ['/usr/lib/openmpi/lib/openmpi/', "/usr/local/lib",r'C:\Libs']
 
+import platform
+print platform.architecture()
 
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
