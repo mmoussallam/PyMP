@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Classes Package Documentation: &mdash; PyMP 1.0.0 documentation</title>
+    <title>Classes Package Documentation: &mdash; PyMP 1.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0.0',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
+    <link rel="top" title="PyMP 1.0.1 documentation" href="index.html" />
     <link rel="next" title="Union of MDCT basis Classes documentation :" href="Mdct.html" />
     <link rel="prev" title="MP routines Documentation" href="MP.html" /> 
   </head>
@@ -49,7 +49,7 @@
         <li class="right" >
           <a href="MP.html" title="MP routines Documentation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -230,6 +230,44 @@ CAUTION: this is an amplitude normalization not an energy one</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="PyMP.signals.Signal.resample">
+<tt class="descname">resample</tt><big>(</big><em>newFs</em><big>)</big><a class="headerlink" href="#PyMP.signals.Signal.resample" title="Permalink to this definition">¶</a></dt>
+<dd><p>resampling the signal</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyMP.signals.Signal.spectrogram">
+<tt class="descname">spectrogram</tt><big>(</big><em>wsize=512</em>, <em>tstep=256</em>, <em>order=2</em>, <em>log=False</em>, <em>ax=None</em>, <em>cmap=None</em>, <em>cbar=True</em><big>)</big><a class="headerlink" href="#PyMP.signals.Signal.spectrogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and plot the (absolute value) spectrogram of the signal</p>
+<p>Based on a short-time fourier transform</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>wsize</strong> : int</p>
+<blockquote>
+<div><p>length of the STFT window in samples (must be a multiple of 4)</p>
+</div></blockquote>
+<p><strong>tstep</strong> : int , opt</p>
+<blockquote>
+<div><p>step between successive windows in samples (must be a multiple of 2,
+a divider of wsize and smaller than wsize/2) (default: wsize/2)</p>
+</div></blockquote>
+<p><strong>order</strong> : int, opt</p>
+<blockquote>
+<div><p>1 will have the Magnitude Spectrum, 2 the Power Spectrum</p>
+</div></blockquote>
+<p><strong>log</strong> : bool, opt</p>
+<blockquote class="last">
+<div><p>Set to True for the log-spectrogram</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="PyMP.signals.Signal.subtract">
 <tt class="descname">subtract</tt><big>(</big><em>atom</em>, <em>debug=0</em>, <em>prevent_energy_increase=True</em><big>)</big><a class="headerlink" href="#PyMP.signals.Signal.subtract" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subtracts the atom waveform from the signal, at the position specified by the atom.timeLocalization property
@@ -263,39 +301,10 @@ WARNING: not sufficiently tested!</p>
 <em class="property">class </em><tt class="descclassname">PyMP.signals.</tt><tt class="descname">LongSignal</tt><big>(</big><em>filepath</em>, <em>frame_size=49152</em>, <em>frame_duration=None</em>, <em>mono=False</em>, <em>Noverlap=0</em><big>)</big><a class="headerlink" href="#PyMP.signals.LongSignal" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class handling long audio signals</p>
 <blockquote>
-<div><p>Subclass of <a class="reference internal" href="#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> where the data is not loaded at once for memory consumptions purposes
+<div>Subclass of <a class="reference internal" href="#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> where the data is not loaded at once for memory consumptions purposes
 Instead, the data is sliced in frames that can be loaded later individually. very useful to
-process large files such as audio archives</p>
-<p>Attributes:</p>
-<blockquote>
-<div><p><cite>filepath</cite>:    The path to the audio file</p>
-<p><cite>frameSize</cite>:   In samples, default is 16384*3</p>
-<p><cite>frameDuration</cite>:  Alternative to frameSize, specify directly a frame duration in seconds (Defult is None)</p>
-<p><cite>forceMono</cite>:      Only load the left (first) channel (default is False)</p>
-<p><cite>Noverlap</cite> :      overlap (as a ratio r such that <img src="_images/mathmpl/math-04e238ee3c.png" style="position: relative; bottom: -6px"/>)</p>
-</div></blockquote>
-</div></blockquote>
-<p>Standard methods to manipulate the signal are:</p>
-<blockquote>
-<div><a class="reference internal" href="#PyMP.signals.LongSignal.get_sub_signal" title="PyMP.signals.LongSignal.get_sub_signal"><tt class="xref py py-func docutils literal"><span class="pre">get_sub_signal()</span></tt></a> : Loads a subSignal</div></blockquote>
-<p class="rubric">Methods</p>
-<dl class="method">
-<dt id="PyMP.signals.LongSignal.get_sub_signal">
-<tt class="descname">get_sub_signal</tt><big>(</big><em>start_seg</em>, <em>seg_num</em>, <em>mono=False</em>, <em>normalize=False</em>, <em>channel=0</em>, <em>pad=0</em><big>)</big><a class="headerlink" href="#PyMP.signals.LongSignal.get_sub_signal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Routine to actually read from the buffer and return a smaller signal instance</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body">a <a class="reference internal" href="#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> object</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Example :</th><td class="field-body">longSig = LongSignal(<strong>myLongSigFilePath</strong>, frameDuration=5) # Initialize long signal
-subSig = longSig.get_sub_signal(0,10) # Loads the first 50 seconds of data</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+process large files such as audio archives</div></blockquote>
+<p class="rubric">Attributes</p>
 </dd></dl>
 
 </div></blockquote>
@@ -401,7 +410,7 @@ EXPERIMENTAL</p>
 
 <dl class="method">
 <dt id="PyMP.approx.Approx.plot_tf">
-<tt class="descname">plot_tf</tt><big>(</big><em>labelX=True</em>, <em>labelY=True</em>, <em>fontsize=12</em>, <em>ylim=None</em>, <em>patchColor=None</em>, <em>labelColor=None</em>, <em>multicolor=False</em>, <em>axes=None</em>, <em>maxAtoms=None</em>, <em>recenter=None</em>, <em>keepValues=False</em>, <em>french=False</em>, <em>Alpha=False</em>, <em>logF=False</em><big>)</big><a class="headerlink" href="#PyMP.approx.Approx.plot_tf" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">plot_tf</tt><big>(</big><em>labelX=True</em>, <em>labelY=True</em>, <em>fontsize=12</em>, <em>ylim=None</em>, <em>patchColor=None</em>, <em>labelColor=None</em>, <em>multicolor=False</em>, <em>axes=None</em>, <em>maxAtoms=None</em>, <em>recenter=None</em>, <em>keepValues=False</em>, <em>french=False</em>, <em>Alpha=False</em>, <em>logF=False</em>, <em>cmap=None</em><big>)</big><a class="headerlink" href="#PyMP.approx.Approx.plot_tf" title="Permalink to this definition">¶</a></dt>
 <dd><p>A time Frequency plot routine using Matplotlib</p>
 <p>each atom of the approx is plotted in a time-frequency plane with a gray scale for amplitudes
 Many options are available:</p>
@@ -470,18 +479,28 @@ recomposed_signal instance</p>
 <em class="property">class </em><tt class="descclassname">PyMP.base.</tt><tt class="descname">BaseAtom</tt><a class="headerlink" href="#PyMP.base.BaseAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract Atom class interface:</p>
 <p>To implement a new type of atom, you must derive from this class.</p>
-<p>Attributes:</p>
-<blockquote>
-<div><ul class="simple">
-<li><cite>nature</cite>: A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT</li>
-<li><a href="#id1"><span class="problematic" id="id2">`</span></a>length: Sample length of the atom (default is 0)</li>
-<li><cite>timePosition</cite>: The index of the first atom sample in a signal</li>
-<li><cite>waveform</cite>: a numpy array that will contain the atom waveform</li>
-<li><cite>amplitude</cite>: the atom amplitude</li>
-<li><cite>fs</cite>: the atom sampling frequency</li>
-</ul>
-</div></blockquote>
 <p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="3%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>nature: str</td>
+<td>&nbsp;</td>
+<td>A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT</td>
+</tr>
+<tr class="row-even"><td>length: int, optional</td>
+<td>&nbsp;</td>
+<td>Sample length of the atom (default is 0)</td>
+</tr>
+<tr class="row-odd"><td>timePosition</td>
+<td>int</td>
+<td>The index of the first atom sample in a signal</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 </dd></dl>
 
@@ -533,6 +552,7 @@ in order to be used correclty by Pursuit algorithm in this framework:</p>
 </dd>
 </dl>
 <p class="rubric">Attributes</p>
+<p class="rubric">Methods</p>
 </dd></dl>
 
 </div></blockquote>
@@ -563,7 +583,7 @@ in order to be used correclty by Pursuit algorithm in this framework:</p>
         <li class="right" >
           <a href="MP.html" title="MP routines Documentation"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

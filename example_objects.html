@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Manipulating Signals &mdash; PyMP 1.0.0 documentation</title>
+    <title>PyMP Tutorial 0. Manipulating Objects &mdash; PyMP 1.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0.0',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,9 +26,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
-    <link rel="next" title="MP routines Documentation" href="MP.html" />
-    <link rel="prev" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" /> 
+    <link rel="top" title="PyMP 1.0.1 documentation" href="index.html" />
+    <link rel="next" title="PyMP Tutorial 1. MP decomposition with Unions of MDCT" href="example.html" />
+    <link rel="prev" title="What is PyMP?" href="doc.html" /> 
   </head>
   <body>
     <div class="related">
@@ -44,12 +44,12 @@
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="MP.html" title="MP routines Documentation"
+          <a href="example.html" title="PyMP Tutorial 1. MP decomposition with Unions of MDCT"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+          <a href="doc.html" title="What is PyMP?"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -59,8 +59,10 @@
             </a></p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Manipulating Signals</a><ul>
+<li><a class="reference internal" href="#">PyMP Tutorial 0. Manipulating Objects</a><ul>
+<li><a class="reference internal" href="#manipulating-signals">Manipulating Signals</a><ul>
 <li><a class="reference internal" href="#reading-and-writing">Reading and Writing</a></li>
+<li><a class="reference internal" href="#visualizations">Visualizations</a></li>
 <li><a class="reference internal" href="#signal-edition">Signal Edition</a></li>
 </ul>
 </li>
@@ -70,13 +72,15 @@
 </ul>
 </li>
 </ul>
+</li>
+</ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="example_coder.html"
-                        title="previous chapter">PyMP Tutorial 2. Audio compression</a></p>
+  <p class="topless"><a href="doc.html"
+                        title="previous chapter">What is PyMP?</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="MP.html"
-                        title="next chapter">MP routines Documentation</a></p>
+  <p class="topless"><a href="example.html"
+                        title="next chapter">PyMP Tutorial 1. MP decomposition with Unions of MDCT</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/example_objects.txt"
@@ -103,12 +107,14 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="manipulating-signals">
-<h1>Manipulating Signals<a class="headerlink" href="#manipulating-signals" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="pymp-tutorial-0-manipulating-objects">
+<h1>PyMP Tutorial 0. Manipulating Objects<a class="headerlink" href="#pymp-tutorial-0-manipulating-objects" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="manipulating-signals">
+<h2>Manipulating Signals<a class="headerlink" href="#manipulating-signals" title="Permalink to this headline">¶</a></h2>
 <p>First thing you may want to do is load, analyse, plot and write signals. These operations are handled using the
 <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> class.</p>
 <div class="section" id="reading-and-writing">
-<h2>Reading and Writing<a class="headerlink" href="#reading-and-writing" title="Permalink to this headline">¶</a></h2>
+<h3>Reading and Writing<a class="headerlink" href="#reading-and-writing" title="Permalink to this headline">¶</a></h3>
 <p>You can use the constructor of the <a class="reference internal" href="classes.html#PyMP.signals.Signal" title="PyMP.signals.Signal"><tt class="xref py py-class docutils literal"><span class="pre">Signal</span></tt></a> class to load a wav file from the disk.
 This is internally done using the <strong>wave</strong> python module shipped with the standard library. Assuming you&#8217;ve correctly set the PYTHONPATH variable so that it contains
 the pymp/PyMP/ directory, you can simply type in a python shell:</p>
@@ -144,10 +150,22 @@ sampling frequency, sample format, etc.. you can access the samples directly as 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">zero_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1024</span><span class="p">,)),</span> <span class="n">Fs</span><span class="o">=</span><span class="mi">8000</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>where <cite>Fs</cite> is the sampling frequency (default is zero)
-At any moment you can visualize the data using the <tt class="xref py py-func docutils literal"><span class="pre">Signal.plot()</span></tt> function:</p>
+<p>where <cite>Fs</cite> is the sampling frequency (default is zero)</p>
+</div>
+<div class="section" id="visualizations">
+<h3>Visualizations<a class="headerlink" href="#visualizations" title="Permalink to this headline">¶</a></h3>
+<p>At any moment you can visualize the data using the <tt class="xref py py-func docutils literal"><span class="pre">Signal.plot()</span></tt> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
+</div>
+<p>Alternatively, a useful routine to visualize the time-frequency content is the <tt class="xref py py-func docutils literal"><span class="pre">Signal.spectrogram()</span></tt> function.
+For instance, to plot the logarithm of the power spectrum with a 1024 sample window and 75% overlap:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span><span class="o">.</span><span class="n">spectrogram</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href="./pyplots/Spectro_example.py">Source code</a>, <a class="reference external" href="./pyplots/Spectro_example.png">png</a>, <a class="reference external" href="./pyplots/Spectro_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/Spectro_example.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/Spectro_example.png" src="_images/Spectro_example.png" />
 </div>
 <p>Writing a signal is also quite straightforward:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">signal</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;new_dest_file.wav&#39;</span><span class="p">)</span>
@@ -155,7 +173,7 @@ At any moment you can visualize the data using the <tt class="xref py py-func do
 </div>
 </div>
 <div class="section" id="signal-edition">
-<h2>Signal Edition<a class="headerlink" href="#signal-edition" title="Permalink to this headline">¶</a></h2>
+<h3>Signal Edition<a class="headerlink" href="#signal-edition" title="Permalink to this headline">¶</a></h3>
 <p>Often you need to edit signals, e.g. crop them or pad them with zeroes on the borders,
 this can be done easily:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">signal</span><span class="o">.</span><span class="n">length</span>
@@ -199,14 +217,14 @@ For example, we can create a signal with only ones and pad it with zeroes on the
 </div>
 </div>
 <div class="section" id="manipulating-approximation-objects">
-<h1>Manipulating Approximation objects<a class="headerlink" href="#manipulating-approximation-objects" title="Permalink to this headline">¶</a></h1>
+<h2>Manipulating Approximation objects<a class="headerlink" href="#manipulating-approximation-objects" title="Permalink to this headline">¶</a></h2>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last"><a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> objects are the equivalent of <em>Book</em> objects in MPTK.
 They handle the approximation of a signal on a given dictionary.</p>
 </div>
 <div class="section" id="creation">
-<h2>Creation<a class="headerlink" href="#creation" title="Permalink to this headline">¶</a></h2>
+<h3>Creation<a class="headerlink" href="#creation" title="Permalink to this headline">¶</a></h3>
 <p>A trivial creation takes no further arguments.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.approx</span> <span class="kn">import</span> <span class="n">Approx</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">approx</span> <span class="o">=</span> <span class="n">Approx</span><span class="p">()</span>
@@ -240,7 +258,7 @@ then the atom&#8217;s waveform is synthesized using internal routine and used to
 </div>
 </div>
 <div class="section" id="approximation-in-a-mp-context">
-<h2>Approximation in a MP context<a class="headerlink" href="#approximation-in-a-mp-context" title="Permalink to this headline">¶</a></h2>
+<h3>Approximation in a MP context<a class="headerlink" href="#approximation-in-a-mp-context" title="Permalink to this headline">¶</a></h3>
 <p>Although you can manipulate <a class="reference internal" href="classes.html#PyMP.approx.Approx" title="PyMP.approx.Approx"><tt class="xref py py-class docutils literal"><span class="pre">Approx</span></tt></a> objects on their own, it is much more interesting to link them to existing signals and to a dictionary.
 For example, let us define a dictionary as a union of 3 MDCT basis:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP</span> <span class="kn">import</span> <span class="n">Signal</span>
@@ -269,6 +287,7 @@ using the Signal to Residual Ratio (SRR):</p>
 <p>Since we picked a random atom with no link to the signal, the SRR (in dB) is very poor. It will be much better when MP select atoms based on their correlation to the signal</p>
 </div>
 </div>
+</div>
 
 
           </div>
@@ -289,12 +308,12 @@ using the Signal to Residual Ratio (SRR):</p>
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="MP.html" title="MP routines Documentation"
+          <a href="example.html" title="PyMP Tutorial 1. MP decomposition with Unions of MDCT"
              >next</a> |</li>
         <li class="right" >
-          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+          <a href="doc.html" title="What is PyMP?"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Union of MDCT basis Classes documentation : &mdash; PyMP 1.0.0 documentation</title>
+    <title>Union of MDCT basis Classes documentation : &mdash; PyMP 1.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0.0',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyMP 1.0.0 documentation" href="index.html" />
+    <link rel="top" title="PyMP 1.0.1 documentation" href="index.html" />
     <link rel="prev" title="Classes Package Documentation:" href="classes.html" /> 
   </head>
   <body>
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="classes.html" title="Classes Package Documentation:"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -129,6 +129,12 @@
 <dt id="PyMP.mdct.atom.Atom.copy">
 <tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>copycat routine</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PyMP.mdct.atom.Atom.get_tf_info">
+<tt class="descname">get_tf_info</tt><big>(</big><em>Fs</em><big>)</big><a class="headerlink" href="#PyMP.mdct.atom.Atom.get_tf_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns energy centroids and spread in the time frequency plane</p>
 </dd></dl>
 
 <dl class="method">
@@ -395,29 +401,42 @@ are very slow but convergence should be optimum</p>
 <dt id="PyMP.mdct.rand.block.SequenceBlock">
 <em class="property">class </em><tt class="descclassname">PyMP.mdct.rand.block.</tt><tt class="descname">SequenceBlock</tt><big>(</big><em>length=0</em>, <em>resSignal=None</em>, <em>frameLen=0</em>, <em>randomType='random'</em>, <em>nbSim=1</em>, <em>windowType=None</em>, <em>seed=None</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>block implementing the Randomized Pursuit</p>
-<p>Attributes:</p>
-<blockquote>
-<div><p><cite>sequence_type</cite>: The type of time-shift sequence, available choices are</p>
-<blockquote>
-<div><blockquote>
-<div><em>scale</em>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><cite>sequence_type</cite>: str</td>
+<td><dl class="first docutils">
+<dt>The type of time-shift sequence, available choices are</dt>
+<dd><em>scale</em>
 <em>random</em>
 <em>gaussian</em>
 <em>binom</em>
 <em>dicho</em>
 <em>jump</em>
-<em>binary</em></div></blockquote>
-<p>default is <em>random</em> which use a uniform pseudo-random generator</p>
-</div></blockquote>
-<p><cite>shift_list</cite>: The actual sequence of subdictionary time-shifts</p>
-<p><cite>current_shift</cite>: The current time-shift</p>
-<p><cite>nbSim</cite>: Number of consecutive iterations with the same time-shift (default is 1)</p>
-</div></blockquote>
-<p class="rubric">Attributes</p>
+<em>binary</em></dd>
+</dl>
+<p class="last">default is <em>random</em> which use a uniform pseudo-random generator</p>
+</td>
+</tr>
+<tr class="row-even"><td><cite>shift_list</cite>: array-like</td>
+<td>The actual sequence of subdictionary time-shifts</td>
+</tr>
+<tr class="row-odd"><td><cite>current_shift</cite>: int</td>
+<td>The current time-shift</td>
+</tr>
+<tr class="row-even"><td><cite>nbSim</cite>: int</td>
+<td>Number of consecutive iterations with the same time-shift (default is 1)</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <dl class="method">
 <dt id="PyMP.mdct.rand.block.SequenceBlock.update">
-<tt class="descname">update</tt><big>(</big><em>new_res_signal</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em>, <em>iterationNumber=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock.update" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">update</tt><big>(</big><em>new_res_signal</em>, <em>startFrameIdx=0</em>, <em>stopFrameIdx=-1</em>, <em>iteration_number=0</em><big>)</big><a class="headerlink" href="#PyMP.mdct.rand.block.SequenceBlock.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Same as superclass except that at each update, one need to pick a time shift from the sequence</p>
 </dd></dl>
 
@@ -465,7 +484,7 @@ the shifts are controlled by the different blocks.</p>
         <li class="right" >
           <a href="classes.html" title="Classes Package Documentation:"
              >previous</a> |</li>
-        <li><a href="index.html">PyMP 1.0.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

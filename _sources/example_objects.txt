@@ -1,3 +1,6 @@
+PyMP Tutorial 0. Manipulating Objects
+=====================================
+
 Manipulating Signals
 --------------------
 First thing you may want to do is load, analyse, plot and write signals. These operations are handled using the
@@ -41,9 +44,19 @@ Meaning you can also create a :class:`.Signal` object directly from a numpy arra
 >>> zero_signal = Signal(np.zeros((1024,)), Fs=8000)
 
 where `Fs` is the sampling frequency (default is zero)
+
+Visualizations
+**************
 At any moment you can visualize the data using the :func:`.Signal.plot` function::
 
 >>> signal.plot()
+
+Alternatively, a useful routine to visualize the time-frequency content is the :func:`.Signal.spectrogram` function.
+For instance, to plot the logarithm of the power spectrum with a 1024 sample window and 75% overlap:
+
+>>> signal.spectrogram(1024, 256, order=2, log=True, cmap=cm.hot, cbar=True)
+
+.. plot:: pyplots/Spectro_example.py
 
 Writing a signal is also quite straightforward::
 

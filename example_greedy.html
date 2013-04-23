@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyMP Tutorial 3. Greedy decomposition variants &mdash; PyMP 1.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PyMP 1.0.1 documentation" href="index.html" />
+    <link rel="next" title="MP routines Documentation" href="MP.html" />
+    <link rel="prev" title="PyMP Tutorial 2. Audio compression" href="example_coder.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MP.html" title="MP routines Documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyMP Tutorial 3. Greedy decomposition variants</a><ul>
+<li><a class="reference internal" href="#orthogonal-matching-pursuit">Orthogonal Matching Pursuit</a></li>
+<li><a class="reference internal" href="#gradient-pursuit">Gradient Pursuit</a></li>
+<li><a class="reference internal" href="#local-versions-of-omp-gp">Local versions of OMP/GP</a></li>
+<li><a class="reference internal" href="#cyclic-matching-pursuit">Cyclic Matching Pursuit</a></li>
+<li><a class="reference internal" href="#example">example</a></li>
+<li><a class="reference internal" href="#bibliography">Bibliography</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="example_coder.html"
+                        title="previous chapter">PyMP Tutorial 2. Audio compression</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="MP.html"
+                        title="next chapter">MP routines Documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/example_greedy.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pymp-tutorial-3-greedy-decomposition-variants">
+<h1>PyMP Tutorial 3. Greedy decomposition variants<a class="headerlink" href="#pymp-tutorial-3-greedy-decomposition-variants" title="Permalink to this headline">¶</a></h1>
+<p>There are many variants of the MP algorithm. Only a few of them are directly implemented in PyMP.
+In the first tutorial, we saw some variants of the selection step (e.g. RSSMP). Here we&#8217;re interested
+in the update step. In order to use this variants, we use the <tt class="xref py py-func docutils literal"><span class="pre">mp.greedy()</span></tt> function of the <tt class="xref py py-mod docutils literal"><span class="pre">mp</span></tt>
+module.</p>
+<p>Here&#8217;s a example of use with a simple multiscale MDCT dictionary and the standard MP algorithm:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct</span> <span class="kn">import</span> <span class="n">Dico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP</span> <span class="kn">import</span> <span class="n">mp</span><span class="p">,</span> <span class="n">Signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="s">&#39;data/ClocheB.wav&#39;</span><span class="p">,</span> <span class="n">mono</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c"># Load Signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">sig</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>     <span class="c"># Keep only 4 seconds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># atom of scales 8, 64 and 512 ms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scales</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span> <span class="o">*</span> <span class="n">sig</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">512</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mp_dico</span> <span class="o">=</span> <span class="n">Dico</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Launching decomposition, stops either at 20 dB of SRR or 2000 iterations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mp_approx</span><span class="p">,</span> <span class="n">mp_decay</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">greedy</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">mp_dico</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="s">&#39;mp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is equivalent to using the <tt class="xref py py-func docutils literal"><span class="pre">mp.mp()</span></tt> method. However, the additionnal <em>update</em> keyword
+argument allows to change the nature of the update step.</p>
+<div class="section" id="orthogonal-matching-pursuit">
+<h2>Orthogonal Matching Pursuit<a class="headerlink" href="#orthogonal-matching-pursuit" title="Permalink to this headline">¶</a></h2>
+<p>The principle of OMP is to ensure that at each iteration, chosen atom weights are the best possible
+ones (in a least squares sense).  An orthogobnal projection of the residual onto the subspace spanned
+by all previously selected atoms is thus performed. Original paper is [1].
+The keyword to use OMP is <em>omp</em>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">OMP is extremely resource consuming. You should not try to use it on
+signals with lengths greater than a few thousand samples. Try the local version instead or GP.</p>
+</div>
+</div>
+<div class="section" id="gradient-pursuit">
+<h2>Gradient Pursuit<a class="headerlink" href="#gradient-pursuit" title="Permalink to this headline">¶</a></h2>
+<p>Gradient Pursuits have been introduced by Blumensath and Davis in [2]. The idea is to replace the
+costly orthogonal projection by a much more affordable directionnal update step.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Orthogonal and directionnal pursuits implementation are not compatible (yet) with <a class="reference internal" href="Mdct.html#PyMP.mdct.dico.FullDico" title="PyMP.mdct.dico.FullDico"><tt class="xref py py-class docutils literal"><span class="pre">FullDico</span></tt></a> is implemented.</p>
+</div>
+</div>
+<div class="section" id="local-versions-of-omp-gp">
+<h2>Local versions of OMP/GP<a class="headerlink" href="#local-versions-of-omp-gp" title="Permalink to this headline">¶</a></h2>
+<p>Mailhé <em>et al</em> [3] have presented variants of OMP and GP that are much more efficient since they only perform
+the update in a neighborhood of the last selected atom.
+For the kind of dictionaries that are implemented in PyMP (i.e. time-localized MDCT and Wavelets), this is a great news.
+The keyword arguments to use the local OMP is <em>locomp</em> and local GP is <em>locgp</em></p>
+</div>
+<div class="section" id="cyclic-matching-pursuit">
+<h2>Cyclic Matching Pursuit<a class="headerlink" href="#cyclic-matching-pursuit" title="Permalink to this headline">¶</a></h2>
+<p>Coming Soon!</p>
+</div>
+<div class="section" id="example">
+<h2>example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>The following example build a k-sparse signal and compares decompositions using
+MP, locOMP and locGP:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP</span> <span class="kn">import</span> <span class="n">mp</span><span class="p">,</span> <span class="n">Signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.mdct</span> <span class="kn">import</span> <span class="n">Dico</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">256</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dico</span> <span class="o">=</span> <span class="n">Dico</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">M</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">scales</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">L</span> <span class="o">=</span> <span class="mi">256</span> <span class="o">*</span> <span class="mi">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">L</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># create a k-sparse signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">L</span><span class="p">,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">PyMP.tools</span> <span class="kn">import</span> <span class="n">mdct</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">L</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">random_indexes</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">L</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp_vec</span><span class="p">[</span><span class="n">random_indexes</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">random_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">k</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># initialize true sparse rep</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sparse_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">L</span><span class="p">,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">sparse_data</span> <span class="o">+=</span> <span class="n">mdct</span><span class="o">.</span><span class="n">imdct</span><span class="p">(</span><span class="n">sp_vec</span><span class="p">[</span><span class="n">m</span><span class="o">*</span><span class="n">L</span><span class="p">:(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">L</span><span class="p">],</span> <span class="n">scales</span><span class="p">[</span><span class="n">m</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">sparse_data</span><span class="p">,</span> <span class="n">Fs</span><span class="o">=</span><span class="mi">8000</span><span class="p">,</span> <span class="n">mono</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">data</span> <span class="o">+=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">L</span><span class="p">,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">scale</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_atoms</span> <span class="o">=</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># Run the decompositions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app_1</span><span class="p">,</span> <span class="n">dec1</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">greedy</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">dico</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="s">&#39;mp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app_2</span><span class="p">,</span> <span class="n">dec2</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">greedy</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">dico</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="s">&#39;locgp&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app_3</span><span class="p">,</span> <span class="n">dec3</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">greedy</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">dico</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="s">&#39;locomp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Plotting the decay with :</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dec1</span> <span class="o">/</span> <span class="n">dec1</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dec2</span> <span class="o">/</span> <span class="n">dec2</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dec3</span> <span class="o">/</span> <span class="n">dec3</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Residual Energy decay (dB)&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Iteration&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">((</span><span class="s">&#39;MP&#39;</span><span class="p">,</span> <span class="s">&#39;LocGP&#39;</span><span class="p">,</span> <span class="s">&#39;LocOMP&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>we have:</p>
+<p>(<a class="reference external" href="./pyplots/OMP_example.py">Source code</a>, <a class="reference external" href="./pyplots/OMP_example.png">png</a>, <a class="reference external" href="./pyplots/OMP_example.hires.png">hires.png</a>, <a class="reference external" href="./pyplots/OMP_example.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="_images/OMP_example.png" src="_images/OMP_example.png" />
+</div>
+</div>
+<div class="section" id="bibliography">
+<h2>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="docutils">
+<dt>1 <span class="classifier-delimiter">:</span> <span class="classifier">Pati, Y. C. C., Rezaiifar, R., &amp; Krishnaprasad, P. S. S. Orthogonal Matching Pursuit: Recursive Function Approximation with Applications to Wavelet Decomposition (<a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.55.1254">pdfomp</a>).</span></dt>
+<dd>Proceedings of the 27 th Annual Asilomar Conference on Signals, Systems, and Computers (pp. 40–44).</dd>
+<dt>2 <span class="classifier-delimiter">:</span> <span class="classifier">Blumensath, T., &amp; Davies, M. . (2008). Gradient Pursuits.</span></dt>
+<dd>IEEE Transactions on Signal Processing, 56(6), 2370–2382 (<a class="reference external" href="http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;arnumber=4480155&amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D4480155">pdfgp</a>).</dd>
+<dt>3 <span class="classifier-delimiter">:</span> <span class="classifier">Mailhé, B., Gribonval, R., Vandergheynst, P., &amp; Bimbot, F. (2011). Fast orthogonal sparse approximation algorithms over local dictionaries.</span></dt>
+<dd>Signal Processing vol 91(12) (2822-2835) (<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S0165168411000053">pdfloc</a>).</dd>
+</dl>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="MP.html" title="MP routines Documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="example_coder.html" title="PyMP Tutorial 2. Audio compression"
+             >previous</a> |</li>
+        <li><a href="index.html">PyMP 1.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Manuel Moussallam.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

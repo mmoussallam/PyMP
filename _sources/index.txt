@@ -10,10 +10,13 @@ PyMP's documentation!
    :maxdepth: 2
    
    doc
+   example_objects
    
    example
    example_coder
-   example_objects
+   example_greedy
+   
+   
 
    MP.rst
    classes.rst
