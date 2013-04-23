@@ -22,7 +22,7 @@ _Logger = log.Log('Signal', imode=False)
 # from operator import add, mul
 
 
-class Signal(object):
+class Signal(base.BaseSignal):
     """This file defines the main class handling audio signal in the Pymp Framework.
 
     A Signal is fairly a numpy array (called data) and a collection of attributes.
@@ -60,7 +60,7 @@ class Signal(object):
     """
 
     # att
-    data = []
+    data = np.array([])
     channel_num = 0
     length = 0
     fs = 0
@@ -74,7 +74,7 @@ class Signal(object):
         """ Simple constructor from a numpy array (data) or a string 
     parameters
     ----------
-    data : array
+    data : array-like
         a numpy array containing the signal data
     Fs :  int
         the sampling frequency
@@ -383,12 +383,12 @@ class Signal(object):
                 self.data[i] = 0
             if self.data[i] < -1:
                 _Logger.warning(str(i) + 'th sample was below -1: cropping')
-                print "Data Clipped during writing"
+#                 "Data Clipped during writing"
                 self.data[i] = -1
             if self.data[i] > 1:
                 _Logger.warning(str(i) + 'th sample was over 1: cropping')
                 self.data[i] = 1
-                print "Data Clipped during writing"
+#                print "Data Clipped during writing"
             value = int(16384 * self.data[i])
             packed_value = struct.pack('h', value)
             values.append(packed_value)
@@ -447,7 +447,8 @@ class Signal(object):
 
         return W
 
-    def spectrogram(self, wsize=512, tstep=256, order=2, log=False, ax=None):
+    def spectrogram(self, wsize=512, tstep=256, order=2, log=False,
+                    ax=None, cmap=None, cbar=True):
         """ Compute and plot the (absolute value) spectrogram of the signal 
         
         Based on a short-time fourier transform
@@ -538,13 +539,19 @@ class Signal(object):
         yvalues = (yticks*0.5*float(self.fs)/float(Fmax)).astype(int)
         xticks =  np.arange(.0,Tmax, Tmax/10.0)
         xvalues = (xticks*float(tstep)/float(self.fs))
-        
+        if cmap is None:
+            import matplotlib.cm as cm
+            cmap = cm.coolwarm
         plt.imshow(Spectro,
-                   origin='lower')
+                   origin='lower',
+                   cmap=cmap)
+        
         plt.xticks(xticks, ["%1.2f"%v for v in xvalues])
         plt.yticks(yticks, yvalues)
         plt.xlabel('Time (s)')
         plt.ylabel('Frequency (Hz)')
+        if cbar:
+            plt.colorbar()
 # def InitFromFile(filepath, forceMono=False, doNormalize=False, debugLevel=None):
 #    ''' Static method to create a Signal from a wav file on the disk
 #        This is based on the wave Python library through the use of the Tools.SoundFile class

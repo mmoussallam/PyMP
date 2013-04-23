@@ -1,6 +1,6 @@
 
-PyMP Tutorial 1. Signal decomposition
-=====================================
+PyMP Tutorial 1. MP decomposition with Unions of MDCT
+=====================================================
 
 This tutorial will describe how PyMP works, and mostly how to use it to perform audio
 signal decompositions on multiscale MDCT dictionaries

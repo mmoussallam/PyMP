@@ -22,15 +22,15 @@ print "Running MP, OMP and local versions on synthetic k-sparse"
 scales = [16, 64, 256]
 dico = Dico(scales)
 M = len(scales)
-L = 256 * 10
-k = 30
+L = 256 * 4
+k = 0.5*L
 
 # create a k-sparse signal
 sp_vec = np.zeros(M*L,)
 from PyMP.tools import mdct
 random_indexes = np.arange(M*L)
 np.random.shuffle(random_indexes)
-random_weights = 5*np.random.randn(M*L)
+random_weights = np.random.randn(M*L)
 sp_vec[random_indexes[0:k]] = random_weights[0:k]
 
 sparse_data = np.zeros(L,)
@@ -64,12 +64,14 @@ plt.plot(10.0 * np.log10(dec1 / dec1[0]))
 plt.plot(10.0 * np.log10(dec2 / dec2[0]))
 plt.plot(10.0 * np.log10(dec3 / dec3[0]))
 plt.grid()
+plt.ylabel('Residual Energy decay (dB)')
+plt.xlabel('Iteration')
 plt.legend(('MP', 'LocGP', 'LocOMP'))
 
-plt.figure()
-plt.plot(sp_vec, 'o')
-plt.plot(app_1.to_array()[0], 'rx')
-plt.plot(app_2.to_array()[0], 'ks')
-plt.plot(app_3.to_array()[0], 'md')
+#plt.figure()
+#plt.plot(sp_vec, 'o')
+#plt.plot(app_1.to_array()[0], 'rx')
+#plt.plot(app_2.to_array()[0], 'ks')
+#plt.plot(app_3.to_array()[0], 'md')
 
 plt.show()

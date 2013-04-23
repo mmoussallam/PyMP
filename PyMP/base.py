@@ -8,6 +8,32 @@
 # -----------------------------------------------------------------------
 #
 #
+import numpy as np
+
+class BaseSignal(object):
+    """
+    Attributes
+    ----------
+    *data* : array
+        a numpy array containing the signal data
+    *fs* : int
+        The sampling frequency
+    *location* :  str , optional
+        Where the original file is located on the disk
+    """
+    
+    data = np.array([])
+    fs = 0
+    location = ""
+
+    def __init__(self):
+        """ default constructor doesn't do anything """
+    
+    def add(self, atom):
+        raise NotImplementedError("Subclass method not found")
+        
+    def subtract(self, atom):       
+        raise NotImplementedError("Subclass method not found") 
 
 
 class BaseAtom(object):
@@ -19,10 +45,6 @@ class BaseAtom(object):
     ----------
     nature: str
         A string describing the atom type (e.g MDCT, MCLT , GaborReal) default is MDCT
-    length: int, optional
-        Sample length of the atom (default is 0)
-    timePosition : int
-        The index of the first atom sample in a signal
     waveform : array-like
         a numpy array that will contain the atom waveform
     amplitude : float
@@ -33,18 +55,14 @@ class BaseAtom(object):
     """
 
     # default values
-    nature = 'Abstract'
-    length = 0
-    time_position = 0
+    nature = 'Abstract'    
     waveform = None
+    length = 0
     fs = 0
-    amplitude = 0
-    phase = None
+    amplitude = 0    
 
     def __init__(self):
-        self.length = 0
-        self.amplitude = 0
-        self.time_position = 0
+        """" basic constructor doesn't do anything"""
 
     # mandatory functions
     def get_waveform(self):
@@ -67,7 +85,7 @@ class BaseBlock(object):
 
     # members
     scale = 0
-    residualSignal = None
+    residual_signal = BaseSignal()
 
     # methods
     def __init__(self):
@@ -88,15 +106,13 @@ class BaseDico(object):
 
             - `sizes`: a list of scales
 
-            - `blocks`: a list of blocks that handles the projection of a residual signal along with
+            - `blocks`: a list of :class:`.BaseBlock` that handles the projection of a residual signal along with
                         the selection of a projection maximum given a transform and a criteria
         """
     # attributes:
-    sizes = None
-    tolerances = None
-    blocks = None    
-    nature = 'Abstract'
-    matrix = None
+    sizes = None    
+    blocks = []    
+    nature = 'Abstract'    
 
     def __init__(self):
         """ default constructor doesn't do anything"""
@@ -110,3 +126,33 @@ class BaseDico(object):
 
     def get_best_atom(self):
         raise NotImplementedError("Subclass method not found")
+    
+                        
+class BaseApprox(object):
+    """
+    Attributes
+    ----------
+    *dico* : :class:`.BaseDico`
+        the dictionary (as a :class:`.BaseDico` object) from which it has been constructed
+    *atoms* : list
+        a list of :class:`.BaseAtom` objets
+    *original_signal* : :class:`.BaseSignal`
+        a :class:`.Signal` object that is the original signal
+    *recomposed_signal* :  :class:`.BaseSignal`
+        a :class:`.BaseSignal` objet for the reconstructed signal (as the weighted sum of atoms specified in the atoms list)
+    """
+    dico = BaseDico()
+    atoms = []
+    original_signal = BaseSignal()
+    recomposed_signal = BaseSignal()
+    
+    def __init__(self):
+        """ default constructor doesn't do anything """
+    
+    def add(self, atom):
+        raise NotImplementedError("Subclass method not found")
+        
+    def remove(self, atom):       
+        raise NotImplementedError("Subclass method not found")   
+    
+ 

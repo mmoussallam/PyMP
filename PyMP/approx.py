@@ -12,7 +12,7 @@ import numpy as np
 
 from PyMP import signals
 from PyMP import log
-from PyMP.base import BaseAtom
+from PyMP.base import BaseAtom, BaseApprox
 from PyMP.tools.mdct import imdct
 
 
@@ -20,7 +20,7 @@ from PyMP.tools.mdct import imdct
 _Logger = log.Log('Approx')
 
 
-class Approx:
+class Approx(BaseApprox):
     """ The approx class encapsulate the approximation that is iteratively being constructed by a greed algorithm
     
     Attributes
@@ -168,13 +168,16 @@ class Approx:
         else:
             raise TypeError("not recognized")
 
+        if start is None:
+            start = 0
+        
         if step is None:
             step = 1
         output_approx = Approx(
             self.dico, [], self.original_signal, self.length, self.fs)
         if stop > self.atom_number:
             raise ValueError('Dude you asked fore more than I can give you..')
-
+                
         for atomIdx in range(start, stop, step):
             output_approx.add(self.atoms[atomIdx])
 
@@ -317,7 +320,7 @@ class Approx:
     def plot_tf(
         self, labelX=True, labelY=True, fontsize=12, ylim=None, patchColor=None, labelColor=None,
         multicolor=False, axes=None, maxAtoms=None, recenter=None, keepValues=False,
-            french=False, Alpha=False, logF=False):
+            french=False, Alpha=False, logF=False, cmap=None):
         """ A time Frequency plot routine using Matplotlib
 
             each atom of the approx is plotted in a time-frequency plane with a gray scale for amplitudes
@@ -371,7 +374,10 @@ class Approx:
             valueArray = np.array(
                 [abs(atom.get_value()) for atom in self.atoms])
         if multicolor:
-            cmap = cc.LinearSegmentedColormap('jet', abs(valueArray))
+            if cmap is None:
+                cmap = cc.LinearSegmentedColormap('jet', abs(valueArray))
+            else:
+                cmap = cc.LinearSegmentedColormap(cmap, abs(valueArray))
             for atom in self.atoms:
                 if abs(atom.mdct_value) > maxValue:
                     maxValue = abs(atom.mdct_value)

@@ -46,8 +46,7 @@ class AtomTest(unittest.TestCase):
 
     def runTest(self):
         # empty creation
-        atom = BaseAtom()
-        self.assertEqual(atom.length, 0)
+        atom = BaseAtom()        
         self.assertEqual(atom.amplitude, 0)
         self.assertEqual(atom.nature, 'Abstract')
 
@@ -1563,7 +1562,7 @@ if __name__ == '__main__':
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(LOMPTest())
-#    suite.addTest(ApproxTest())
+    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
@@ -1573,7 +1572,7 @@ if __name__ == '__main__':
 #    suite.addTest(WaveletAtomTest())
 #    suite.addTest(WaveletDicoAndBlockTest())
 #    suite.addTest(WaveletPursuitTest())
-    suite.addTest(WaveletRSSMPTest())
+#    suite.addTest(WaveletRSSMPTest())
 
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
