@@ -19,7 +19,7 @@ Here's a example of use with a simple multiscale MDCT dictionary and the standar
 >>> # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
 >>> mp_approx, mp_decay = mp.greedy(sig, mp_dico, 20, 2000, pad=False, update='mp')
 
-This is equivalent to using the :func:`mp.mp` method. However, the additionnal *update* keyword
+This is equivalent to using the :func:`.mp.mp` method. However, the additionnal *update* keyword
 argument allows to change the nature of the update step. 
 
 Orthogonal Matching Pursuit

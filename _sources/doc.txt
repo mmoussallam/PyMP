@@ -21,9 +21,9 @@ recommend you use one of the existing implementation (indeed MPTK) as
 it can be fairly faster and more thoroughly tested that this piece of
 software.
 
-In the opposite case let's have a look at how this is built:
+In the opposite case let's have a look at how this is built. The archtecture is built upon these objects:
 
-.. uml:: /home/manu/workspace/meeg_denoise/bench.py
+.. uml:: /home/manu/workspace/PyMP/PyMP/base.py
 
 
 A few notions
