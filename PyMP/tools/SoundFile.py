@@ -42,11 +42,15 @@ class SoundFile:
             self.nframes = len(self.data)
             wavfile.close()
 
-        elif filename[-3:] == 'wav' or filename[-3:] == 'WAV':
+        elif filename[-3:] == 'wav' or filename[-3:] == 'WAV' or filename[-2:] == 'au':
             self.filename = filename[(filename.rfind('/'))+1:]
             self.filepath = filename[:(filename.rfind('/'))]
-
-            wavfile = wave.open(filename, 'r')
+            
+            if filename[-2:] == 'au':
+                import sunau
+                wavfile = sunau.open(filename , 'r');
+            else:
+                wavfile = wave.open(filename, 'r')
             self.filetype = filename[len(filename)-3:]
             self.nbChannel = wavfile.getnchannels()
             self.sampleRate = wavfile.getframerate()

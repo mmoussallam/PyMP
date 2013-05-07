@@ -27,7 +27,7 @@ In this example, the standard algorithm is used to decomposed the glockenspiel s
 
 .. note::
 
-	IMPORTANT: the fact that we know it's the standard algorithm that is used is because we choosed a :class:`.Dico` object as dictionary.
+	IMPORTANT: the fact that we know it's the standard algorithm that is used is because we chose a :class:`.Dico` object as dictionary.
 
 First plot (a) is the original glockenspiel waveform. (b) presents the 3 MDCT (absolute values) considered.
 (c) is the reconstructed signal, accessible via:
@@ -53,7 +53,7 @@ and save the result in various formats (see the :class:`.Approx` documentation):
 >>> approx.recomposed_signal.write('outPutPath.wav')
 
 Locally Optimized MP
---------------------
+********************
 
 To run a locally adaptive (or optimized) MP, all we have to do is to pick a :class:`.LODico` object as a dictionary. The internal
 routines of its blocks will perform the local optimization so that at our level this is quite transparent:
@@ -76,7 +76,7 @@ The locally adaptive Matching pursuit has yielded a better decomposition (in the
 Alternatively one can verify that for a given level of SRR, LoMP will use a smaller number of atoms.
 
 MP with Random Sequential Subdictionaries
------------------------------------------
+*****************************************
 
 RSSMP is explained in the journal paper_ .
 

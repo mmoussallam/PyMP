@@ -3,6 +3,7 @@ from numpy import concatenate , nonzero
 import matplotlib.pyplot as plt
 import math
 
+# Kind of deprecated...
 
 def GetMaxXCorr(X , Y , maxlag=0 , debug=0):
 

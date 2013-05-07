@@ -15,8 +15,7 @@ PyMP's documentation!
    example
    example_coder
    example_greedy
-   
-   
+      
 
    MP.rst
    classes.rst

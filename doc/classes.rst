@@ -9,7 +9,7 @@ Signal and Approximation Handles
 ********************************
 	
 Module signals
---------------
+..............
 
 The main class is :class:`.Signal`, it can be instantiated from a numpy array
 using the main constructor (multichannel is allowed).
@@ -24,7 +24,7 @@ Longer Signals are handled with :class:`LongSignal` objects.
       :members: Signal, LongSignal
 
 Module approx
--------------
+.............
 
 The main class is :class:`.Approx`. It describe an approximant of a signal. 
 This object handles MP constructed approximations. It isis quite similar in nature to the MPTK [1] 
