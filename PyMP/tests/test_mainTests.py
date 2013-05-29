@@ -793,12 +793,12 @@ class StochasticMPTest(unittest.TestCase):
     def runTest(self):
 # dico = Dico.Dico([2**l for l in range(7,15,1)] , Atom.transformType.MDCT)
 
-        dico = random_dico.StochasticDico([256, 2048, 8192],debug_level=2)
+        dico = random_dico.StochasticDico([128,1024],debug_level=2)
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
-        signal_original.crop(0, 5 * 16384)
+        signal_original.crop(0, 1 * 8192)
 
-        signal_original.data += 0.01 * np.random.random(5 * 16384)
+        signal_original.data += 0.01 * np.random.random(1 * 8192)
 
         # first try with a single-atom signals
         pyAtom = mdct_atom.Atom(2048, 1, 11775, 128, 8000, 0.57)
@@ -812,23 +812,24 @@ class StochasticMPTest(unittest.TestCase):
         # second test
         signal_original = signals.Signal(op.join(audio_filepath, "ClocheB.wav"),
                                          normalize=True, mono=True)
-
-        app_mp, dec_mp = mp.greedy(signal_original, dico, 10, 100, debug=2,
+        signal_original.pad(256)
+        app_mp, dec_mp = mp.greedy(signal_original, dico, 10, 20, debug=2,
                                    pad=True, clean=True,update='mp')        
 
         #  Ok test also the local GP implementation
-        app_locgp, dec_locgp = mp.greedy(signal_original, dico, 10, 100, debug=2,
-                                         pad=False, clean=True,update='locgp')
+        # NOT CoMPATIble AnyMore
+#        app_locgp, dec_locgp = mp.greedy(signal_original, dico, 10, 20, debug=2,
+#                                         pad=False, clean=True,update='locgp')
 
         print app_mp        
-        print app_locgp
+#        print app_locgp
 
         plt.figure()
         plt.plot(10.0 * np.log10(dec_mp / dec_mp[0]), 'b')
 #        plt.plot(10.0 * np.log10(dec_locomp / dec_locomp[0]), 'r--')
-        plt.plot(10.0 * np.log10(dec_locgp / dec_locgp[0]), 'k-.')
+#        plt.plot(10.0 * np.log10(dec_locgp / dec_locgp[0]), 'k-.')
         plt.legend(('MP', 'LocGP'))
-#        plt.show()
+        plt.show()
 
 #        self.assertGreater(dec_mp[-1], dec_locomp[-1])
 #        self.assertGreater(dec_mp[-1], dec_locgp[-1])
@@ -1562,13 +1563,13 @@ if __name__ == '__main__':
 #    suite.addTest(SequenceDicoTest())
 #    suite.addTest(SSMPTest())
 #    suite.addTest(LOMPTest())
-    suite.addTest(ApproxTest())
+#    suite.addTest(ApproxTest())
 #    suite.addTest(AtomTest())
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
 #    suite.addTest(WinServerTest())
 #    suite.addTest(Signaltest())
-#    suite.addTest(StochasticMPTest())
+    suite.addTest(StochasticMPTest())
 #    suite.addTest(WaveletAtomTest())
 #    suite.addTest(WaveletDicoAndBlockTest())
 #    suite.addTest(WaveletPursuitTest())

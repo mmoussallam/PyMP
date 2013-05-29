@@ -35,7 +35,7 @@ class WaveletDico(BaseDico):
         Also the zero padding attribute must be set at initialization        
         '''
         _Logger.set_level(debug_level)
-        self.wavelets = wavelets
+        self.wavelets = wavelets        
         self.pad = pad
     
     def get_pad(self):

@@ -68,6 +68,8 @@ class SequenceDico(AbstractSequenceDico, WaveletDico):
         _Logger.set_level(debug_level)
         _Logger.info("Creating %s object" % self.__class__.__name__)
         self.wavelets = wavelets
+        # Monstruous Hack to be removed
+        self.sizes = [-1]*len(wavelets)
         self.pad = pad
         self.L_shifts = L_shifts
         self.x_shifts = x_shifts

@@ -593,8 +593,7 @@ def _mp_loop(dictionary, debug, silent_fail,
              res_energy, it_number):
     #===========================================================================
     # # Internal MP loop
-    #=========================================================================
-
+    #=========================================================================    
     # Compute inner products and selects the best atom
     dictionary.update(res_signal, it_number)
     # retrieve the best correlated atom
@@ -612,7 +611,7 @@ def _mp_loop(dictionary, debug, silent_fail,
             _Logger.error("Something wrong happened at iteration " +
                           str(it_number) + " atom substraction abandonned")
             print "Atom Selected: ", best_atom
-            print res_signal.length, best_atom.time_position, best_atom.length
+            print res_signal.length, best_atom.time_position, best_atom.length            
             if debug > 1:
                 import matplotlib.pyplot as plt
                 plt.figure()

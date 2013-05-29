@@ -184,9 +184,9 @@ class SequenceBlock(AbstractSequenceBlock, mdct_block.Block):
         return Atom
 
 
-class StochasticBlock(mdct_block.Block):
+class StochasticBlock(mdct_block.FullBlock):
     """ Block implementing the stochastic MP:
-        atom selection is probabilistic """
+        atom selection is probabilistic in the full dictionary"""
         
     def __init__(self, length=0, resSignal=None, frameLen=0, 
                  randomType='proba',
@@ -211,13 +211,50 @@ class StochasticBlock(mdct_block.Block):
 
         self.framed_data_matrix = self.residual_signal.data
         self.frame_num = len(self.framed_data_matrix) / self.frame_len
-        self.projs_matrix = np.zeros(len(self.framed_data_matrix))
+        
+        self.projs_matrix = np.zeros((self.scale / 2, len(self.framed_data_matrix)))
+        self.best_score_tree = np.zeros((self.scale / 2, self.frame_num))
+        
+#        for i in range(self.scale / 2):
+##            self.projs_matrix[i] = zeros((self.scale/2 , self.scale/2))
+#            self.projs_matrix.append( np.zeros(len(self.framed_data_matrix)))
+#            self.best_score_tree[i] = np.zeros(self.frame_num)
+#        self.projs_matrix = np.zeros(len(self.framed_data_matrix))
 
         self.randomType = randomType
         
         self.windowType = windowType
     
         self.sigma= sigma
+    
+    def compute_transform(self, startingFrame=1, endFrame=-1):
+        if self.w_long is None:
+            self.initialize()
+
+        if endFrame < 0:
+            endFrame = self.frame_num - 1
+
+        if startingFrame < 1:
+            startingFrame = 1
+
+        startingFrame = 1
+        endFrame = self.frame_num - 1
+
+        L = self.scale
+        K = L / 2
+#        T = K/2
+#        normaCoeffs = sqrt(2/float(K))
+#        print startingFrame , endFrame
+        for l in range(-K / 2, K / 2, 1):
+            parallelProjections.project(self.framed_data_matrix,
+                                                 self.best_score_tree[l + K / 2,:],
+                                                 self.projs_matrix[
+                                                     l + K / 2,:],
+                                                 self.locCoeff,
+                                                 self.post_twid_vec,
+                                                 startingFrame,
+                                                 endFrame,
+                                                 self.scale, l)
     
     def find_max(self):
         """ the selection step is probabilistic: the max
@@ -226,11 +263,10 @@ class StochasticBlock(mdct_block.Block):
             
             values are chosen with probability linearly proportionnal 
             to exp(sigma * projection)
-            """
-        
+            """        
         # draw a new index vector whose weights are poduct of
         # a random variable and the projection matrix
-        probabilities = np.exp(self.sigma * np.abs(self.projs_matrix)) - np.exp(0)
+        probabilities = np.exp(self.sigma * np.abs(self.projs_matrix.ravel())) - np.exp(0)
         # normalize so it adds to 1                
         
         probabilities /= np.sum(probabilities)        
@@ -238,22 +274,31 @@ class StochasticBlock(mdct_block.Block):
         bins = np.add.accumulate(probabilities)
         
         # now draw an index at random: use it as the selected atom
-        self.maxIdx = np.digitize(np.random.random_sample(1), bins)[0]
+        maxidx = np.digitize(np.random.random_sample(1), bins)[0]
         
 #        print np.max(np.abs(self.projs_matrix))
         # deduce the value of the selected atom
-        self.max_value = self.projs_matrix[self.maxIdx]
-        _Logger.debug("Chose index %d at random with value %1.5f"%(self.maxIdx, self.max_value))
+        self.max_shift = maxidx / len(self.framed_data_matrix)
+        self.maxIdx = maxidx % len(self.framed_data_matrix)
+        
+        self.max_value = self.projs_matrix[self.max_shift, self.maxIdx]
+        _Logger.debug("Chose index %d - shift %d at random with value %1.5f"%(self.maxIdx,
+                                                                              self.max_shift,
+                                                                              self.max_value))
         
 #        print self.max_value
 
     def get_max_atom(self):
         self.max_frame_idx = floor(self.maxIdx / (0.5 * self.scale))
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
-        Atom = mdct_atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
+        Atom = mdct_atom.Atom(self.scale, 1,
+                              max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0),
+                              self.max_bin_idx, self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
         Atom.mdct_value = self.max_value
+        Atom.time_shift = -self.max_shift  + self.scale/4        
 
+        Atom.time_position += Atom.time_shift
         # new version : compute also its waveform through inverse MDCT
         Atom.waveform = self.synthesize_atom()
 
