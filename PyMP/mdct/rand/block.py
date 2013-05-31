@@ -54,8 +54,7 @@ class SequenceBlock(AbstractSequenceBlock, mdct_block.Block):
                  windowType=None,
                  seed=None):
         self.scale = length
-        self.residual_signal = resSignal
-        
+        self.residual_signal = resSignal        
         super(SequenceBlock,self).__init__(randomType=randomType, nbSim=nbSim,                  
                                             seed=seed)
 

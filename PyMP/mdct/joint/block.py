@@ -764,7 +764,8 @@ class RandomSetBlock(SetBlock):
         elif nature == 'median':
             self.nature = 1
         else:
-            raise ValueError(' Unrecognized Criterion for selection')
+            self.nature = nature
+#            raise ValueError(' Unrecognized Criterion for selection')
 
         self.shift_list = [floor(
             (self.scale / 2) * (i - 0.5)) for i in np.random.random(self.length)]
@@ -874,6 +875,10 @@ class RandomSetBlock(SetBlock):
             sumOfProjections = np.sum(self.projs_matrix ** 2, 1)
         elif self.nature == 1:
             sumOfProjections = np.median(self.projs_matrix ** 2, 1)
+        else:
+            sumOfProjections = self.nature(self.projs_matrix ** 2)
+#        print self.projs_matrix.shape
+#        print sumOfProjections.shape
         self.maxIdx = sumOfProjections.argmax()
 
     def get_not_optimized_best_atoms(self):
