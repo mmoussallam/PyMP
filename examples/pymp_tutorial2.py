@@ -5,7 +5,6 @@ Tutorial provided as part of PyMP
 M. Moussallam
 
 """
-
 from PyMP.mdct import Dico, LODico
 from PyMP.mdct.rand import SequenceDico
 from PyMP import mp, mp_coder, Signal
