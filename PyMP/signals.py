@@ -70,7 +70,8 @@ class Signal(base.BaseSignal):
     energy = 0
 
     # Constructor
-    def __init__(self, data=[], Fs=0, normalize=False, mono=False, debug_level=None):
+    def __init__(self, data=[], Fs=0, normalize=False, mono=False, debug_level=None,
+                 fast_create=False):
         """ Simple constructor from a numpy array (data) or a string 
     parameters
     ----------
@@ -82,56 +83,62 @@ class Signal(base.BaseSignal):
         whether to normalize the signal (e.g. max will be 1)
     mono :  bool, optionnal
         keep only the first channel
-
+    fast_create : bool, optionnal
+        for fast creation: skip test on the input data
         """
-
-        if isinstance(data, str):
-            self.location = data
-            Sf = SoundFile.SoundFile(data)
-            self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
-            self.sample_width = Sf.sample_width
-
-            Fs = Sf.sampleRate
+        if fast_create:                            
+            # fast creation : not computing the energy nor checking input format
+            self.data = data
+            self.length = self.data.shape[0]
+            self.fs = Fs
         else:
-
-            self.data = np.array(data)
-            # remove any nans or infs data
-            self.data[np.isnan(self.data)] = 0
-            self.data[np.isinf(self.data)] = 0
-
-            if len(self.data.shape) > 2:
-                raise ValueError("Cannot process more than 2D arrays")
-
+            if isinstance(data, str):
+                self.location = data
+                Sf = SoundFile.SoundFile(data)
+                self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
+                self.sample_width = Sf.sample_width
+    
+                Fs = Sf.sampleRate
+            else:        
+                self.data = np.array(data)
+                # remove any nans or infs data
+                self.data[np.isnan(self.data)] = 0
+                self.data[np.isinf(self.data)] = 0
+    
+                if len(self.data.shape) > 2:
+                    raise ValueError("Cannot process more than 2D arrays")
+    
+                if len(self.data.shape) > 1:
+                    if self.data.shape[0] < self.data.shape[1]:
+                        # by convention we store channels as columns...
+                        self.data = self.data.transpose()
+    
+                    
+            # keeping only the left channel
+            if mono and len(self.data.shape) > 1:
+                self.data = self.data[:, 0]
+    
+            if debug_level is not None:
+                _Logger.set_level(debug_level)
+    
+            self.length = self.data.shape[0]
+            self.fs = Fs
+    
             if len(self.data.shape) > 1:
-                if self.data.shape[0] < self.data.shape[1]:
-                    # by convention we store channels as columns...
-                    self.data = self.data.transpose()
-
-        # keeping only the left channel
-        if mono and len(self.data.shape) > 1:
-            self.data = self.data[:, 0]
-
-        if debug_level is not None:
-            _Logger.set_level(debug_level)
-
-        self.length = self.data.shape[0]
-        self.fs = Fs
-
-        if len(self.data.shape) > 1:
-            self.channel_num = self.data.shape[1]
-        else:
-            self.channel_num = 1
-
-        if normalize & (self.length > 0):
-            _Logger.info('Normalizing Signal')
-            normaFact = self.data.max()
-            self.data = self.data.astype(float) / float(normaFact)
-            self.is_normalized = True
-
-        if len(data) > 0:
-            self.energy = np.sum(self.data ** 2)
-
-        _Logger.info('Signal created ' + str(self))
+                self.channel_num = self.data.shape[1]
+            else:
+                self.channel_num = 1
+    
+            if normalize & (self.length > 0):
+                _Logger.info('Normalizing Signal')
+                normaFact = self.data.max()
+                self.data = self.data.astype(float) / float(normaFact)
+                self.is_normalized = True
+    
+            if len(data) > 0:
+                self.energy = np.sum(self.data ** 2)
+    
+            _Logger.info('Signal created ' + str(self))
 
     def __getitem__(self, item):
         if isinstance(item, slice):
@@ -658,7 +665,8 @@ class LongSignal(Signal):
 #        self.data = fromstring(str_bytestream,'h')
 #        wavfile.close()
 
-    def get_sub_signal(self, start_seg, seg_num, mono=False, normalize=False, channel=0, pad=0):
+    def get_sub_signal(self, start_seg, seg_num, mono=False, normalize=False,
+                       channel=0, pad=0, fast_create=False):
         """ Routine to actually read from the buffer and return a smaller signal instance
 
         :Returns:
@@ -696,7 +704,9 @@ class LongSignal(Signal):
 
             reshapedData = reshapedData.reshape(nFrames, )
 
-        SubSignal = Signal(reshapedData, self.fs, normalize=normalize)
+        SubSignal = Signal(reshapedData, self.fs,
+                           normalize=normalize,
+                           fast_create=fast_create)
         SubSignal.location = self.location
 
         if pad != 0:
