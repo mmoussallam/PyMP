@@ -4,7 +4,7 @@ import os
 import numpy.core
 
 NUMPYDIR = os.path.dirname(numpy.core.__file__)
-libraries = ['fftw3-3']
+libraries = ['fftw3']
 include_dirs = [os.path.join(NUMPYDIR, r'include/numpy'),'/usr/local/include',r'C:\Libs']
 library_dirs = ['/usr/lib/openmpi/lib/openmpi/', "/usr/local/lib",r'C:\Libs']
 

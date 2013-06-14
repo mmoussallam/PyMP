@@ -8,6 +8,7 @@ module.
 
 Here's a example of use with a simple multiscale MDCT dictionary and the standard MP algorithm:
 
+>>> import numpy as np
 >>> from PyMP.mdct import Dico
 >>> from PyMP import mp, Signal
 >>> sig = Signal('data/ClocheB.wav', mono=True)  # Load Signal
@@ -62,45 +63,10 @@ example
 The following example build a k-sparse signal and compares decompositions using
 MP, locOMP and locGP:
 
->>> from PyMP import mp, Signal
->>> from PyMP.mdct import Dico
->>> scales = [16, 64, 256]
->>> dico = Dico(scales)
->>> M = len(scales)
->>> L = 256 * 4
->>> k = 0.5*L
->>> # create a k-sparse signal
->>> sp_vec = np.zeros(M*L,)
->>> from PyMP.tools import mdct
->>> random_indexes = np.arange(M*L)
->>> np.random.shuffle(random_indexes)
->>> random_weights = np.random.randn(M*L)
->>> sp_vec[random_indexes[0:k]] = random_weights[0:k]
->>> # initialize true sparse rep
->>> sparse_data = np.zeros(L,)
->>> for m in range(M):
->>>     sparse_data += mdct.imdct(sp_vec[m*L:(m+1)*L], scales[m])
->>> sig = Signal(sparse_data, Fs=8000, mono=True, normalize=True)
->>> sig.data += 0.01 * np.random.random(L,)
->>> sig.pad(scale[-1])
->>> n_atoms = k + 1
->>> # Run the decompositions
->>> app_1, dec1 = mp.greedy(sig, dico, 100, n_atoms, debug=0, pad=False, update='mp')
->>> app_2, dec2 = mp.greedy(sig, dico, 100, n_atoms, debug=0, pad=False, update='locgp')
->>> app_3, dec3 = mp.greedy(sig, dico, 100, n_atoms, debug=0, pad=False, update='locomp')
+.. literalinclude:: snippets/greedy_snippets.py
 
-Plotting the decay with :
 
->>> plt.figure()
->>> plt.plot(10.0 * np.log10(dec1 / dec1[0]))
->>> plt.plot(10.0 * np.log10(dec2 / dec2[0]))
->>> plt.plot(10.0 * np.log10(dec3 / dec3[0]))
->>> plt.grid()
->>> plt.ylabel('Residual Energy decay (dB)')
->>> plt.xlabel('Iteration')
->>> plt.legend(('MP', 'LocGP', 'LocOMP'))
-
-we have:
+Then you can plot the decays
 
 .. plot:: pyplots/OMP_example.py
 

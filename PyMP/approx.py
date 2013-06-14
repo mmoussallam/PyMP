@@ -55,7 +55,7 @@ class Approx(BaseApprox):
     fs = 0
 
     def __init__(self, dico=None, atoms=[], original_signal=None, length=0,
-                 Fs=0, debug_level=None):
+                 Fs=0, debug_level=None, fast_create=False):
         """ 
         Parameters
         ----------
@@ -88,10 +88,13 @@ class Approx(BaseApprox):
         # provided
         if original_signal is not None:
             self.recomposed_signal = original_signal.__class__(
-                np.zeros(original_signal.data.shape), self.fs, debug_level=debug_level)
+                np.zeros(original_signal.data.shape), self.fs,
+                debug_level=debug_level,
+                fast_create=fast_create)
         else:
             self.recomposed_signal = signals.Signal(
-                np.zeros(self.length), self.fs,debug_level=debug_level)
+                np.zeros(self.length), self.fs,debug_level=debug_level,
+                fast_create=fast_create)
 
         self.recomposed_signal.is_normalized = isNormalized
 
@@ -228,14 +231,14 @@ class Approx(BaseApprox):
             if doAppend:
 #                print  atom.length , " appended "
                 filteredApprox.add(atom)
-#
 
         return filteredApprox
 
     # this function adds an atom to the collection and updates the internal
     # signal approximant
     def add(self, newAtom, clean=False, noWf=False):
-        '''this function adds an atom to the collection and updates the internal signal approximant'''
+        '''this function adds an atom to the collection and updates
+        the internal signal approximant'''
         if not isinstance(newAtom, BaseAtom):
             raise TypeError("add need a py_pursuit_Atom as parameter ")
 
@@ -248,13 +251,11 @@ class Approx(BaseApprox):
             else:
                 self.synthesize(0, True)
     #            print "approx resynthesized"
-
             if clean:
                 del newAtom.waveform
 
         # otherwise recompute ?
 
-    #
 
     def update(self, atom_indexes, new_weights, update_rec=False):
         """ update atom values (e.g. after projection) and the

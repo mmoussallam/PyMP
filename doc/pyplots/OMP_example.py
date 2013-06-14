@@ -23,7 +23,7 @@ scales = [16, 64, 256]
 dico = Dico(scales)
 M = len(scales)
 L = 256 * 4
-k = 0.5*L
+k = 0.2*L
 
 # create a k-sparse signal
 sp_vec = np.zeros(M*L,)
@@ -47,17 +47,23 @@ for m in range(M):
 
 
 signal_original = Signal(
-    sparse_data, Fs=8000, mono=True, normalize=True)
-signal_original.data += 0.01 * np.random.random(L,)
+    sparse_data, Fs=8000, mono=True, normalize=False)
 
-n_atoms = k + 1
+signal_original.data += 0.01 * np.random.random(signal_original.length,)
 
-app_1, dec1 = mp.greedy(signal_original, dico, 100,
-                        n_atoms, debug=0, pad=True, update='mp')
+n_atoms = k 
+
+signal_original.pad(dico.get_pad())
+
 app_2, dec2 = mp.greedy(signal_original, dico, 100,
                         n_atoms, debug=0, pad=False, update='locgp')
+app_1, dec1 = mp.greedy(signal_original, dico, 100,
+                        n_atoms, debug=0, pad=False, update='mp')
 app_3, dec3 = mp.greedy(signal_original, dico, 100,
                         n_atoms, debug=0, pad=False, update='locomp')
+
+#plt.figure(figsize=(16,6))
+#plt.subplot(121)
 
 plt.figure()
 plt.plot(10.0 * np.log10(dec1 / dec1[0]))
@@ -68,10 +74,30 @@ plt.ylabel('Residual Energy decay (dB)')
 plt.xlabel('Iteration')
 plt.legend(('MP', 'LocGP', 'LocOMP'))
 
-#plt.figure()
-#plt.plot(sp_vec, 'o')
-#plt.plot(app_1.to_array()[0], 'rx')
-#plt.plot(app_2.to_array()[0], 'ks')
-#plt.plot(app_3.to_array()[0], 'md')
+
+
+#mp_sp_vec = app_1.to_array()[0]
+#locgp_sp_vec = app_2.to_array()[0]
+#locomp_sp_vec = app_3.to_array()[0]
+#
+#true_index = sp_vec.nonzero()[0]
+#mp_index = mp_sp_vec.nonzero()[0]
+#locgp_index = locgp_sp_vec.nonzero()[0]
+#locomp_index = locomp_sp_vec.nonzero()[0]
+#
+#pad = dico.get_pad()
+#N = mp_sp_vec.shape[0]/M
+#
+#depad_idx = lambda x:x - (2*x/N + 1)*pad 
+#pad_idx = lambda x:x + ((2*x/L) + 1)*pad
+#
+#plt.subplot(122)
+##plt.figure()
+#plt.stem(map(pad_idx,true_index), sp_vec[true_index],'-bo')
+#plt.stem(mp_index, mp_sp_vec[mp_index], '--rx')
+#plt.stem( locgp_index, locgp_sp_vec[locgp_index], '-.ks')
+#plt.stem( locomp_index, locomp_sp_vec[locomp_index], ':md')
+#plt.legend(('Truth', 'MP', 'LocGP', 'LocOMP'))
+#plt.xlabel('Atom index')
 
 plt.show()

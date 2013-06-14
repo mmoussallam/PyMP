@@ -58,6 +58,18 @@ def binom(sequence):
     return x
 
 
+def euclid_dist(x, y):
+    from numpy import log10, linalg 
+    return log10(linalg.norm(x - y)/(linalg.norm(x)*linalg.norm(y)))
+
+def hamming_dist(x,y):
+    x_ind = x.nonzero()[0]
+    y_ind = y.nonzero()[0]
+    import numpy as np
+    same = float(np.count_nonzero(np.intersect1d(x_ind,y_ind)))
+    all = float(np.count_nonzero(np.union1d(x_ind,y_ind)))    
+    return 1.0-(same/all)
+
 ###############" testing ##########"
 # print jump(range(16))
 # print sine(range(64))

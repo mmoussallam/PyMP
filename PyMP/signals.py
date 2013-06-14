@@ -655,7 +655,7 @@ class LongSignal(Signal):
         _Logger.info('Type is ' + self.filetype + ' , ' + str(self.
                                                               channel_num) + ' channels at ' + str(self.fs))
         _Logger.info('Separated in ' + str(self.n_seg) + ' segments of size ' + str(self.segment_size) + ' samples overlap of ' + str(self.overlap * self.segment_size))
-        self.length = self.n_seg * frame_size
+        self.length = self.n_seg * (1.0- Noverlap)*frame_size
         wavfile.close()
 
 #    def readFrames(self , frameIndexes):
@@ -715,3 +715,8 @@ class LongSignal(Signal):
 # print "Created Signal of length " + str(SubSignal.length) +" samples " #of "
 # + str(Signal.channel_num) + "channels"
         return SubSignal
+
+
+    def get_duration(self):
+        ''' returns the duration in seconds '''
+        return float(self.length) / float(self.fs)

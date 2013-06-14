@@ -15,6 +15,7 @@ PyMP's documentation!
    example
    example_coder
    example_greedy
+   example_similarity
       
 
    MP.rst

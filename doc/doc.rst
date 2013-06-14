@@ -52,6 +52,12 @@ The algorithm itself is performed using function from the :mod:`.mp` module. A c
 
 How to have it work?
 --------------------
+On unix systems it should be really easy provided you have all the required libraries, simply run ::
+
+   $make all
+
+If it's not sufficient, please follow instructions below
+
 .. warning::
 
 	You will need to have *fftw*  and *openMP* libraries installed and header accessible. On Debian-based OS you'll need the following packages:
@@ -63,7 +69,7 @@ How to have it work?
 	Installation has been succesfully tested on linux machines but not on windows.
 	Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries
 	I recommend the use of cygwin on Windows Platform, although it appears matplotlib installation on cygwin
-	may not be as straightforward as it should.
+	may not be as straightforward as it should. 
 
 Additionnaly you'll want to have the following Python packages installed:
 

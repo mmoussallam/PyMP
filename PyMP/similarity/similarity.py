@@ -30,43 +30,45 @@ def build_sim_matrix(song_path, frame_size=4*16384,
     
     return apps, decays, orig_longsignal
 
-def jointcodingdistortion(l_target , reference, idx, max_rate ,
-                          halfSearchArea , threshold=0 , doSubtract=True, 
+def jointcodingdistortion(l_target , ref_app, idx, max_rate ,
+                          search_width , threshold=0 , doSubtract=True, 
                           allowDiffAmp =False , debug=0 , discard = False,
                           precut=-1):
     """ compute the joint coding distortion e.g. given a rate what is the distorsion achieved
-    if coding the target knowing the reference"""
+    if coding the target knowing the ref_app"""
     target = l_target.get_sub_signal(idx, 1, 
                                     mono=True,
                                     pad=8192,
                                     fast_create=True)
-    tolerances = [2]*len(reference.dico.sizes)
+    tolerances = [2]*len(ref_app.dico.sizes)
     # initialize the fftw    
     
     # initialize factored approx
-    factorizedApprox = approx.Approx(reference.dico, 
+    factorizedApprox = approx.Approx(ref_app.dico, 
                                        [], 
                                        target, 
-                                       reference.length, 
-                                       reference.fs)        
-    timeShifts = np.zeros(reference.atom_number)
+                                       ref_app.length, 
+                                       ref_app.fs,
+                                       fast_create=True)        
+    timeShifts = np.zeros(ref_app.atom_number)
     atom_idx = 0
     rate = 0    
     residual = target.data.copy()
 #    startSRR = factorizedApprox.compute_srr()
     if debug > 0:
-        print "starting factorization of " , reference.atom_number , " atoms"        
-    while (rate < max_rate) and (atom_idx < reference.atom_number):
+        print "starting factorization of " , ref_app.atom_number , " atoms"        
+    while (rate < max_rate) and (atom_idx < ref_app.atom_number):
         # Stop only when the target rate is achieved or all atoms have been used
         
-        atom = reference[atom_idx]
+        atom = ref_app[atom_idx]
         # make a copy of the atom
         newAtom = atom.copy()
-        HalfWidth = (tolerances[reference.dico.sizes.index(atom.length)] -1) * atom.length/2;            
+        HalfWidth = (tolerances[ref_app.dico.sizes.index(atom.length)] -1) * atom.length/2;            
         
 #            print HalfWidth
         input1 = residual[atom.time_position - HalfWidth : atom.time_position + atom.length + HalfWidth]
-        input2 = np.concatenate( (np.concatenate((np.zeros(HalfWidth) , atom.waveform) ) , np.zeros(HalfWidth) ) )
+        input2 = np.zeros((2*HalfWidth + atom.length))
+        input2[HalfWidth:-HalfWidth] = atom.waveform
         
         if not (input1.shape == input2.shape):
             continue 
@@ -76,12 +78,12 @@ def jointcodingdistortion(l_target , reference, idx, max_rate ,
         score = scoreVec;
         
         # find max correlation and remember the TimeShift
-#        sigFft = fft(residual[newAtom.time_position - halfSearchArea : newAtom.time_position + newAtom.length + halfSearchArea] , atom.length + 2*halfSearchArea)
-#        atomFft = fft(np.concatenate( (np.concatenate((np.zeros(halfSearchArea) , newAtom.waveform) ) , np.zeros(halfSearchArea) ) ) ,atom.length + 2*halfSearchArea)
+#        sigFft = fft(residual[newAtom.time_position - search_width : newAtom.time_position + newAtom.length + search_width] , atom.length + 2*search_width)
+#        atomFft = fft(np.concatenate( (np.concatenate((np.zeros(search_width) , newAtom.waveform) ) , np.zeros(search_width) ) ) ,atom.length + 2*search_width)
 #
 #        # compute xcorr through fft
 #        newts , score = Xcorr.GetMaxXCorr(atomFft , sigFft ,
-#                                          maxlag =halfSearchArea , debug =debug) 
+#                                          maxlag =search_width , debug =debug) 
         if debug>0:
             print "Score of " , score , " found"
         # handle MP atoms #
@@ -145,25 +147,24 @@ def test_run():
         dists = np.zeros((long_sigs.n_seg, len(apps)))    
         t = time.time()
         for idx in range(long_sigs.n_seg):
+#            dist_list = Parallel(n_jobs=4,pre_dispatch=6)(delayed(jointcodingdistortion)(long_sigs,
+#                                                                           app, idx,
+#                                                                           max_rate,1024)
+#                                           for app in apps) 
             for jdx in range(idx,len(apps)):
                 dists[idx,jdx] = jointcodingdistortion(long_sigs,
                                                apps[jdx],
                                                idx, max_rate,
                                                1024)    
-    mp._clean_fftw()
-
-
-
-#    print time.time() - t    
-#    plt.figure()
-#    plt.imshow(dists>0)
-#    plt.title("%d"%max_rate)
-#        
-#plt.show()
+    mp._clean_fftw()    
+    
+#plt.figure()
+#plt.imshow(dists>0)        
 
 import cProfile 
-cProfile.runctx('test_run()', globals(), locals())
 
+cProfile.runctx('test_run()', globals(), locals())
+#plt.show()
 
 #dist = jointcodingdistortion(long_sigs.get_sub_signal(0, 1, mono=True,pad=8192) ,
 #                              apps[1] , 300,

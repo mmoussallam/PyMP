@@ -268,7 +268,7 @@ def mp_long(orig_longsignal,
 
     output_dir = output_dir + str(target_srr) + '/'
 
-    if not os.path.exists(output_dir):
+    if not os.path.exists(output_dir) and write:
         os.makedirs(output_dir)
 
     # test inputs

@@ -54,6 +54,7 @@ At any moment you can visualize the data using the :func:`.Signal.plot` function
 Alternatively, a useful routine to visualize the time-frequency content is the :func:`.Signal.spectrogram` function.
 For instance, to plot the logarithm of the power spectrum with a 1024 sample window and 75% overlap:
 
+>>> import matplotlib.cm as cm
 >>> signal.spectrogram(1024, 256, order=2, log=True, cmap=cm.hot, cbar=True)
 
 .. plot:: pyplots/Spectro_example.py
@@ -61,6 +62,7 @@ For instance, to plot the logarithm of the power spectrum with a 1024 sample win
 Writing a signal is also quite straightforward::
 
 >>> signal.write('new_dest_file.wav')
+
 
 Signal Edition
 **************
