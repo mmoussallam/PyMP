@@ -5,7 +5,7 @@ A Pythonic Implementation of Greedy Algorithms developed during my PhD
 
 This software is provided under GNU GPL license see Licence.txt
 
-Documentation: moussallam.net/manu/PyMP/
+Documentation: http://manuel.moussallam.net/PyMP/
 
 Install, build or test with make utility: 
 
