@@ -56,7 +56,7 @@ Information Distance
 Following the idea of the paper [1], we can build proxies of information distances between the two
 sparse representation by quantifying the amount of *complexity* that is required to transform one into another
 
-The underlying idea is that if :math:`\tilde{x}` and :math:`\tilde{y}`are similar, then joint coding should be effective.
+The underlying idea is that if :math:`\tilde{x}` and :math:`\tilde{y}` are similar, then joint coding should be effective.
 In particular, one would guess that atoms in the support of :math:`\tilde{x}` are efficient for an approximation :math:`\tilde{x}` of :math:`y`.
 A simple version of this paradigm is implemented in the mp_coder module:
 
@@ -65,7 +65,13 @@ A simple version of this paradigm is implemented in the mp_coder module:
 This metric measures the signal to residual ratio that is achieved by using the atoms of the reference to approximate the target
 the best time shift :math:`\tau^{n}` for each of the m atoms of :math:`\tilde{x}`.
 
-.. math:: D_{R}(x,y)=10\log_{10}\left(\frac{\|\hat{y}-y\|_{2}^{2}}{\|\hat{y}\|_{2}^{2}}\right)\mbox{ such that }R(\hat{y}|\tilde{x})\leq R
+.. math:: D_{R}(x,y) = 10\log_{10}(\frac{\|\hat{y}-y\|_{2}^{2}}{\|\hat{y}\|_{2}^{2}}) 
+
+
+such that:
+ 
+.. math:: R(\hat{y}|\tilde{x})\leq R
+
 
 where :math:`R` is a fixed number of bits that corresponds to the amount of information that is 
 needed to *transform* the reference into the target using
@@ -92,7 +98,7 @@ Let us use this method to compute a similarity matrix for a longer version of th
 that lasts 40 seconds. First let's load it into a :class:`.LongSignal` object:
 
 >>> from PyMP.signals import LongSignal
->>> seg_size = 5*8192 # roughly 2 seconds at 44100 Hz
+>>> seg_size = 5*8192 # roughly 1 seconds at 44100 Hz
 >>> long_signal = LongSignal(op.join(os.environ['PYMP_PATH'],'data/Bach_prelude_40s.wav'), seg_size, mono=True, Noverlap=0.5)
 >>> long_signal.n_seg
 89

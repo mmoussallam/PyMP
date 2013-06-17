@@ -819,6 +819,7 @@ def _locgp_loop(dictionary, debug, silent_fail,
         for at_i in ov_sel_atoms:
             at = current_approx[at_i]
             block = dictionary.blocks[dictionary.find_block_by_scale(at.length)]
+            print at.frame * at.length / 2 + at.freq_bin, at.freq_bin, at.frame, block.projs_matrix.shape
             loc_projs2.append(
                 block.projs_matrix[at.frame * at.length / 2 + at.freq_bin])
         loc_projs2.append(best_atom.mdct_value)
