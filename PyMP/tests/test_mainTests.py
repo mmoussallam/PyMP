@@ -1032,7 +1032,7 @@ class ApproxTest(unittest.TestCase):
         self.assertEqual(pyAtom, app.filter_atoms(1024, [
             12000, 15000], None).atoms[0])
 
-        self.assertAlmostEqual(app.compute_srr(), -114.057441323)
+        self.assertAlmostEqual(app.compute_srr(),  -23.7667261632)
         # TODO testing du SRR
 
         # testing the write_to_xml and read_from_xml methods
@@ -1568,8 +1568,8 @@ if __name__ == '__main__':
 #    suite.addTest(DicoTest())
 #    suite.addTest(BlockTest())
 #    suite.addTest(WinServerTest())
-#    suite.addTest(Signaltest())
-    suite.addTest(StochasticMPTest())
+    suite.addTest(Signaltest())
+#    suite.addTest(StochasticMPTest())
 #    suite.addTest(WaveletAtomTest())
 #    suite.addTest(WaveletDicoAndBlockTest())
 #    suite.addTest(WaveletPursuitTest())

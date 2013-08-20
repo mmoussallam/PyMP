@@ -10,10 +10,11 @@
 
 import math
 import wave
+import scikits.audiolab as audiolab
 import struct
 import numpy as np
 
-from tools import SoundFile
+#from tools import SoundFile
 import base
 import log
 
@@ -94,11 +95,14 @@ class Signal(base.BaseSignal):
         else:
             if isinstance(data, str):
                 self.location = data
-                Sf = SoundFile.SoundFile(data)
-                self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
-                self.sample_width = Sf.sample_width
+#                Sf = SoundFile.SoundFile(data)
+                Sf = audiolab.Sndfile(data, 'r')
+                                
+                self.data = Sf.read_frames(int(Sf.nframes))
+#                self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
+                self.sample_width = Sf.encoding
     
-                Fs = Sf.sampleRate
+                Fs = Sf.samplerate
             else:        
                 self.data = np.array(data)
                 # remove any nans or infs data
@@ -293,7 +297,7 @@ class Signal(base.BaseSignal):
         """ downsampling the signal by taking only a portion of the data """
 
         if newFs >= self.fs:
-            print 'WARNING new sampling frequency is bigger than actual, trying upsampling instead'
+            _Logger.warning('WARNING new sampling frequency is bigger than actual, trying upsampling instead')
             return self.resample(newFs)
 
         # ratio of selected points
@@ -617,17 +621,24 @@ class LongSignal(Signal):
         self.location = filepath
         self.segment_size = frame_size
 
+        wavfile = audiolab.Sndfile(filepath, 'r')
         # overlaps methods from SoundFile object
 #        if (filepath[-4:] =='.wav'):
-        wavfile = wave.open(filepath, 'r')
+#            wavfile = wave.open(filepath, 'r')
+#        elif (filepath[-3:] =='.au'): 
+#            import sunau
+#            wavfile = sunau.open(filepath , 'r');
 #        elif (filepath[-4:] =='.raw'):
 #            wavfile = open()
         self.filetype = filepath[len(filepath) - 3:]
-        self.channel_num = wavfile.getnchannels()
-        self.fs = wavfile.getframerate()
-        self.nframes = wavfile.getnframes()
-        self.sample_width = wavfile.getsampwidth()
-
+#        self.channel_num = wavfile.getnchannels()
+#        self.fs = wavfile.getframerate()
+#        self.nframes = wavfile.getnframes()
+        
+        self.sample_width = wavfile.encoding
+        self.channel_num = wavfile.channels
+        self.fs = wavfile.samplerate
+        self.nframes = wavfile.nframes
         self.overlap = Noverlap
 
         if frame_duration is not None:
@@ -683,12 +694,13 @@ class LongSignal(Signal):
         # convert frame into bytes positions
         bFrame = int(start_seg * (self.segment_size * (1 - self.overlap)))
         nFrames = int(seg_num * self.segment_size)
-        wavfile = wave.open(self.location, 'r')
-        wavfile.setpos(bFrame)
+        wavfile = audiolab.Sndfile(self.location, 'r')
+#        wavfile = wave.open(self.location, 'r')
+        wavfile.seek(bFrame, 0, 'r')
 #        print "Reading ",bFrame, nFrames, wavfile._framesize
-        str_bytestream = wavfile.readframes(nFrames)
-        data = np.fromstring(str_bytestream, 'h')
-        wavfile.close()
+#        str_bytestream = wavfile.read_frames(nFrames)
+        data = wavfile.read_frames(nFrames)
+#        wavfile.close()
 
         if self.channel_num > 1:
             reshapedData = data.reshape(nFrames, self.channel_num)
