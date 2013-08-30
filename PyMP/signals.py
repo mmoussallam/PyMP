@@ -364,7 +364,7 @@ class Signal(base.BaseSignal):
 #        self.data[-K:] *= np.sin((np.arange(K).astype(float)) * np.pi / (
 #            2 * K) + np.pi / 2)
 
-    def write(self, fileOutputPath, pad=0):
+    def write(self, fileOutputPath, normalize=False, pad=0):
         ''' Write the current signal at the specified location in wav format
 
             This is done using the wave python library'''
@@ -377,6 +377,11 @@ class Signal(base.BaseSignal):
 #            print "Warning!!!! Zero-energy signal:"
 
         wav_file = wave.open(fileOutputPath, 'wb')
+        # BUGFIX
+        if isinstance(self.sample_width, str):
+            self.sample_width = 2
+        if self.channel_num < 1:
+            self.channel_num = 1
         wav_file.setparams((self.channel_num,
                             self.sample_width,
                             self.fs,
@@ -385,7 +390,7 @@ class Signal(base.BaseSignal):
 
         # prepare binary output
         values = []
-        if not self.is_normalized:
+        if not self.is_normalized and normalize:
             self.normalize()
 
         for i in range(len(self.data)):
@@ -406,7 +411,8 @@ class Signal(base.BaseSignal):
 
         value_str = ''.join(values)
         wav_file.writeframes(value_str)
-
+        import os
+        print "Written to ", os.path.abspath(fileOutputPath)
 #        else:
 # _Logger.warning("Warning BUGFIX not done yet, chances are writing failed");
 #            wav_file.writeframes((self.data).astype(int).tostring())
@@ -475,6 +481,11 @@ class Signal(base.BaseSignal):
             1 will have the Magnitude Spectrum, 2 the Power Spectrum
         log : bool, opt
             Set to True for the log-spectrogram
+            
+        returns
+        -------
+        
+        The Spectrogram matrix
         """
         import matplotlib.pyplot as plt
         from scipy.fftpack import fft, ifft, fftfreq
@@ -563,6 +574,8 @@ class Signal(base.BaseSignal):
         plt.ylabel('Frequency (Hz)')
         if cbar:
             plt.colorbar()
+            
+        return Spectro
 # def InitFromFile(filepath, forceMono=False, doNormalize=False, debugLevel=None):
 #    ''' Static method to create a Signal from a wav file on the disk
 #        This is based on the wave Python library through the use of the Tools.SoundFile class
