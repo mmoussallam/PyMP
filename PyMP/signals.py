@@ -95,14 +95,18 @@ class Signal(base.BaseSignal):
         else:
             if isinstance(data, str):
                 self.location = data
-                Sf = SoundFile.SoundFile(data)
-#                Sf = audiolab.Sndfile(data, 'r')
-                                
-#                self.data = Sf.read_frames(int(Sf.nframes))
-                self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
-#                self.sample_width = Sf.encoding
+                try:
+                    import scikits.audiolab as audiolab
+                    Sf = audiolab.Sndfile(data, 'r')
+                    self.data = Sf.read_frames(int(Sf.nframes))
+                    Fs = Sf.sampleRate
+                    self.sample_width = Sf.encoding
+                except:
+                    Sf = SoundFile.SoundFile(data)
+                    self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
+                    self.sample_width = Sf.sample_width
     
-                Fs = Sf.sampleRate
+                
             else:        
                 self.data = np.array(data)
                 # remove any nans or infs data
