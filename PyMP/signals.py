@@ -105,7 +105,7 @@ class Signal(base.BaseSignal):
                     Sf = SoundFile.SoundFile(data)
                     self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
                     self.sample_width = Sf.sample_width
-    
+                    Fs = Sf.sampleRate
                 
             else:        
                 self.data = np.array(data)
@@ -396,27 +396,30 @@ class Signal(base.BaseSignal):
         values = []
         if not self.is_normalized and normalize:
             self.normalize()
-
+        clipped = False
+        
         for i in range(len(self.data)):
             if np.isnan(self.data[i]):
-                _Logger.warning("NaN data found: replaced by 0")
+#                _Logger.warning("NaN data found: replaced by 0")
                 self.data[i] = 0
             if self.data[i] < -1:
-                _Logger.warning(str(i) + 'th sample was below -1: cropping')
-#                 "Data Clipped during writing"
+#                _Logger.warning(str(i) + 'th sample was below -1: cropping')
                 self.data[i] = -1
-            if self.data[i] > 1:
-                _Logger.warning(str(i) + 'th sample was over 1: cropping')
+            if self.data[i] > 1:                
+#                _Logger.warning(str(i) + 'th sample was over 1: cropping')
                 self.data[i] = 1
-#                print "Data Clipped during writing"
+                clipped=True
             value = int(16384 * self.data[i])
             packed_value = struct.pack('h', value)
             values.append(packed_value)
 
+        if clipped:
+            _Logger.warning('Some values clipped during the writing.. \
+                         you may want to normalize to get values -1 and 1')
         value_str = ''.join(values)
         wav_file.writeframes(value_str)
         import os
-        print "Written to ", os.path.abspath(fileOutputPath)
+        _Logger.info("Written to %s"% os.path.abspath(fileOutputPath))
 #        else:
 # _Logger.warning("Warning BUGFIX not done yet, chances are writing failed");
 #            wav_file.writeframes((self.data).astype(int).tostring())

@@ -497,7 +497,7 @@ if __name__ == "__main__":
     suite.addTest(BlocksTest())
     suite.addTest(DicosTest())
     suite.addTest(PursuitTest())
-#    suite.addTest(nonLinearTest())
+    suite.addTest(nonLinearTest())
     suite.addTest(perfTestsNL())
 #    suite.addTest(SymetryTest())
     unittest.TextTestRunner(verbosity=2).run(suite)

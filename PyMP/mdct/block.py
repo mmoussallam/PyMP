@@ -841,7 +841,8 @@ class SpreadBlock(Block):
         self.mask_index_x = np.array([], dtype=int, ndmin=1)
         self.mask_index_y = np.array([], dtype=int, ndmin=1)
         
-        self.mask = np.ones(self.projs_matrix.shape)
+        self.mask = np.ma.empty_like(self.projs_matrix)
+        self.mask_values = np.ma.ones(self.projs_matrix.shape)
         
         self.mask_index = np.zeros(self.projs_matrix.shape)
         self.maskSize = maskSize
@@ -863,7 +864,10 @@ class SpreadBlock(Block):
 #        newImage = np.where(np.logical_and(image1, image2), (image1 + image2) / 2, 0)
 
 #        self.projs_matrix = np.where(np.logical_and(self.projs_matrix, self.mask), self.projs_matrix * self.mask, self.projs_matrix)        
-        self.projs_matrix *= self.mask
+#        print self.projs_matrix.shape
+#        print self.mask.mask
+        np.ma.masked_equal(self.mask_values, 1)
+        self.projs_matrix *= self.mask_values
         
 #        for x,y in zip(self.mask_index_x, self.mask_index_y):
 #            self.projs_matrix[x*self.scale/2 + y] *= self.mask[x*self.scale/2 + y]
@@ -917,7 +921,7 @@ class SpreadBlock(Block):
         for i in range(-mask_frame_width, mask_frame_width + 1, 1):
 #            self.mask_index.append()
 #            self.mask_index[((c_frame + i) * self.scale / 2) + (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + (c_bin + mask_bin_width)] = 1
-            self.mask[((c_frame + i) * self.scale / 2) + (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + (c_bin + mask_bin_width)] *= self.penalty
+            self.mask_values[((c_frame + i) * self.scale / 2) + (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + (c_bin + mask_bin_width)] *= self.penalty
 
         
 #            self.mask[((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx - self.maskSize): ((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx + self.maskSize)] = self.penalty

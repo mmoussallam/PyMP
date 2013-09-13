@@ -55,7 +55,7 @@ Alternatively, a useful routine to visualize the time-frequency content is the :
 For instance, to plot the logarithm of the power spectrum with a 1024 sample window and 75% overlap:
 
 >>> import matplotlib.cm as cm
->>> signal.spectrogram(1024, 256, order=2, log=True, cmap=cm.hot, cbar=True)
+>>> spectro = signal.spectrogram(1024, 256, order=2, log=True, cmap=cm.hot, cbar=True)
 
 .. plot:: pyplots/Spectro_example.py
 

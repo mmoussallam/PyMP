@@ -6,7 +6,7 @@ In the first tutorial, we saw some variants of the selection step (e.g. RSSMP). 
 in the update step. In order to use this variants, we use the :func:`mp.greedy` function of the :mod:`mp` 
 module.
 
-Here's a example of use with a simple multiscale MDCT dictionary and the standard MP algorithm:
+Here's a example of use with a simple multiscale MDCT dictionary and the standard MP algorithm::
 
 >>> import numpy as np
 >>> from PyMP.mdct import Dico
@@ -19,9 +19,12 @@ Here's a example of use with a simple multiscale MDCT dictionary and the standar
 >>> mp_dico = Dico(scales)
 >>> # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
 >>> mp_approx, mp_decay = mp.greedy(sig, mp_dico, 20, 2000, pad=False, update='mp')
+>>> mp_approx.atom_number
+565
 
-This is equivalent to using the :func:`.mp.mp` method. However, the additionnal *update* keyword
-argument allows to change the nature of the update step. 
+.. note::
+   This is equivalent to using the :func:`.mp.mp` method. However, the additionnal *update* keyword
+   argument allows to change the nature of the update step. 
 
 Orthogonal Matching Pursuit
 ***************************

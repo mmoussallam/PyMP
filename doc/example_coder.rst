@@ -62,6 +62,7 @@ Let us perform a MP decomposition of a 1 second audio exceprt of Glockenspiel us
 >>> # Launching decomposition, stops either at 20 dB of SRR or 2000 iterations
 >>> mp_approx, mp_decay = mp.mp(sig, mp_dico, 20, 2000, pad=False)
 
+
 This should be relatively fast, the algorithm stops when it reaches 20 dB of SRR and a number of atoms determined by:
 
 >>> mp_approx.atom_number
