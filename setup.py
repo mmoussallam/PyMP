@@ -29,7 +29,7 @@ def configuration(parent_package='', top_path=None):
 if __name__ == '__main__':
     setup(configuration=configuration,
           name='PyMP',
-          version='1.0',
+          version='1.1',
           description='Python Matching Pursuit Modules',
           author='Manuel Moussallam',
           author_email='manuel.moussallam@gmail.com',
