@@ -242,7 +242,7 @@ class RandomSetDico(SetDico, random_dico.SequenceDico):
             self.isNL = True
             print "NL dico detected"
             self.params = params
-
+        
     def initialize(self, residualSignalList):
         self.blocks = []
         self.best_current_block = None

@@ -758,7 +758,7 @@ class RandomSetBlock(SetBlock):
             (len(self.enframedDataMatrixList[0]), self.sigNumber), float)
 
         self.use_c_optim = useC
-
+        
         if nature == 'sum':
             self.nature = 0
         elif nature == 'median':

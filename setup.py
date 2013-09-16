@@ -27,15 +27,21 @@ def configuration(parent_package='', top_path=None):
     return config
 
 if __name__ == '__main__':
+    with open('README.md') as file:
+        long_description = file.read()
+    
     setup(configuration=configuration,
-          name='PyMP',
-          version='1.1',
-          description='Python Matching Pursuit Modules',
+          name='PyPursuit',
+          version='1.1.0',
+          description='Pythonic Matching Pursuit Modules',
           author='Manuel Moussallam',
           author_email='manuel.moussallam@gmail.com',
+          long_description = long_description,
           url='https://github.com/mmoussallam/PyMP',
+#          install_requires=['numpy',],
           #package_dir = {'': 'src'},
+          package_data={'': ['license.txt','Makefile','README.md']},
           packages=['PyMP.tools', 'PyMP.mdct', 'PyMP.mdct.rand','PyMP.mdct.joint'],
-          py_modules=['PyMP.mp', 'PyMP.base', 'PyMP.approx', 'PyMP.signals',
+          py_modules=['PyMP.mp', 'PyMP.base','PyMP.baserand', 'PyMP.approx', 'PyMP.signals',
               'PyMP.mp_cmd', 'PyMP.log', 'PyMP.win_server', 'PyMP.mp_coder'],
          )
