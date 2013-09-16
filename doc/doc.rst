@@ -52,7 +52,16 @@ The algorithm itself is performed using function from the :mod:`.mp` module. A c
 
 How to have it work?
 --------------------
-On unix systems it should be really easy provided you have all the required libraries, simply run ::
+
+Installation
+************
+PyMP is available from Python Package repository with the command: $pip install -U pypursuit
+For windows platform, a 32-bit installer can be found in the download page. 
+
+Building from source
+********************
+Download the latest sources from github: https://github.com/mmoussallam/PyMP
+On unix-based systems it should be really easy provided you have all the required libraries, simply run ::
 
    $make all
 
@@ -66,7 +75,7 @@ If it's not sufficient, please follow instructions below
 
 		- python-dev
 
-	Installation has been succesfully tested on linux machines but not on windows.
+	Installation has been succesfully tested on linux, Mac OS and windows 32 bit.
 	Since Microsoft compiler (at least the free version of it) has bad handling of 64 bits libraries
 	I recommend the use of cygwin on Windows Platform, although it appears matplotlib installation on cygwin
 	may not be as straightforward as it should. 
