@@ -9,7 +9,7 @@ Created on Sep 13, 2011
 import unittest
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import os.path as op
@@ -221,6 +221,34 @@ class realTest2(unittest.TestCase):
 #        plt.savefig(name + '_decayTFMasking.eps')
 
 
+class coherenceTest(unittest.TestCase):
+    
+    def runTest(self):
+        dico = [128, 1024, 8192]
+        nbAtoms = 100
+        pySig = Signal(op.join(audio_filepath,
+                               'Bach_prelude_40s.wav'),
+                       mono=True, normalize=True)
+        classicDIco = mdct_dico.Dico(dico)
+        spreadDico = mdct_dico.SpreadDico(
+            dico, all_scales=True, penalty=0, maskSize=10)
+        
+        import time
+        t = time.time()
+        app_mp , _ = mp.mp(pySig, classicDIco, 20, nbAtoms)
+        print "Classic took %1.3f sec"%(time.time()-t)
+        t = time.time()
+        app_spreadmp , _ = mp.mp(pySig, spreadDico, 20, nbAtoms)
+        print "Spread took %1.3f sec"%(time.time()-t)
+        
+        
+        plt.figure()
+        plt.subplot(121)
+        app_mp.plot_tf()
+        plt.subplot(122)
+        app_spreadmp.plot_tf()
+        plt.show()
+
 class perfTest(unittest.TestCase):
 
     def runTest(self):
@@ -249,7 +277,8 @@ if __name__ == "__main__":
 #    suite.addTest(dicosTest())
 #    suite.addTest(realTest())
 #    suite.addTest(realTest2())
-    suite.addTest(perfTest())
+    suite.addTest(coherenceTest())
+#    suite.addTest(perfTest())
 #
     unittest.TextTestRunner(verbosity=2).run(suite)
 #    plt.show()

@@ -346,7 +346,7 @@ class SpreadDico(Dico):
         for mdctSize in self.sizes:
             if mdctSize in self.spreadScales:
                 self.blocks.append(block.SpreadBlock(
-                    mdctSize , res_signal))
+                    mdctSize , res_signal, penalty=self.penalty, maskSize=self.maskSize))
             else:
                 self.blocks.append(block.Block(
                     mdctSize , res_signal))

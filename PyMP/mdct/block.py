@@ -866,15 +866,18 @@ class SpreadBlock(Block):
 #        self.projs_matrix = np.where(np.logical_and(self.projs_matrix, self.mask), self.projs_matrix * self.mask, self.projs_matrix)        
 #        print self.projs_matrix.shape
 #        print self.mask.mask
-        np.ma.masked_equal(self.mask_values, 1)
+#        np.ma.masked_equal(self.mask_values, 1)
+#        self.mask_values = np.ma.ones(self.projs_matrix.shape)
         self.projs_matrix *= self.mask_values
-        
+#        masked_projs = np.ma.masked_array(self.projs_matrix, mask = self.mask_values<1)
+#        np.ma.masked_array(self.projs_matrix, mask = self.mask_values<1)
 #        for x,y in zip(self.mask_index_x, self.mask_index_y):
 #            self.projs_matrix[x*self.scale/2 + y] *= self.mask[x*self.scale/2 + y]
 #        plt.figure()
 #        plt.imshow(reshape(self.mask,(self.frameNumber,self.scale/2)),interpolation='nearest',aspect='auto')
+#        self.maxIdx = np.abs(masked_projs).argmax()
         self.maxIdx = np.abs(self.projs_matrix).argmax()
-
+#        self.maxIdx = self.projs_matrix.argmax()
 #        print self.maxIdx
 
 # maxIdx = abs(self.projs_matrix[treeMaxIdx*self.scale/2 :
