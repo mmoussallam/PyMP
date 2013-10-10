@@ -95,13 +95,15 @@ class Signal(base.BaseSignal):
         else:
             if isinstance(data, str):
                 self.location = data
-                try:
+                try:                    
                     import scikits.audiolab as audiolab
-                    Sf = audiolab.Sndfile(data, 'r')
-                    self.data = Sf.read_frames(int(Sf.nframes))
-                    Fs = Sf.sampleRate
+                    Sf = audiolab.Sndfile(data, 'r')                    
+                    self.data = Sf.read_frames(int(Sf.nframes))                               
+                    Fs = Sf.samplerate                    
                     self.sample_width = Sf.encoding
                 except:
+                    print "Audiolab not found using built-in modules"
+                    print "WARNING: may have some difficulties reading exotic file formats"
                     Sf = SoundFile.SoundFile(data)
                     self.data = Sf.GetAsMatrix().reshape(Sf.nframes, Sf.nbChannel)
                     self.sample_width = Sf.sample_width
@@ -292,6 +294,8 @@ class Signal(base.BaseSignal):
     def resample(self, newFs):
         """ resampling the signal """
         from scipy.signal import resample
+        if not (self.data.shape[0] %2 ==0):        
+            self.crop(0, self.data.shape[0]-1)
         resamp_data = resample(self.data, self.get_duration()*newFs)
         self.data = resamp_data
         self.length = len(self.data)

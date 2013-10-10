@@ -89,7 +89,8 @@ class Dico(BaseDico):
         self.ending_touched_index = -1
         for mdctSize in self.sizes:
             self.blocks.append(block.Block(mdctSize,
-                                           residual_signal, useC=self.use_c_optim, forceHF=self.forceHF))
+                                           residual_signal, useC=self.use_c_optim,
+                                           forceHF=self.forceHF))
 
     def init_proj_matrix(self, itNumbers):
         """ method used for monitoring the projection along iterations

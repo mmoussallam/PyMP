@@ -1,6 +1,6 @@
 /*****************************************************************************
 #                                                                            /
-#                              parallelFFT.h                                 /
+#                         parallelProjections.h                              /
 #                                                                            /
 #                        Matching Pursuit Library                            /
 #                                                                            /
@@ -79,6 +79,8 @@ fftw_complex *pyvector_to_complexCarrayptrs(PyArrayObject *arrayin);
 int *pyvector_to_intCarrayptrs(PyArrayObject *arrayin);
 
 /*static PyObject * test(PyObject *self, PyObject *args);*/
+
+static PyObject *project_penalized_mdct(PyObject *self, PyObject *args);
 
 /* Multi-Threaded plan initialization */
 static PyObject *  initialize_plans(PyObject *self, PyObject *args);

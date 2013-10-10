@@ -55,8 +55,18 @@ How to have it work?
 
 Installation
 ************
-PyMP is available from Python Package repository with the command: $pip install -U pypursuit
-For windows platform, a 32-bit installer can be found in the download page. 
+Linux/Mac OS
+............
+PyMP is available from Python Package repository with the command: 
+   *pip install -U pypursuit*
+
+Alternatively a 64 bit archive is available here:
+   http://manuel.moussallam.net/PyMP/windist/PyPursuit-1.1.0.linux-x86_64.tar.gz
+
+Windows
+.......
+For windows platform, a 32-bit installer can be found here: 
+   http://manuel.moussallam.net/PyMP/windist/PyPursuit-1.1.0.win32-py2.7.exe 
 
 Building from source
 ********************

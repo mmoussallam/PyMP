@@ -1,6 +1,6 @@
 /*****************************************************************************
 #                                                                            /
-#                              parallelFFT.c                                 /
+#                         parallelProjections.c                              /
 #                                                                            /
 #                        Matching Pursuit Library                            /
 #                                                                            /
@@ -447,6 +447,81 @@ project_masked_gabor(PyObject *self, PyObject *args)
 	  return Py_BuildValue("i", 1);
 }
 
+
+/* Simple MDCT transform with a penalized maskeing
+The projection is not affected, but the score in the scoreTree is,
+meaning a penalized atom will appear as less interesting and will unlikely be selected
+ */
+static PyObject *
+project_penalized_mdct(PyObject *self, PyObject *args)
+{
+	/* declarations */
+   PyArrayObject *in_data , *in_vecProj,*in_penMask , *in_vecPreTwid, *in_vecPostTwid, *out_scoreTree;  // The python objects to be extracted from the args
+   double *cin_data , *cin_vecProj,*cin_penMask , *cout_scoreTree;   // The C vectors to be created to point to the
+								   //   python vectors, cin and cout point to the row
+								   //   of vecin and vecout, respectively
+
+   fftw_complex * cin_vecPreTwid, *cin_vecPostTwid; // complex twiddling coefficients
+   int start,  end , L ,  res; // touched frame indexes, size and potential offsets
+   int n_frames;
+   double lambda;
+   //printf("%d Threads have been created \n", nb_threads);
+   /* Parse tuples separately since args will differ between C fcns */
+   if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!iiid", &PyArray_Type, &in_data,
+												&PyArray_Type, &out_scoreTree,
+											  &PyArray_Type, &in_vecProj,
+											  &PyArray_Type, &in_penMask,
+											  &PyArray_Type, &in_vecPreTwid,
+											  &PyArray_Type, &in_vecPostTwid,
+											  &start,  &end , &L ,&lambda))  return NULL;
+
+	/* Check null pointers */
+   if (NULL == in_data)  {
+	printf("in_data was null..\n");
+	return NULL;}
+   if (NULL == in_vecProj)  {
+	printf("in_vecProj was null..\n");
+	return NULL;}
+   if (NULL == in_penMask)  {
+   	printf("in_penMask was null..\n");
+   	return NULL;}
+   if (NULL == in_vecPreTwid)  {
+	printf("in_vecPreTwid was null..\n");
+	return NULL;}
+   if (NULL == in_vecPostTwid)  {
+	printf("in_vecPostTwid was null..\n");
+	return NULL;}
+   if (NULL == out_scoreTree)  {
+	printf("out_scoreTree was null..\n");
+	return NULL;}
+
+   n_frames = out_scoreTree->dimensions[0];
+
+	// Check on maximum frame index search: force last frame index to be in the bounds
+   if (end >= n_frames) {
+		//printf("Warning : asked frame end is out of bounds\n");
+		end = n_frames-1;
+   }
+
+   /* Change contiguous arrays into C * arrays   */
+   cin_data 	  = pyvector_to_Carrayptrs(in_data);
+   cin_vecProj 	  = pyvector_to_Carrayptrs(in_vecProj);
+   cout_scoreTree = pyvector_to_Carrayptrs(out_scoreTree);
+   cin_penMask    = pyvector_to_Carrayptrs(in_penMask);
+
+   /* These vectors are complex */
+   cin_vecPreTwid  = pyvector_to_complexCarrayptrs(in_vecPreTwid);
+   cin_vecPostTwid = pyvector_to_complexCarrayptrs(in_vecPostTwid);
+
+   /* Then call library function to compute the projections */
+   res = projectPenalizedMDCT(cin_data ,cout_scoreTree,cin_vecProj,cin_penMask,
+		   cin_vecPreTwid , cin_vecPostTwid,
+		   start ,end ,L, lambda);
+
+   if (res < 0) return NULL;
+
+  return Py_BuildValue("i", 1);
+}
 
 /* Here we are interested in summing , multiplying or maximizing the minimums of
  * the projections on a set of signal: only difference with project_mclt is the
@@ -1255,6 +1330,7 @@ static PyMethodDef AllMethods[] = {
     {"subproject",  subproject, METH_VARARGS,  "Same as project but for subsampled dictionary."},
     {"project_mclt",  project_mclt, METH_VARARGS,  "Perform the MCLT computations.\n FFTW objects must havve been initialized."},
     {"project_masked_gabor",  project_masked_gabor, METH_VARARGS,  "Loop of gabor computations."},
+    {"project_penalized_mdct",  project_penalized_mdct, METH_VARARGS,  "MDCT with a penalty added to the projections."},
     {"project_mclt_set",  project_mclt_set, METH_VARARGS,  "specific developments"},
     {"project_mclt_NLset",  project_mclt_NLset, METH_VARARGS,  "specific developments"},
     {"project_mclt_3Dset",  project_mclt_3Dset, METH_VARARGS,  "specific developments"},

@@ -48,7 +48,7 @@ class SoundFile:
             
             if filename[-2:] == 'au':
                 import sunau
-                wavfile = sunau.open(filename , 'r');
+                wavfile = sunau.open(str(filename) , 'r');
             else:
                 wavfile = wave.open(filename, 'r')
             self.filetype = filename[len(filename)-3:]
@@ -61,6 +61,7 @@ class SoundFile:
             str_bytestream = wavfile.readframes(self.nframes)
 
             #print filename,self.sampleWidth, self.nbChannel , self.sampleRate,self.nframes
+#            print wavfile.getparams()
 
             if self.sample_width == 1:
                 typeStr = 'int8'

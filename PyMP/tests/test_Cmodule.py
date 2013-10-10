@@ -25,9 +25,9 @@ import commands
 import string
 
 print "---- Test import du module!"
-
+#sys.path.append(os.environ['PYMP_PATH'])
 from PyMP import parallelProjections
-
+print dir(parallelProjections)
 print "---- OK"
 
 
@@ -45,7 +45,6 @@ from cmath import exp, pi
 import unittest
 
 audio_filepath = op.join(op.dirname(__file__), '..', '..', 'data')
-
 class CmoduleTest(unittest.TestCase):
     def runTest(self):
         print "-----Test mp sur multi-echelle MDCT"
@@ -128,6 +127,24 @@ class CmoduleTest(unittest.TestCase):
         else:
             print "Died!"
         
+        print " --- Testing MDCT projections with penalized masking"
+        print " ---Testing good call"
+        input_data = 0.42 * np.random.random((N, 1))
+        projectionMatrix = np.zeros((N, 1))                            
+        
+        # test with an overall penalty
+        pen_mask = np.ones(projectionMatrix.shape)
+        lamb = 0.01;
+        res = parallelProjections.project_penalized_mdct(input_data, scoreTree,
+                            projectionMatrix,
+                            pen_mask, pre_twidVec, post_twidVec, i, j, L,lamb)
+        print np.max(scoreTree), np.max(np.abs(projectionMatrix))
+        assert(np.max(scoreTree) == np.max(np.abs(projectionMatrix)) - lamb)
+        
+        if res is not None:
+            print "Survived.."
+        else:
+            print "Died!"
         
         #print "Testing Bad call:"
         #computeMCLT.project(input_data )
@@ -388,11 +405,15 @@ class CmoduleTest(unittest.TestCase):
             raise TypeError("ARf")
 
 if __name__ == '__main__':
-
+    
     import matplotlib.pyplot as plt
     plt.switch_backend('Agg')  # to avoid display while testing
     
-    _Logger.info('Starting Tests')
+#    _Logger.info('Starting Tests')
     suite = unittest.TestSuite()
+    suite.addTest(CmoduleTest())
+
+    unittest.TextTestRunner(verbosity=2).run(suite)
 
     print "------------ ALL TESTS PASSED SUCCESSFULLY -----------------"
+    

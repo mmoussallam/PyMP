@@ -890,7 +890,9 @@ class SpreadBlock(Block):
         self.max_bin_idx = self.maxIdx - self.max_frame_idx * (0.5 * self.scale)
      
         # proceed as usual
-        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - self.scale / 4, 0), self.max_bin_idx, self.residual_signal.fs)
+        Atom = atom.Atom(self.scale, 1, max((self.max_frame_idx * self.scale / 2) - 
+                                            self.scale / 4, 0), self.max_bin_idx,
+                         self.residual_signal.fs)
         Atom.frame = self.max_frame_idx
 
         Atom.mdct_value = self.max_value
@@ -924,7 +926,9 @@ class SpreadBlock(Block):
         for i in range(-mask_frame_width, mask_frame_width + 1, 1):
 #            self.mask_index.append()
 #            self.mask_index[((c_frame + i) * self.scale / 2) + (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + (c_bin + mask_bin_width)] = 1
-            self.mask_values[((c_frame + i) * self.scale / 2) + (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + (c_bin + mask_bin_width)] *= self.penalty
+            self.mask_values[((c_frame + i) * self.scale / 2) +
+                              (c_bin - mask_bin_width): ((c_frame + i) * self.scale / 2) + 
+                              (c_bin + mask_bin_width)] = self.penalty
 
         
 #            self.mask[((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx - self.maskSize): ((self.max_frame_idx + i) * self.scale / 2) + (self.max_bin_idx + self.maskSize)] = self.penalty

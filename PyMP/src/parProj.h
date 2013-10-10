@@ -79,7 +79,7 @@
  		fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
  		int start , int end , int L);
 
-
+/* Specialized Routines for Masked and Penalized selection criterions*/
  int projectMaskedGabor(double * cin_data,
                   double * cout_scoreTree,
                   fftw_complex * cin_vecProj,
@@ -88,18 +88,29 @@
                   int   end,
                   int L);
 
+ int projectPenalizedMDCT(double * cin_data,
+                  double * cout_scoreTree,
+                  double * cin_vecProj,
+                  double *penalty_mask,
+                  fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
+                  int   start,
+                  int   end,
+                  int L, double lambda);
+
+ /* Multidimensionnal projection */
  int projectSet(double * cin_data ,
 		 double * cin_vecProj , double * cout_scoreTree,
  		fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
  		int start , int end , int L, int type);
 
+ /* Plain calculus of an atom projection */
  int projectAtom(double *cin_sigData,
  		double *cin_atomData ,
  		double *cout_score,
  		int L, int scale);
 
  /*
-  * Project an tom and find the optimal time shift and projection value
+  * Project an atom and find the optimal time shift and projection value
   * assuming the atom's waveform fft is already known
   */
  int reprojectAtom(double *cin_sigData,
