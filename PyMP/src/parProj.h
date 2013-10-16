@@ -91,6 +91,7 @@
  int projectPenalizedMDCT(double * cin_data,
                   double * cout_scoreTree,
                   double * cin_vecProj,
+                  double * cin_vecPenalizedProj,
                   double *penalty_mask,
                   fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
                   int   start,

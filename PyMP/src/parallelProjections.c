@@ -456,8 +456,9 @@ static PyObject *
 project_penalized_mdct(PyObject *self, PyObject *args)
 {
 	/* declarations */
-   PyArrayObject *in_data , *in_vecProj,*in_penMask , *in_vecPreTwid, *in_vecPostTwid, *out_scoreTree;  // The python objects to be extracted from the args
-   double *cin_data , *cin_vecProj,*cin_penMask , *cout_scoreTree;   // The C vectors to be created to point to the
+   PyArrayObject *in_data , *in_vecProj,*in_vecPenalizedProj, *in_penMask;
+   PyArrayObject * in_vecPreTwid, *in_vecPostTwid, *out_scoreTree;  // The python objects to be extracted from the args
+   double *cin_data , *cin_vecProj,*cin_vecPenalizedProj,*cin_penMask , *cout_scoreTree;   // The C vectors to be created to point to the
 								   //   python vectors, cin and cout point to the row
 								   //   of vecin and vecout, respectively
 
@@ -467,9 +468,10 @@ project_penalized_mdct(PyObject *self, PyObject *args)
    double lambda;
    //printf("%d Threads have been created \n", nb_threads);
    /* Parse tuples separately since args will differ between C fcns */
-   if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!iiid", &PyArray_Type, &in_data,
+   if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!iiid", &PyArray_Type, &in_data,
 												&PyArray_Type, &out_scoreTree,
 											  &PyArray_Type, &in_vecProj,
+											  &PyArray_Type, &in_vecPenalizedProj,
 											  &PyArray_Type, &in_penMask,
 											  &PyArray_Type, &in_vecPreTwid,
 											  &PyArray_Type, &in_vecPostTwid,
@@ -482,6 +484,9 @@ project_penalized_mdct(PyObject *self, PyObject *args)
    if (NULL == in_vecProj)  {
 	printf("in_vecProj was null..\n");
 	return NULL;}
+   if (NULL == in_vecPenalizedProj)  {
+   	printf("in_vecPenalizedProj was null..\n");
+   	return NULL;}
    if (NULL == in_penMask)  {
    	printf("in_penMask was null..\n");
    	return NULL;}
@@ -506,6 +511,7 @@ project_penalized_mdct(PyObject *self, PyObject *args)
    /* Change contiguous arrays into C * arrays   */
    cin_data 	  = pyvector_to_Carrayptrs(in_data);
    cin_vecProj 	  = pyvector_to_Carrayptrs(in_vecProj);
+   cin_vecPenalizedProj = pyvector_to_Carrayptrs(in_vecPenalizedProj);
    cout_scoreTree = pyvector_to_Carrayptrs(out_scoreTree);
    cin_penMask    = pyvector_to_Carrayptrs(in_penMask);
 
@@ -514,7 +520,8 @@ project_penalized_mdct(PyObject *self, PyObject *args)
    cin_vecPostTwid = pyvector_to_complexCarrayptrs(in_vecPostTwid);
 
    /* Then call library function to compute the projections */
-   res = projectPenalizedMDCT(cin_data ,cout_scoreTree,cin_vecProj,cin_penMask,
+   res = projectPenalizedMDCT(cin_data ,cout_scoreTree,cin_vecProj,
+		   cin_vecPenalizedProj,cin_penMask,
 		   cin_vecPreTwid , cin_vecPostTwid,
 		   start ,end ,L, lambda);
 

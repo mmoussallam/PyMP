@@ -476,7 +476,7 @@ class Signal(base.BaseSignal):
         return W
 
     def spectrogram(self, wsize=512, tstep=256, order=2, log=False,
-                    ax=None, cmap=None, cbar=True):
+                    ax=None, cmap=None, cbar=True, extent=None):
         """ Compute and plot the (absolute value) spectrogram of the signal 
         
         Based on a short-time fourier transform
@@ -577,10 +577,11 @@ class Signal(base.BaseSignal):
             cmap = cm.coolwarm
         plt.imshow(Spectro,
                    origin='lower',
-                   cmap=cmap)
-        
-        plt.xticks(xticks, ["%1.2f"%v for v in xvalues])
-        plt.yticks(yticks, yvalues)
+                   cmap=cmap,
+                   extent=extent)
+        if extent is None:
+            plt.xticks(xticks, ["%1.2f"%v for v in xvalues])
+            plt.yticks(yticks, yvalues)
         plt.xlabel('Time (s)')
         plt.ylabel('Frequency (Hz)')
         if cbar:

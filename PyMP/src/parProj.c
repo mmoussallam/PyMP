@@ -1125,7 +1125,8 @@ int projectMaskedGabor(double * cin_data,
 int projectPenalizedMDCT(double * cin_data,
                  double * cout_scoreTree,
                  double * cin_vecProj,
-                 double *penalty_mask,
+                 double * cin_vecPenalizedProj,
+                 double * penalty_mask,
                  fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
                  int   start,
                  int   end,
@@ -1165,7 +1166,12 @@ int projectPenalizedMDCT(double * cin_data,
 
     if(DEBUG) printf("DEBUG : Projecting frames from %d to %d \n" , start, end);
     /* LOOP ON signal frames */
-     #pragma omp parallel for default(none) private(i,j,realprod,penalty,fftw_private_input,fftw_private_output, fftw_private_plan, threadIdx,max) shared(cout_scoreTree,penalty_mask,cin_vecPostTwid,cin_vecPreTwid,cin_data,K,T,L,cin_vecProj,norm,start,end,lambda,ThreadPool_inputs,ThreadPool_outputs,ThreadPool_plans,size_number,blockIndex)
+    #pragma omp parallel for default(none) \
+			private(i,j,realprod,penalty,fftw_private_input,\
+					fftw_private_output, fftw_private_plan, threadIdx,max) \
+			shared(cout_scoreTree,penalty_mask,cin_vecPostTwid,cin_vecPreTwid,\
+					cin_data,K,T,L,cin_vecProj,cin_vecPenalizedProj,norm,start,end,lambda,\
+					ThreadPool_inputs,ThreadPool_outputs,ThreadPool_plans,size_number,blockIndex)
     for(i=start; i < end+1 ; i++){
 
         threadIdx = omp_get_thread_num();
@@ -1204,11 +1210,15 @@ int projectPenalizedMDCT(double * cin_data,
 			cin_vecProj[j + i*K] = (double) norm * realprod;
 			/* BUGFIX here - search is conducted on real values*/
 			/* CHANGES : penalization by current mask before selecting the maximum*/
-			penalty = lambda * penalty_mask[j + i*K];
-			if (( fabs(cin_vecProj[j + i*K]) - penalty) > max) {
-				max = fabs(cin_vecProj[j + i*K]) - penalty;
+			/*penalty = lambda * penalty_mask[j + i*K];*/
+
+			/*Now apply the penalty */
+			cin_vecPenalizedProj[j + i*K] = fabs(cin_vecProj[j + i*K])*(1 + (lambda * penalty_mask[j + i*K]));
+
+			if ( cin_vecPenalizedProj[j + i*K] > max) {
+				max = cin_vecPenalizedProj[j + i*K];
 				cout_scoreTree[i] = max;
-				if(DEBUG) printf("DEBUG found new value of %2.2f (penalty of %2.3f) at frame %d located at %d \n" , max , penalty,i , j);
+				if(DEBUG) printf("DEBUG found new value of %2.2f (penalty of %2.3f) at frame %d located at %d \n" , max , penalty_mask[j + i*K],i , j);
 			}
 
         }
