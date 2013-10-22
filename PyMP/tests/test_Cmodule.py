@@ -131,15 +131,15 @@ class CmoduleTest(unittest.TestCase):
         print " ---Testing good call"
         input_data = 0.42 * np.random.random((N, 1))
         projectionMatrix = np.zeros((N, 1))                            
-        
+        penprojectionMatrix = np.zeros((N, 1))  
         # test with an overall penalty
         pen_mask = np.ones(projectionMatrix.shape)
         lamb = 0.01;
         res = parallelProjections.project_penalized_mdct(input_data, scoreTree,
-                            projectionMatrix,
-                            pen_mask, pre_twidVec, post_twidVec, i, j, L,lamb)
+                            projectionMatrix, penprojectionMatrix,
+                            pen_mask, pre_twidVec, post_twidVec, i, j, L,lamb,0)
         print np.max(scoreTree), np.max(np.abs(projectionMatrix))
-        assert(np.max(scoreTree) == np.max(np.abs(projectionMatrix)) - lamb)
+        assert(np.max(scoreTree) == np.max(np.abs(penprojectionMatrix)) )
         
         if res is not None:
             print "Survived.."

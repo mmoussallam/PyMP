@@ -98,6 +98,17 @@
                   int   end,
                   int L, double lambda);
 
+ /* MCLT Dictionary projections computed using FFTS */
+ int projectPenalizedMCLT(double * cin_data,
+                  double * cout_scoreTree,
+                  double * cin_vecProj,
+                  double * cin_vecPenalizedProj,
+                  double * penalty_mask,
+                  fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
+                  int   start,
+                  int   end,
+                  int L, double lambda);
+
  /* Multidimensionnal projection */
  int projectSet(double * cin_data ,
 		 double * cin_vecProj , double * cout_scoreTree,

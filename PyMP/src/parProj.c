@@ -1121,7 +1121,7 @@ int projectMaskedGabor(double * cin_data,
 
 }
 
-/* Gabor Dictionary projections computed using FFTS */
+/* MDCT Dictionary projections computed using FFTS */
 int projectPenalizedMDCT(double * cin_data,
                  double * cout_scoreTree,
                  double * cin_vecProj,
@@ -1220,6 +1220,137 @@ int projectPenalizedMDCT(double * cin_data,
 				cout_scoreTree[i] = max;
 				if(DEBUG) printf("DEBUG found new value of %2.2f (penalty of %2.3f) at frame %d located at %d \n" , max , penalty_mask[j + i*K],i , j);
 			}
+
+        }
+        /*if(max > absoluteMax){
+            absoluteMax = max;
+        }*/
+    }/* END loop on signal frames */
+    /*mxFree(window);*/
+
+
+    return (1);
+
+}
+
+/* MCLT Dictionary projections computed using FFTS */
+int projectPenalizedMCLT(double * cin_data,
+                 double * cout_scoreTree,
+                 double * cin_vecProj,
+                 double * cin_vecPenalizedProj,
+                 double * penalty_mask,
+                 fftw_complex * cin_vecPreTwid , fftw_complex * cin_vecPostTwid,
+                 int   start,
+                 int   end,
+                 int L, double lambda) {
+
+    /* Declarations */
+    int i, j;  /* Loop indexes*/
+    int K, T , blockIndex, threadIdx;
+    double norm;
+
+    /*omp_set_num_threads(omp_get_max_threads());*/
+
+
+    fftw_complex *fftw_private_input , *fftw_private_output;  /* FFTW input and output vectors*/
+    fftw_plan fftw_private_plan;						/* FFTW Plan*/
+    fftw_complex prod;
+    double max;
+    /* Declarations -  end */
+
+    /* initialize some constants*/
+    K = L/2;
+    T = K/2;
+    norm = sqrt(2.00/((double)K));
+	/*  Retrieve inputs and outputs vector from global variables*/
+    blockIndex = -1;
+
+	for (i=0 ; i < size_number ; i++){
+		if (L == fft_sizes[i])
+		{	blockIndex =i;
+		break;
+		}
+	}
+	if (blockIndex <0) {
+		printf("Warning: FFTW has not been properly initiated\n");
+		return(-1);
+	}
+
+
+    if(DEBUG) printf("DEBUG : Projecting frames from %d to %d \n" , start, end);
+    /* LOOP ON signal frames */
+    #pragma omp parallel for default(none) \
+			private(i,j,prod,fftw_private_input,\
+					fftw_private_output, fftw_private_plan, threadIdx,max) \
+			shared(cout_scoreTree,penalty_mask,cin_vecPostTwid,cin_vecPreTwid,\
+					cin_data,K,T,L,cin_vecProj,cin_vecPenalizedProj,norm,start,end,lambda,\
+					ThreadPool_inputs,ThreadPool_outputs,ThreadPool_plans,size_number,blockIndex)
+    for(i=start; i < end+1 ; i++){
+
+        threadIdx = omp_get_thread_num();
+
+        /* Allocate FFTW vector for current thread : Already instantiated and available in ThreadPools*/
+        fftw_private_input = ThreadPool_inputs[(threadIdx*size_number)+blockIndex];
+        fftw_private_output = ThreadPool_outputs[(threadIdx*size_number)+blockIndex];
+
+        fftw_private_plan = ThreadPool_plans[(threadIdx*size_number)+blockIndex];
+
+        /* populate input */
+		for(j=0; j < L; j++){
+
+			fftw_private_input[j][0] = (double) (cin_data[j + i*K - T]) * cin_vecPreTwid[j][0];
+			fftw_private_input[j][1] = (double) (cin_data[j + i*K - T]) * cin_vecPreTwid[j][1];
+		}
+
+        /* perform FFT*/
+        fftw_execute(fftw_private_plan);
+        /* post-twiddle and assignement to projection vector
+        // simultaneous max search and storage in the score Tree*/
+
+
+/*         BUGFIX : do not allow for zero frequency
+        cin_vecProj[i*K][0] = 0;
+        cin_vecProj[i*K][1] = 0;*/
+        max = 0.0;
+
+        for(j=1; j < K; j++){
+
+        	product(fftw_private_output[j], cin_vecPostTwid[j] , prod);
+
+			/*cin_vecProj[j + i*K][0] = ((double) norm) * prod[0];
+			cin_vecProj[j + i*K][1] = ((double) norm) * prod[1];*/
+
+			cin_vecProj[j + i*K] = norm * modulus(prod);
+
+			cin_vecPenalizedProj[j + i*K] = cin_vecProj[j + i*K]*(1 + (lambda * penalty_mask[j + i*K]));
+			if ((cin_vecPenalizedProj[j + (i*K)]) > max) {
+				max = (cin_vecPenalizedProj[j + (i*K)]);
+
+				cout_scoreTree[i] = max;
+
+			}
+
+			/* Change the sign if real part is negative */
+			if (prod[0]<0) cin_vecProj[j + i*K] *= -1;
+
+        	/* Real part is all we care about
+			realprod = ((double) (fftw_private_output[j][0]* cin_vecPostTwid[j][0]) -
+					 (double) (fftw_private_output[j][1]* cin_vecPostTwid[j][1]) );
+
+
+			cin_vecProj[j + i*K] = (double) norm * realprod;
+			 BUGFIX here - search is conducted on real values
+			 CHANGES : penalization by current mask before selecting the maximum
+			penalty = lambda * penalty_mask[j + i*K];
+
+			Now apply the penalty
+			cin_vecPenalizedProj[j + i*K] = fabs(cin_vecProj[j + i*K])*(1 + (lambda * penalty_mask[j + i*K]));
+
+			if ( cin_vecPenalizedProj[j + i*K] > max) {
+				max = cin_vecPenalizedProj[j + i*K];
+				cout_scoreTree[i] = max;
+				if(DEBUG) printf("DEBUG found new value of %2.2f (penalty of %2.3f) at frame %d located at %d \n" , max , penalty_mask[j + i*K],i , j);
+			}*/
 
         }
         /*if(max > absoluteMax){

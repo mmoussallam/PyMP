@@ -465,17 +465,18 @@ project_penalized_mdct(PyObject *self, PyObject *args)
    fftw_complex * cin_vecPreTwid, *cin_vecPostTwid; // complex twiddling coefficients
    int start,  end , L ,  res; // touched frame indexes, size and potential offsets
    int n_frames;
+   int type;
    double lambda;
    //printf("%d Threads have been created \n", nb_threads);
    /* Parse tuples separately since args will differ between C fcns */
-   if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!iiid", &PyArray_Type, &in_data,
+   if (!PyArg_ParseTuple(args, "O!O!O!O!O!O!O!iiidi", &PyArray_Type, &in_data,
 												&PyArray_Type, &out_scoreTree,
 											  &PyArray_Type, &in_vecProj,
 											  &PyArray_Type, &in_vecPenalizedProj,
 											  &PyArray_Type, &in_penMask,
 											  &PyArray_Type, &in_vecPreTwid,
 											  &PyArray_Type, &in_vecPostTwid,
-											  &start,  &end , &L ,&lambda))  return NULL;
+											  &start,  &end , &L ,&lambda, &type))  return NULL;
 
 	/* Check null pointers */
    if (NULL == in_data)  {
@@ -520,15 +521,24 @@ project_penalized_mdct(PyObject *self, PyObject *args)
    cin_vecPostTwid = pyvector_to_complexCarrayptrs(in_vecPostTwid);
 
    /* Then call library function to compute the projections */
-   res = projectPenalizedMDCT(cin_data ,cout_scoreTree,cin_vecProj,
+   /* Type 0 is for plain MDCT , type 1 for MCLT */
+   if (type==0){
+	   res = projectPenalizedMDCT(cin_data ,cout_scoreTree,cin_vecProj,
 		   cin_vecPenalizedProj,cin_penMask,
 		   cin_vecPreTwid , cin_vecPostTwid,
-		   start ,end ,L, lambda);
+		   start ,end ,L, lambda);}
+   else{
+	   res = projectPenalizedMCLT(cin_data ,cout_scoreTree,cin_vecProj,
+	   		   cin_vecPenalizedProj,cin_penMask,
+	   		   cin_vecPreTwid , cin_vecPostTwid,
+	   		   start ,end ,L, lambda);
+   }
 
    if (res < 0) return NULL;
 
   return Py_BuildValue("i", 1);
 }
+
 
 /* Here we are interested in summing , multiplying or maximizing the minimums of
  * the projections on a set of signal: only difference with project_mclt is the
